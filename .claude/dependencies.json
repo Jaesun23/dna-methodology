@@ -1,0 +1,33 @@
+{
+  "plugins": [
+    {
+      "name": "spark-agents",
+      "version": "^4.3.0",
+      "repository": "https://github.com/Jaesun23/spark-claude",
+      "description": "SPARK Agent System - Stage 5-9에서 재사용",
+      "required_agents": [
+        "implementer-spark",
+        "tester-spark",
+        "documenter-spark",
+        "designer-spark",
+        "analyzer-spark",
+        "qc-spark"
+      ],
+      "usage": {
+        "stage5": "implementer-dna → implementer-spark (DNA 시스템 구현)",
+        "stage6": "documenter-dna → documenter-spark (표준 문서화)",
+        "stage7": "designer-dna → designer-spark (청사진 작성)",
+        "stage8": "analyzer-dna → analyzer-spark (작업 분해)",
+        "stage9": "qc-dna → qc-spark (체크리스트 + 자동화)"
+      },
+      "note": "Stage 5-9의 DNA 에이전트는 SPARK 에이전트를 내부적으로 호출하는 Wrapper입니다."
+    }
+  ],
+  "installation": {
+    "instructions": [
+      "1. SPARK 플러그인 설치: /plugin install https://github.com/Jaesun23/spark-claude",
+      "2. DNA 플러그인 설치: /plugin install .",
+      "3. 사용: /dna:init 으로 프로젝트 시작"
+    ]
+  }
+}
