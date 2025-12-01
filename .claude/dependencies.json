@@ -4,7 +4,7 @@
       "name": "spark-agents",
       "version": "^4.3.0",
       "repository": "https://github.com/Jaesun23/spark-claude",
-      "description": "SPARK Agent System - Stage 5-9에서 재사용",
+      "description": "SPARK Agent System - Stage 5-9 에이전트 원본 출처",
       "required_agents": [
         "implementer-spark",
         "tester-spark",
@@ -14,13 +14,13 @@
         "qc-spark"
       ],
       "usage": {
-        "stage5": "implementer-dna → implementer-spark (DNA 시스템 구현)",
-        "stage6": "documenter-dna → documenter-spark (표준 문서화)",
-        "stage7": "designer-dna → designer-spark (청사진 작성)",
-        "stage8": "analyzer-dna → analyzer-spark (작업 분해)",
-        "stage9": "qc-dna → qc-spark (체크리스트 + 자동화)"
+        "stage5": "implementer-dna (복사 from implementer-spark)",
+        "stage6": "documenter-dna (복사 from documenter-spark)",
+        "stage7": "designer-dna (복사 from designer-spark)",
+        "stage8": "analyzer-dna (복사 from analyzer-spark)",
+        "stage9": "qc-dna (복사 from qc-spark)"
       },
-      "note": "Stage 5-9의 DNA 에이전트는 SPARK 에이전트를 내부적으로 호출하는 Wrapper입니다."
+      "note": "Stage 5-9의 DNA 에이전트는 spark-claude 에이전트를 복사하여 이름만 변경한 것입니다."
     }
   ],
   "installation": {

@@ -153,12 +153,12 @@ cd dna-methodology
 - `decision-maker-dna` - ADR 작성
 - `planner-dna` - DNA 시스템 계획
 
-**Stage 5-9** (SPARK Wrapper):
-- `implementer-dna` → `implementer-spark`
-- `documenter-dna` → `documenter-spark`
-- `designer-dna` → `designer-spark`
-- `analyzer-dna` → `analyzer-spark`
-- `qc-dna` → `qc-spark`
+**Stage 5-9** (복사 후 이름 변경):
+- `implementer-dna` (from `implementer-spark`)
+- `documenter-dna` (from `documenter-spark`)
+- `designer-dna` (from `designer-spark`)
+- `analyzer-dna` (from `analyzer-spark`)
+- `qc-dna` (from `qc-spark`)
 
 자세한 매핑: [SPARK Agent 매핑 가이드](docs/integration/spark-agent-mapping.md)
 

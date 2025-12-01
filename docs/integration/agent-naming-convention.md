@@ -28,99 +28,46 @@
 | **Stage 2** | `investigator-dna` | 신규 | 환경 제약 조사 |
 | **Stage 3** | `decision-maker-dna` | 신규 | ADR 작성 |
 | **Stage 4** | `planner-dna` | 신규 | DNA 시스템 계획 |
-| **Stage 5** | `implementer-dna` | Wrapper (SPARK) | DNA 시스템 구현 |
-| **Stage 6** | `documenter-dna` | Wrapper (SPARK) | 표준 문서화 |
-| **Stage 7** | `designer-dna` | Wrapper (SPARK) | 청사진 작성 |
-| **Stage 8** | `analyzer-dna` | Wrapper (SPARK) | 작업 분해 |
-| **Stage 9** | `qc-dna` | Wrapper (SPARK) | 거버넌스 |
+| **Stage 5** | `implementer-dna` | 복사 (이름 변경) | DNA 시스템 구현 |
+| **Stage 6** | `documenter-dna` | 복사 (이름 변경) | 표준 문서화 |
+| **Stage 7** | `designer-dna` | 복사 (이름 변경) | 청사진 작성 |
+| **Stage 8** | `analyzer-dna` | 복사 (이름 변경) | 작업 분해 |
+| **Stage 9** | `qc-dna` | 복사 (이름 변경) | 거버넌스 |
 
 ---
 
-## Wrapping 전략 (Stage 5-9)
+## Stage 5-9 에이전트 (복사 및 이름 변경)
 
-Stage 5-9의 DNA 에이전트는 SPARK 에이전트를 **내부적으로 호출**합니다.
+**작업 방법**:
+1. spark-claude 프로젝트에서 에이전트 파일 복사
+2. 파일명: `-spark` → `-dna` 변경
+3. YAML frontmatter의 `name` 필드만 변경
+4. 나머지 내용 (Traits, Workflow 등) 모두 동일하게 유지
 
-### 예시: implementer-dna
-
-```markdown
-# dna-plugin/agents/implementer-dna.md
----
-name: implementer-dna
-description: DNA Stage 5 - DNA 시스템 구현 (SPARK implementer-spark 활용)
-tools: Task, Read, Write, Bash
----
-
-You are a DNA Stage 5 implementation specialist.
-
-## Core Identity
-
-You orchestrate DNA System implementation by delegating to SPARK's implementer-spark.
-
-## Workflow
-
-**Phase 1: Context Loading**
-- Read docs/context/stage4_output.json
-- Extract 11 DNA System specs
-
-**Phase 2: SPARK Delegation**
-```python
-Task("implementer-spark", f"""
-프로젝트: {project_name}
-작업: DNA 시스템 구현
-
-11개 시스템:
-{systems_from_stage4}
-
-참고 표준:
-- docs/context/stage3_output.json (ADRs)
-- docs/context/stage6_output.json (Standards)
-""")
-```
-
-**Phase 3: Validation**
-- SPARK 완료 확인
-- Stage 5 산출물 검증
-- docs/context/stage5_output.json 저장
-```
-
----
-
-## Commands에서 호출
-
-```markdown
-# Stage 1 실행
-/dna:stage1
-
-# 내부적으로:
-Task("classifier-dna", "...")
-
----
-
-# Stage 5 실행
-/dna:stage5
-
-# 내부적으로:
-Task("implementer-dna", "...")
-  └─> Task("implementer-spark", "...")  # SPARK 위임
-```
+**복사된 에이전트**:
+- `implementer-spark.md` → `implementer-dna.md`
+- `documenter-spark.md` → `documenter-dna.md`
+- `designer-spark.md` → `designer-dna.md`
+- `analyzer-spark.md` → `analyzer-dna.md`
+- `qc-spark.md` → `qc-dna.md`
 
 ---
 
 ## 장점
 
 ### 1. 완전한 통일성
-✅ 사용자는 DNA 에이전트만 알면 됨
+✅ 모든 Stage에 DNA 에이전트 존재
 ✅ `/dna:stage1` ~ `/dna:stage9` 일관된 경험
-✅ SPARK 의존성은 내부 구현 디테일
+✅ 일관된 `-dna` 네이밍
 
-### 2. 독립적 발전
-✅ DNA: 방법론 + Skills 세밀화
-✅ SPARK: Traits + Role 연구
-✅ 각자의 진화 경로
+### 2. 검증된 에이전트 활용
+✅ Stage 5-9는 spark-claude의 검증된 에이전트 정의 사용
+✅ Traits, Workflow 모두 동일 (이름만 변경)
+✅ 안정적이고 신뢰할 수 있는 동작
 
 ### 3. 명확한 책임
-✅ `-dna`: 방법론 프레임워크
-✅ `-spark`: 범용 에이전트 시스템
+✅ `-dna`: DNA 방법론 프레임워크
+✅ `-spark`: 범용 에이전트 연구
 ✅ 네이밍만으로 소속 파악
 
 ---
@@ -133,16 +80,16 @@ dna-plugin/agents/
 ├── investigator-dna.md       # Stage 2 (신규)
 ├── decision-maker-dna.md     # Stage 3 (신규)
 ├── planner-dna.md            # Stage 4 (신규)
-├── implementer-dna.md        # Stage 5 (Wrapper)
-├── documenter-dna.md         # Stage 6 (Wrapper)
-├── designer-dna.md           # Stage 7 (Wrapper)
-├── analyzer-dna.md           # Stage 8 (Wrapper)
-└── qc-dna.md                 # Stage 9 (Wrapper)
+├── implementer-dna.md        # Stage 5 (복사)
+├── documenter-dna.md         # Stage 6 (복사)
+├── designer-dna.md           # Stage 7 (복사)
+├── analyzer-dna.md           # Stage 8 (복사)
+└── qc-dna.md                 # Stage 9 (복사)
 ```
 
 ---
 
 **최종 결정**: 모든 에이전트 `-dna` 접미사 사용
-**Wrapping 전략**: Stage 5-9는 SPARK 에이전트 내부 호출
+**Stage 5-9**: spark-claude 에이전트 복사 후 이름만 변경
 **작성일**: 2025-12-01
 **작성자**: Jason & Claude (2호)

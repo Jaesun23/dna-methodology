@@ -8,17 +8,17 @@ DNA Methodology는 9개 Stage로 구성되며, Stage 5-9에서 SPARK 에이전�
 
 ## 에이전트 매핑 테이블
 
-| Stage | DNA 에이전트 | 구현 방식 | SPARK 에이전트 | 작업 |
-|-------|-------------|----------|---------------|------|
+| Stage | DNA 에이전트 | 구현 방식 | 원본 | 작업 |
+|-------|-------------|----------|------|------|
 | **Stage 1** | `classifier-dna` | 신규 | - | 패밀리 분류 (CoD) |
 | **Stage 2** | `investigator-dna` | 신규 | - | 환경 제약 조사 |
 | **Stage 3** | `decision-maker-dna` | 신규 | - | ADR 작성 |
 | **Stage 4** | `planner-dna` | 신규 | - | DNA 시스템 계획 |
-| **Stage 5** | `implementer-dna` | Wrapper | `implementer-spark` | DNA 시스템 구현 |
-| **Stage 6** | `documenter-dna` | Wrapper | `documenter-spark` | 표준 문서화 |
-| **Stage 7** | `designer-dna` | Wrapper | `designer-spark` | 청사진 작성 |
-| **Stage 8** | `analyzer-dna` | Wrapper | `analyzer-spark` | 작업 분해 |
-| **Stage 9** | `qc-dna` | Wrapper | `qc-spark` | 체크리스트 + 자동화 |
+| **Stage 5** | `implementer-dna` | 복사 (이름 변경) | `implementer-spark` | DNA 시스템 구현 |
+| **Stage 6** | `documenter-dna` | 복사 (이름 변경) | `documenter-spark` | 표준 문서화 |
+| **Stage 7** | `designer-dna` | 복사 (이름 변경) | `designer-spark` | 청사진 작성 |
+| **Stage 8** | `analyzer-dna` | 복사 (이름 변경) | `analyzer-spark` | 작업 분해 |
+| **Stage 9** | `qc-dna` | 복사 (이름 변경) | `qc-spark` | 체크리스트 + 자동화 |
 
 ---
 
@@ -103,125 +103,70 @@ DNA Methodology는 9개 Stage로 구성되며, Stage 5-9에서 SPARK 에이전�
 
 ---
 
-## Stage 5-9: Wrapper 에이전트 (SPARK 위임)
+## Stage 5-9: 복사된 에이전트 (이름 변경)
 
 ### Stage 5: DNA System Implementation
 
 **DNA 에이전트**: `implementer-dna`
-**SPARK 위임**: `implementer-spark`
+**원본**: `implementer-spark` (spark-claude)
 **역할**: Stage 4 계획에 따라 11개 DNA 시스템 구현
 
-**호출 방법**:
-```markdown
-/dna:stage5
-
-# 내부적으로 implementer-dna 호출
-Task("implementer-dna", """
-Stage 5 실행 요청
-""")
-
-# implementer-dna가 SPARK에 위임
-Task("implementer-spark", """
-프로젝트: {project_name}
-작업: DNA 시스템 구현
-참고: docs/context/stage4_output.json
-
-11개 시스템:
-1. Logging (structlog)
-2. Configuration (Pydantic Settings)
-3. Database (SQLAlchemy)
-... (생략)
-""")
-```
+**에이전트 파일**:
+- 파일명: `implementer-dna.md`
+- 내용: `implementer-spark.md`와 동일
+- 변경: YAML `name: implementer-dna`만 수정
 
 ---
 
 ### Stage 6: Project Standards Documentation
 
 **DNA 에이전트**: `documenter-dna`
-**SPARK 위임**: `documenter-spark`
+**원본**: `documenter-spark` (spark-claude)
 **역할**: ADR → DO/DON'T 표준 문서 변환
 
-**호출 방법**:
-```markdown
-/dna:stage6
-
-# 내부적으로 documenter-dna → documenter-spark 위임
-Task("documenter-dna", """
-프로젝트: {project_name}
-작업: 표준 문서 작성
-입력: docs/context/stage3_output.json (ADRs)
-출력: PROJECT_STANDARDS.md (DO/DON'T 형식)
-""")
-```
+**에이전트 파일**:
+- 파일명: `documenter-dna.md`
+- 내용: `documenter-spark.md`와 동일
+- 변경: YAML `name: documenter-dna`만 수정
 
 ---
 
 ### Stage 7: Blueprint Design
 
 **DNA 에이전트**: `designer-dna`
-**SPARK 위임**: `designer-spark`
+**원본**: `designer-spark` (spark-claude)
 **역할**: 완전한 청사진 작성 (환경 제외 모든 것)
 
-**호출 방법**:
-```markdown
-/dna:stage7
-
-# 내부적으로 designer-dna → designer-spark 위임
-Task("designer-dna", """
-프로젝트: {project_name}
-작업: 청사진 작성
-컨텍스트:
-- Stage 1-6 결과 모두 로드
-- 패밀리, NFR, 제약, ADR, DNA 시스템, 표준
-산출물: BLUEPRINT.md (완전한 설계서)
-""")
-```
+**에이전트 파일**:
+- 파일명: `designer-dna.md`
+- 내용: `designer-spark.md`와 동일
+- 변경: YAML `name: designer-dna`만 수정
 
 ---
 
 ### Stage 8: Task Breakdown
 
 **DNA 에이전트**: `analyzer-dna`
-**SPARK 위임**: `analyzer-spark`
+**원본**: `analyzer-spark` (spark-claude)
 **역할**: 청사진 → 독립 실행 가능한 레고블럭으로 분해
 
-**호출 방법**:
-```markdown
-/dna:stage8
-
-# 내부적으로 analyzer-dna → analyzer-spark 위임
-Task("analyzer-dna", """
-프로젝트: {project_name}
-작업: 작업 분해
-입력: BLUEPRINT.md
-출력: TASK_BREAKDOWN.md (독립 작업 단위)
-원칙: 각 작업 2-4시간, TODO/pass 금지
-""")
-```
+**에이전트 파일**:
+- 파일명: `analyzer-dna.md`
+- 내용: `analyzer-spark.md`와 동일
+- 변경: YAML `name: analyzer-dna`만 수정
 
 ---
 
 ### Stage 9: Governance & Automation
 
 **DNA 에이전트**: `qc-dna`
-**SPARK 위임**: `qc-spark`
+**원본**: `qc-spark` (spark-claude)
 **역할**: 체크리스트 작성 + Pre-commit hooks 설정
 
-**호출 방법**:
-```markdown
-/dna:stage9
-
-# 내부적으로 qc-dna → qc-spark 위임
-Task("qc-dna", """
-프로젝트: {project_name}
-작업: 거버넌스 구축
-Phase 1: 체크리스트 작성 (각 작업별)
-Phase 2: Pre-commit hooks 설정
-Phase 3: CI/CD 파이프라인
-Phase 4: Import-linter 설정
-""")
-```
+**에이전트 파일**:
+- 파일명: `qc-dna.md`
+- 내용: `qc-spark.md`와 동일
+- 변경: YAML `name: qc-dna`만 수정
 
 ---
 
@@ -272,19 +217,19 @@ DNA Methodology를 사용하려면 SPARK 플러그인이 먼저 설치되어야 
 /dna:stage4 → planner-dna (신규)
    │
    ▼
-/dna:stage5 → implementer-dna → implementer-spark (Wrapper)
+/dna:stage5 → implementer-dna (복사)
    │
    ▼
-/dna:stage6 → documenter-dna → documenter-spark (Wrapper)
+/dna:stage6 → documenter-dna (복사)
    │
    ▼
-/dna:stage7 → designer-dna → designer-spark (Wrapper)
+/dna:stage7 → designer-dna (복사)
    │
    ▼
-/dna:stage8 → analyzer-dna → analyzer-spark (Wrapper)
+/dna:stage8 → analyzer-dna (복사)
    │
    ▼
-/dna:stage9 → qc-dna → qc-spark (Wrapper)
+/dna:stage9 → qc-dna (복사)
    │
    ▼
 완성! 🎉
