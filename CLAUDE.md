@@ -15,6 +15,61 @@ DNA Methodology v4.0 is a 9-Stage software design framework that overcomes AI co
 2. **Environment Enforcement**: Standards + DNA Systems + Automation ensure consistency
 3. **LEGO Block Strategy**: Break work into independent, self-contained units
 
+---
+
+## ⚠️ 프로젝트의 진짜 목표 (IMPORTANT!)
+
+**이 프로젝트는 "아이디어에서 완성된 소프트웨어까지" AI와 함께 만드는 완전한 방법론을 확립하는 것입니다.**
+
+### 현재 상태
+
+```
+✅ 검증 완료 (Stage 7-9): Blueprint → Task Breakdown → Checklist → 구현
+❌ 연구 필요 (Stage 1-6): 아이디어 → Blueprint 작성
+```
+
+### 최우선 과제
+
+**Stage 1-6를 각각 "단위작업"으로 만들기**
+
+- 단위작업 = AI가 한 세션에서 최고 성과를 낼 수 있는 크기
+- 명확한 입력과 출력
+- 일관성 유지 방법
+- 검증 가능
+
+### ⚠️ 중요: Stage의 진짜 의미
+
+**Stage ≠ 한 번의 작업**
+**Stage = 여러 세션에 걸친 점진적 누적**
+
+예시:
+```
+Stage 3 (ADR 작성):
+  Session 1: ADR 001-003 작성 📝
+  Session 2: ADR 004-006 작성 📝
+  Session 3: ADR 007-009 작성 📝
+  ...
+  결과: 총 20개 ADR 완성
+```
+
+각 세션은 "일부분"만 작업하지만, 일관성 유지 (제약조건, 전체 맥락 항상 제공)
+
+### 📖 완전한 컨텍스트
+
+**백지상태의 2호가 이 프로젝트를 이해하려면 반드시 읽어야 할 문서:**
+
+👉 **[docs/DNA_PROJECT_OVERVIEW.md](docs/DNA_PROJECT_OVERVIEW.md)**
+
+이 문서에는 다음이 포함되어 있습니다:
+- AI 협업의 6가지 문제점과 해결책
+- DNA 방법론의 2가지 핵심 (부분으로 전체 + 환경 제어)
+- Stage의 진짜 의미 (여러 세션 누적, 구체적 예시)
+- 세 가지 컴포넌트 (Skills/Commands/Agents) 역할
+- 9-Stage 구조 상세 설명
+- 주식 거래 플랫폼 전체 작업 예시
+
+---
+
 ## 9-Stage Process
 
 ```
@@ -281,22 +336,63 @@ Implementation
 
 ## Current Project Status
 
-**Completed**:
-- ✅ Stage 5-9 agents (copied from SPARK, renamed to `-dna`)
-- ✅ Documentation structure (guides, plugin-guide, integration)
-- ✅ Basic plugin structure
+### ✅ 완료된 것
 
-**Not Yet Implemented**:
-- ❌ Stage 1-4 agents (classifier, investigator, decision-maker, planner)
-- ❌ All commands (`/dna:init`, `/dna:stage1` ~ `/dna:stage9`)
-- ❌ Validator scripts
-- ❌ Skills implementation
+1. **방법론 문서** (Stage 1-9 모두 작성됨)
+   - `docs/guides/` - 각 Stage별 가이드/매뉴얼/사례
+   - `docs/plugin-guide/` - 플러그인 개발 가이드
+   - `docs/integration/` - SPARK 통합 문서
 
-**Next Steps**:
-1. Implement Stage 1-4 agents following agent-definition-structure.md
-2. Create command definitions in `dna-plugin/commands/`
-3. Implement validator scripts
-4. Test end-to-end workflow
+2. **Agents** (Stage 5-9만)
+   - `implementer-dna`, `documenter-dna`, `designer-dna`, `analyzer-dna`, `qc-dna`
+   - SPARK에서 복사, 이름만 변경
+
+3. **Plugin 구조**
+   - `.claude-plugin/plugin.json`
+   - `skills/assets/templates/`
+
+### ❌ 아직 안된 것
+
+1. **Agents** (Stage 1-4)
+   - `classifier-dna` (패밀리 분류)
+   - `investigator-dna` (환경 제약 조사)
+   - `decision-maker-dna` (ADR 작성)
+   - `planner-dna` (DNA 시스템 계획)
+
+2. **Commands** (전체)
+   - `/dna:init` ~ `/dna:stage9` (13개 명령어)
+
+3. **Skills** (지식 구조화)
+   - 템플릿만 있음
+   - Progressive Disclosure 구현 필요
+   - Stage별 참조 문서 작성 필요
+
+4. **Validator Scripts**
+
+### 🎯 최종 목표
+
+1. ✅ Stage 1-6 완성 (단위작업으로 만들기)
+2. ✅ Stage 7-9 재검토 (2호의 새 기능 활용)
+3. ✅ 전체 9-Stage 통합 검증
+
+### 📝 다음 작업
+
+**우선순위 1**: Stage 1-6 작업 크기 연구
+- 각 Stage를 어떻게 여러 세션으로 나눌까?
+- 주식 거래 플랫폼 사례로 실험
+- 세션당 작업량 검증
+
+**우선순위 2**: Skills 구조화
+- Stage별 필요한 지식 정리
+- Progressive Disclosure 설계
+
+**우선순위 3**: Stage 1-4 Agents 구현
+- Phase 구조 설계
+- Skills 참조 방식
+
+**우선순위 4**: Commands 작성
+- 오케스트레이션 흐름
+- 인자 처리
 
 ## Key References
 
