@@ -1,6 +1,8 @@
 # DNA Methodology v4.0
 
-> **D**esign **N**avigation **A**rchitecture - AI 컨텍스트 한계를 극복하는 소프트웨어 설계 방법론
+> AI 컨텍스트 한계를 극복하는 소프트웨어 설계 방법론
+>
+> **DNA**: 생명의 DNA처럼, 소프트웨어의 가장 기본이 되는 11개 시스템
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)](https://github.com/Jaesun23/dna-methodology)
@@ -250,6 +252,7 @@ cd dna-methodology
 ## 📞 연락처
 
 - **Author**: Jason (Jaesun23)
+- **Email**: jaesun23@gmail.com
 - **GitHub**: https://github.com/Jaesun23
 - **Issues**: https://github.com/Jaesun23/dna-methodology/issues
 
