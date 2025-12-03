@@ -223,7 +223,126 @@ Examples:
 09L-001_task1_checklist.md        # Stage 9 checklist for task 1
 ```
 
-## Critical Principles
+## DNA 방법론 4대 핵심 원칙 (2025-12-03 확정)
+
+### 1. AI 최적 크기 (AI Optimal Size)
+**"AI가 가장 잘 작업을 수행할 크기로 작업을 하게 한다"**
+
+- **핵심**: 80-90K 토큰 = 100-150줄 체크리스트
+- **의미**: DNA 방법론 전체의 근본 원칙
+- **구현**: Stage 8이 이를 실제로 구현하는 변환점 (Blueprint → Tasks)
+- **판단 기준**:
+  - 체크리스트 예상 줄 수: 100-150줄
+  - 예상 시간은 부차적 (2-4시간은 참고용, AI가 빨리 끝낼 수 있음)
+
+### 2. 완전해질 때까지 반복 (Repeat Until Complete)
+**"부족하면 반복해서 부족함이 없어질 때까지"**
+
+- **핵심**: 절대 불완전한 채로 다음 단계로 가지 않음
+- **프로세스**: 검증 → 실패 → 수정 → 재검증
+- **3단계 검증**:
+  1. Task 크기 검증
+  2. 의존성 검증
+  3. 완전성 검증
+
+### 3. 기능별 분해 + 연결부 + 조립 (Function-based Assembly)
+**"모듈이 크면 기능별로 나누고, 연결부 설계 후 조립"**
+
+- **핵심**: 레이어별 분해 ❌, 기능별 분해 ✅
+
+**잘못된 방식 (레이어별)**:
+```
+Task 002: Order 엔티티 (Domain만)
+Task 007: Order 리포지토리 (Infrastructure만)
+Task 008: 주문 생성 서비스 (Application만)
+Task 011: Orders API (API만)
+```
+
+**올바른 방식 (기능별)**:
+```
+Task: Order 생성 기능
+  - Domain + Application + API + Infrastructure 모두 포함
+  - 🔗 연결부: OrderAggregate 기본 구조 정의
+
+Task: Order 체결 기능
+  - Domain + Application + API + Infrastructure 모두 포함
+  - 🔗 연결부: OrderAggregate 확장 (메서드 추가)
+
+Task: 조립
+  - 연결부를 통한 통합
+  - 하나의 완전한 모듈로 완성
+```
+
+**3단계 전략**:
+1. **기능 단위로 분해**: 하나의 모듈 → 여러 기능
+2. **연결부 설계**: Base class, interface, extension points
+3. **조립**: 연결부를 통해 하나의 모듈로 통합
+
+### 4. 역방향 수정 프로토콜 (Backward Correction Protocol)
+**"앞선 결정의 오류 발견 시 → 되돌아가서 수정 → 다시 현재까지 진행"**
+
+#### 핵심 시나리오:
+```
+Stage 7 (Blueprint) 작성 중...
+  ↓
+Stage 3 (ADR)의 결정이 잘못되었다는 걸 발견!
+  ↓
+❌ 잘못: 그냥 넘어가거나 Blueprint에서 임시방편
+✅ 올바름: Stage 3로 되돌아가서 ADR 수정
+  ↓
+Stage 4 → 5 → 6 → 7 다시 진행
+  ↓
+수정된 ADR이 반영된 올바른 Blueprint 완성
+```
+
+#### 왜 중요한가?
+- **선형 진행의 한계 극복**: Stage 1→2→3→...→9가 일방향이 아님
+- **품질 vs 속도**: 잘못된 기반 위에 계속 쌓으면 나중에 전체 붕괴
+- **AI 특성 고려**: AI는 이전 결정을 맹목적으로 따를 수 있음 → 명시적 수정 프로토콜 필요
+
+#### 6단계 수정 프로토콜:
+```
+Step 1: 오류 발견 및 문서화
+  - 무엇이 잘못되었는가?
+  - 어느 Stage의 어떤 결정인가?
+
+Step 2: 영향받는 Stage 범위 파악
+  - 잘못된 결정 이후 Stage 모두 영향받음
+  - 재작업 범위 명확히 파악
+
+Step 3: 해당 Stage로 이동 → 수정
+  - 근본 원인 수정
+  - 수정 이유 문서화
+
+Step 4: 수정된 산출물 검증
+  - 수정이 올바른지 검증
+  - 다른 결정과 충돌 없는지 확인
+
+Step 5: 다음 Stage부터 현재까지 재진행
+  - 수정된 결정 기반으로 재작업
+  - 모든 영향받은 Stage 다시 실행
+
+Step 6: 재진행 결과 검증
+  - 전체 일관성 확인
+  - 더 이상 오류 없는지 검증
+```
+
+#### 추적성 (Traceability):
+- **수정 이력 기록**: `[파일명]_revision_log.md`
+- **영향 범위 명시**: 어떤 Stage들이 재작업되었는가
+- **재작업 체크리스트**: 재진행 시 누락 방지
+
+#### 각 Stage별 적용:
+- **Stage 2**: Stage 1 검증
+- **Stage 3**: Stage 1-2 검증
+- **Stage 4-6**: Stage 1-3 검증 (ADR 기반)
+- **Stage 7**: Stage 1-6 검증 (가장 critical!)
+- **Stage 8**: Stage 7 검증
+- **Stage 9**: Stage 8 검증
+
+---
+
+## Critical Principles (Legacy - kept for reference)
 
 ### 1. Environment First, Then Execution
 
@@ -336,12 +455,48 @@ Implementation
 
 ## Current Project Status
 
+### 📊 Stage 가이드 검토 현황 (2025-12-03)
+
+#### Stage 1-7 검토 완료
+- **평균 점수**: 59.14/60 (98.6%)
+- **완벽 점수 (60/60)**: Stage 3, 6, 7 (3개/7개 = 43%)
+- **최저 점수**: Stage 2 (58/60 = 96.7%)
+
+#### Stage 8 검토 완료
+- **기본 품질** (6가지 기준): 59/60 (98.3%)
+  - 독립 실행 가능성: 10/10
+  - 명확성: 9/10 (AI 최적 크기 강조 부족)
+  - 실행 가능성: 10/10
+  - 검증 가능성: 10/10
+  - Detailed 정합성: 10/10
+  - 완전성: 10/10
+- **DNA 핵심 원칙 반영**: 13/30 (43.3%)
+  - AI 최적 크기: 6/10
+  - 완전해질 때까지 반복: 4/10
+  - 기능별 분해 + 조립: 3/10
+  - 역방향 수정 프로토콜: 0/10
+- **종합 점수**: 72/90 (80%)
+
+#### Stage 8 개선 작업 (1호 진행 중)
+**4개 섹션 추가** (총 310줄):
+1. "🎯 AI 최적 크기" (70줄)
+2. "🔄 완전해질 때까지 반복" (60줄)
+3. "🧩 기능별 분해 + 연결부 + 조립" (100줄)
+4. "⏪ 역방향 수정 프로토콜" (80줄)
+
+**결과 예상**: 1,299줄 → 1,609줄, DNA 핵심 반영 43% → 90%
+
+#### Stage 1-9 전체 보완 (1호 진행 중)
+- 각 Stage에 "⏪ 이전 Stage 검증 및 수정 프로토콜" 섹션 추가
+- DNA_METHODOLOGY_DETAILED.md에 4대 핵심 원칙 반영
+
 ### ✅ 완료된 것
 
 1. **방법론 문서** (Stage 1-9 모두 작성됨)
    - `docs/guides/` - 각 Stage별 가이드/매뉴얼/사례
    - `docs/plugin-guide/` - 플러그인 개발 가이드
    - `docs/integration/` - SPARK 통합 문서
+   - **DNA 4대 핵심 원칙 확정** (2025-12-03)
 
 2. **Agents** (Stage 5-9만)
    - `implementer-dna`, `documenter-dna`, `designer-dna`, `analyzer-dna`, `qc-dna`
