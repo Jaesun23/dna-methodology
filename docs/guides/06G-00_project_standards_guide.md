@@ -1,1659 +1,1484 @@
-# 프로젝트 표준 문서 작성 가이드
+# Stage 6: 프로젝트 표준 가이드 (Project Standards Guide)
 
-> **목적**: Stage 6 - ADR 결정을 실행 가능한 표준 규칙으로 변환하여 Agent가 따를 수 있는 구체적 가이드를 제공합니다.
+> **목적**: DNA 시스템 사용 강제 규칙 + 자동화 설정으로 일관성 보장
 >
-> **버전**: v2.0 (2025-11-12)
-> - v2.0: Stage 6 범위 명시, 입력/출력 문서 추가
+> **버전**: v6.0 (2025-12-03)
+>
+> - v6.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+> - v2.0 (2025-11-12): 입력/출력 문서 추가
+> - v1.0 (2025-11-10): 초기 버전
 
 ---
 
-## 📥 입력 문서 (Stage 3-5에서 받은 것)
+## 📚 이 가이드의 위치
 
-Stage 6를 시작하기 전에 다음 문서를 읽어야 합니다:
+```
+DNA 방법론 문서 체계:
 
-#### 1. **모든 DNA 시스템 ADR** (필수)
-**위치**: `docs/adr/DNA 시스템/03A-001_*.md` ~ `03A-015_*.md`
-- 로깅, 에러 처리, 인증, 설정 등 공통 환경 결정
-- **활용**: DNA 시스템 표준 규칙 작성
-
-#### 2. **모든 Domain ADR** (필수)
-**위치**: `docs/adr/domain/03A-101_*.md` ~ `03A-130_*.md`
-- 기술 스택, 데이터 설계, API 설계 등 프로젝트 특화 결정
-- **활용**: Domain 표준 규칙 작성
-
-#### 3. **05S-01_dna_standards.md** (참고)
-**위치**: `docs/stage5/05S-01_dna_standards.md` (Stage 5에서 작성됨)
-- DNA 구현 표준 (파일 구조, 네이밍, Import 규칙, 테스트 규칙, 문서화 규칙)
-- **활용**: DNA 시스템 사용 규칙 작성 시 참고
-
-#### 4. **구현된 core/ 모듈** (참고)
-**위치**: `src/core/` (Stage 5에서 구현됨)
-- 실제 DNA 시스템 코드 (logger.py, error.py, config.py, types.py 등)
-- **활용**: 실제 API 확인, 사용 예시 작성
-
----
-
-## 📤 출력 문서 (이 Stage에서 생성해야 할 문서)
-
-### 필수 문서
-
-#### 1. **`06D-01_project_standards.md`** - 프로젝트 표준 (THE 산출물)
-**내용**:
-- ADR 결정을 실행 가능한 규칙으로 변환
-- Agent가 직접 읽고 따를 수 있는 구체적 가이드
-- Mandatory vs Optional 구분
-
-**구조** (5개 섹션):
-```markdown
-# PROJECT STANDARDS
-
-## 1. Naming Conventions
-- File naming: snake_case, max 50 chars
-- Variable naming: camelCase
-- Class naming: PascalCase
-- Examples: ✅ DO / ❌ DON'T
-
-## 2. Code Organization
-- Directory structure
-- Module boundaries
-- Import rules
-
-## 3. Core Modules Usage
-- Mandatory: MUST use core.logging
-- Examples: ✅ DO / ❌ DON'T
-
-## 4. Quality Standards
-- Test coverage: 95%+ unit, 85%+ integration
-- Linting: ruff, mypy
-- Format: black
-
-## 5. Development Workflow
-- Git commit convention
-- PR rules
-- Review criteria
+Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+           ↓
+Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리) - Part 5.4
+           ↓
+Tier 3: 이 문서 (Stage 6 실행 가이드) ← 지금 여기!
 ```
 
-**예시**:
+**참조 문서**:
+- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 5.4
+
+---
+
+## 🤔 왜 Project Standards가 필요한가?
+
+### Bridge의 마지막 조각
+
+```
+Bridge(Stage 4-6)의 4대 구성요소:
+
+┌─────────────────────────────────────────────────────┐
+│  Stage 3: ADR (결정)                                │
+│  "PostgreSQL을 쓰기로 했다"                          │
+└─────────────────────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────────────────────┐
+│  Stage 4: DNA 청사진 (설계)                          │
+│  "src/core/database/ 구조와 API 설계"                │
+└─────────────────────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────────────────────┐
+│  Stage 5: DNA 구현 (코드)                            │
+│  "get_session(), Base 클래스 구현"                   │
+└─────────────────────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────────────────────┐
+│  Stage 6: Project Standards (강제) ← 지금 여기!     │
+│  "직접 SQL 금지, get_session() 필수 사용"            │
+│  "위반 시 pre-commit에서 자동 차단"                  │
+└─────────────────────────────────────────────────────┘
+```
+
+### 규칙만 있고 강제가 없으면?
+
+```
+❌ 강제 없는 규칙:
+
+PROJECT_STANDARDS.md:
+"print() 대신 logger를 사용하세요"
+
+현실:
+domain/orders/service.py:
+    print(f"Creating order: {data}")  # 급하니까 일단...
+    print("DEBUG: ", response)        # 디버깅용...
+
+결과:
+├─ 규칙 문서는 존재하지만 아무도 안 읽음
+├─ 코드 리뷰에서 발견? "이번만 넘어가죠"
+├─ 운영에서 print 로그가 stdout에 뒤섞임
+└─ 3개월 후 "누가 print 쓴 거야?!" 😱
+```
+
+```
+✅ 강제 있는 규칙:
+
+PROJECT_STANDARDS.md:
+"print() 대신 logger를 사용하세요"
+
+자동화:
+pyproject.toml:
+    select = ["T201"]  # T201 = print 금지
+
+.pre-commit-config.yaml:
+    - id: ruff
+      args: [--fix]
+
+결과:
+$ git commit -m "Add order feature"
+Ruff.....Failed
+- T201: print found (domain/orders/service.py:15)
+
+├─ 커밋 자체가 차단됨
+├─ 개발자가 즉시 수정
+├─ 코드 리뷰 불필요 (자동 강제)
+└─ 운영 환경 100% 안전
+```
+
+### 비유: 교통 법규 vs 과속 카메라
+
+```
+교통 법규 (규칙):
+"제한 속도 60km/h를 지키세요"
+
+과속 카메라 (강제):
+위반 시 자동 촬영 → 벌금 → 면허 정지
+
+Project Standards:
+├─ 규칙 = PROJECT_STANDARDS.md (교통 법규)
+├─ 강제 = pre-commit hooks (과속 카메라)
+├─ 처벌 = 커밋 차단 (벌금)
+└─ 결과 = 100% 준수 (안전한 도로)
+```
+
+---
+
+## 📥 입력 문서
+
+### Stage 5에서 전달받는 것
+
+| 파일 | 핵심 내용 | 이 Stage에서 사용 |
+|------|----------|-----------------|
+| `src/core/` | 구현된 DNA 모듈 | 사용 규칙 작성 |
+| `05D-01_dna_implementation.md` | 구현 완료 문서 | 금지/필수 규칙 도출 |
+| `03A-401~499_*.md` | DNA 시스템 ADR | 기술 선택 근거 |
+
+---
+
+## 📤 출력 문서
+
+### 필수 산출물
+
+```
+docs/
+├── 06D-01_project_standards.md    # THE 산출물 (규칙 문서)
+└── 06D-02_automation_config.md    # 자동화 설정 문서
+
+프로젝트 루트/
+├── pyproject.toml                 # Ruff, MyPy, pytest 설정
+├── .pre-commit-config.yaml        # pre-commit hooks
+└── .importlinter                  # 아키텍처 의존성 규칙
+```
+
+---
+
+## 🔧 Project Standards 3대 영역
+
+### 영역 1: DNA 사용 규칙 (DO/DON'T)
+
+```
+각 DNA 시스템마다:
+
+DO (필수):
+├─ 어떤 API를 사용해야 하는지
+├─ 어떤 패턴을 따라야 하는지
+└─ 코드 예시
+
+DON'T (금지):
+├─ 어떤 것을 사용하면 안 되는지
+├─ 왜 금지인지
+└─ Ruff/MyPy 규칙 코드
+```
+
+### 영역 2: 품질 기준 (Zero Tolerance)
+
+```
+절대 타협 없는 기준:
+
+Ruff:     0 violations
+MyPy:     0 errors
+pytest:   0 failures
+Coverage: 95%+
+
+위반 시:
+├─ 커밋 차단 (pre-commit)
+├─ PR 머지 차단 (CI)
+└─ 배포 차단 (CD)
+```
+
+### 영역 3: 자동화 설정 (강제 메커니즘)
+
+```
+3단계 강제:
+
+Day 1: 로컬 (pre-commit)
+├─ Ruff (린팅 + 포맷팅)
+├─ MyPy (타입 체크)
+└─ 기본 테스트
+
+Week 2: 아키텍처 (import-linter)
+├─ core → domain 금지
+├─ domain → api 금지
+└─ 의존성 방향 강제
+
+Month 1+: CI/CD
+├─ GitHub Actions
+├─ 커버리지 게이트
+└─ 배포 파이프라인
+```
+
+---
+
+## 📋 작성 단계 (Part 1-4)
+
+### Part 1: DNA 사용 규칙 작성 (1시간)
+
+#### Step 1: Logging 규칙
+
 ```markdown
-## 3. Core Modules Usage
+## Logging (DNA 1)
 
-### 3.1 Logging (Mandatory)
-**Rule**: MUST use `core.logging.get_logger()`
+### DO ✅
 
-✅ **DO**:
 ```python
+# 올바른 사용
 from core.logging import get_logger
+
 logger = get_logger(__name__)
-logger.info("Order created", order_id=order.id)
+
+# 기본 로깅
+logger.info("주문 생성", order_id=order_id, user_id=user_id)
+
+# 에러 로깅
+logger.error("주문 실패", error=str(e), order_id=order_id)
+
+# 컨텍스트 바인딩
+from core.logging import bind_context
+bind_context(trace_id=trace_id, user_id=user_id)
 ```
 
-❌ **DON'T**:
+### DON'T ❌
+
 ```python
-import logging  # FORBIDDEN!
-logger = logging.getLogger(__name__)
+# 금지 1: print() 사용
+print(f"Creating order: {data}")  # ❌ T201 위반!
+
+# 금지 2: logging 직접 사용
+import logging
+logger = logging.getLogger(__name__)  # ❌ 구조화 로깅 불가
+
+# 금지 3: f-string 메시지
+logger.info(f"Order {order_id} created")  # ❌ 구조화 파괴
+# 올바른: logger.info("Order created", order_id=order_id)
 ```
 
-**Enforcement**: Pre-commit hook blocks `import logging`
-**Reference**: ADR-001 Logging Strategy
+### Ruff 규칙
+- `T201`: print 금지
+- `G004`: f-string in logging 금지
 ```
 
-**특징**:
-- ✅ DO / ❌ DON'T 예시 필수
-- Enforcement 방법 명시
-- ADR 참조 링크
-
----
-
-## 🔄 다음 Stage로 전달되는 것
-
-Stage 6 → Stage 7:
-- ✅ 완성된 프로젝트 표준 문서
-- ✅ Mandatory vs Optional 구분
-- ✅ Agent가 따를 구체적 규칙
-- ✅ Enforcement 방법
-
-Stage 7 (Blueprint)에서는 이를 기반으로:
-- 표준 규칙을 적용한 상세 청사진 작성
-- 도메인별 구현 가이드에 표준 반영
-
----
-
-## 목차
-
-1. [프로젝트 표준이란](#1-프로젝트-표준이란)
-2. [Mandatory vs Optional Standards](#2-mandatory-vs-optional-standards)
-3. [Standards 파일 구조](#3-standards-파일-구조)
-4. [ADR → Standards 변환 상세 절차](#4-adr--standards-변환-상세-절차)
-5. [Individual Standard 작성하기](#5-individual-standard-작성하기)
-6. [Progressive Accumulation 전략](#6-progressive-accumulation-전략)
-7. [Standards 생명주기 관리](#7-standards-생명주기-관리)
-8. [다음 단계 연결](#8-다음-단계-연결)
-
----
-
-## 1. 프로젝트 표준이란
-
-### 1-1. 정의
-
-**Project Standards**는 ADR 결정을 구체적인 실행 규칙으로 변환한 문서입니다.
-
-**핵심 개념**:
-- **ADR = 결정 (What + Why)**
-- **Standards = 실행 (How + Enforcement)**
-- **Agent가 직접 읽고 따를 수 있는 수준의 구체성**
-
-### 1-2. ADR vs Standards 비교
-
-| 측면 | ADR | Standards |
-|------|-----|-----------|
-| **목적** | 아키텍처 결정 기록 | 실행 가이드 제공 |
-| **내용** | Decision + Context + Rationale | Rules + Examples + Patterns |
-| **독자** | 의사결정자 (Jason, 1호, 2호) | 개발자, Agent |
-| **형식** | 서술형 (왜 이렇게 결정했나) | 명령형 (이렇게 하라) |
-| **변경** | 불변 (Superseded로 대체) | 업데이트 가능 (패턴 추가) |
-| **구조** | 7개 섹션 (flexible) | 5개 섹션 (fixed) |
-
-### 1-3. 정보 흐름에서 Standards의 위치
-
-```
-ADR Documents (Decisions)
-    ↓ Transformation
-PROJECT_STANDARDS (Rules) ← 이 가이드!
-    ↓ Applied to
-BLUEPRINT (System Design)
-    ↓ Broken down
-TASK Documents (Work Units)
-    ↓ Converted to
-CHECKLIST (Agent Instructions)
-    ↓ Execute
-Agent Implementation
-```
-
-**Standards의 역할**:
-- ✅ ADR 결정을 코드로 옮기는 **변환 계층**
-- ✅ Blueprint 작성 시 **참조할 규칙 집합**
-- ✅ Task/Checklist에 **인라인 복사될 내용**
-- ✅ Quality Gates의 **검증 기준**
-
-### 1-4. Jason의 방법론에서 Standards의 중요성
-
-**Problem**: ADR만으로는 Agent가 실행 불가
+#### Step 2: Config 규칙
 
 ```markdown
-❌ ADR-015: "structlog를 사용하기로 결정"
-   → Agent: "어떻게 사용하나요? import는? 형식은?"
+## Configuration (DNA 2)
+
+### DO ✅
+
+```python
+# 올바른 사용
+from core.config import get_settings
+
+settings = get_settings()
+
+# 설정값 접근
+db_url = settings.database_url
+redis_url = settings.redis_url
+
+# 환경 확인
+if settings.is_production:
+    # 운영 전용 로직
 ```
 
-**Solution**: Standards가 구체적 실행 규칙 제공
+### DON'T ❌
+
+```python
+# 금지 1: os.environ 직접 접근
+import os
+db_url = os.environ.get("DATABASE_URL")  # ❌ 타입 안전성 없음
+
+# 금지 2: 하드코딩
+db_url = "postgresql://localhost/dev"  # ❌ 환경별 분리 불가
+
+# 금지 3: 설정 파일 직접 읽기
+import json
+config = json.load(open("config.json"))  # ❌ 검증 없음
+```
+
+### Ruff 규칙
+- 커스텀 규칙으로 `os.environ` 사용 감지 (import-linter)
+```
+
+#### Step 3: Types 규칙
 
 ```markdown
-✅ Standards/01_logging.md:
-   - Import: `from structlog import get_logger`
-   - Format: `logger.info("event_name", key=value)`
-   - Forbidden: `print()`, `import logging`
-   - Enforcement: pre-commit hook, ruff T201
-   → Agent: 명확하게 따라 할 수 있음!
+## Types (DNA 3)
+
+### DO ✅
+
+```python
+# 올바른 사용
+from core.types import UserId, OrderId, Money
+
+def create_order(
+    user_id: UserId,
+    amount: Money,
+) -> OrderId:
+    ...
+
+# 값 객체 사용
+price = Money(amount=Decimal("50000"), currency="KRW")
 ```
 
-**핵심 인사이트**:
-- Standards = "Blueprint를 작성하는 사람"이 따를 규칙
-- Standards = "Checklist에 인라인 복사"될 내용
-- Standards = "Quality Gates가 검증"할 기준
+### DON'T ❌
 
----
+```python
+# 금지 1: Any 타입
+def process(data: Any) -> Any:  # ❌ 타입 안전성 없음
+    ...
 
-## 2. Mandatory vs Optional Standards
+# 금지 2: Dict[str, Any]
+def create_order(data: Dict[str, Any]):  # ❌ TypedDict 사용
+    ...
 
-### 2-1. Mandatory Standards (필수 5개)
-
-**모든 프로젝트에 필수적인 표준**:
-
-#### 01. Logging (`01_logging.md`)
-**Why Mandatory**: 프로덕션 디버깅, 모니터링, 감사 추적 필수
-
-**출처 ADR 예시**:
-- ADR-015: structlog 사용
-- ADR-016: 로그 레벨 규칙
-- ADR-017: 민감 정보 로깅 금지
-
-**주요 내용**:
-- Import 규칙
-- Event 명명 규칙
-- Context binding
-- 금지 사항 (print, logging 모듈)
-- Enforcement (pre-commit, ruff)
-
-#### 02. Error Handling (`02_error_handling.md`)
-**Why Mandatory**: 모든 코드는 에러를 다뤄야 함
-
-**출처 ADR 예시**:
-- ADR-020: Custom exception hierarchy
-- ADR-021: 에러 로깅 규칙
-- ADR-022: User-facing error messages
-
-**주요 내용**:
-- Exception 계층 구조
-- 에러 발생 패턴 (raise vs return)
-- 에러 로깅 규칙
-- User-facing vs Internal errors
-- Enforcement (mypy, pytest)
-
-#### 03. Configuration (`03_configuration.md`)
-**Why Mandatory**: 모든 프로젝트는 설정 관리 필요
-
-**출처 ADR 예시**:
-- ADR-025: pydantic-settings 사용
-- ADR-026: .env 파일 규칙
-- ADR-027: 시크릿 관리 (AWS Secrets Manager)
-
-**주요 내용**:
-- Settings class 패턴 (Pydantic)
-- 환경별 설정 (.env.dev, .env.prod)
-- 시크릿 관리
-- 금지 사항 (하드코딩, git commit)
-- Enforcement (pre-commit hook)
-
-#### 04. Type Hints (`04_type_hints.md`)
-**Why Mandatory**: 타입 안정성은 품질의 기본
-
-**출처 ADR 예시**:
-- ADR-030: 100% type hints coverage
-- ADR-031: mypy strict mode
-- ADR-032: Pydantic for DTOs
-
-**주요 내용**:
-- Type hint 규칙 (모든 함수, 클래스)
-- Generic types (List, Dict, Optional)
-- Pydantic models for data
-- 금지 사항 (Any, type: ignore 남용)
-- Enforcement (mypy strict)
-
-#### 05. Testing (`05_testing.md`)
-**Why Mandatory**: 테스트 없는 코드는 레거시
-
-**출처 ADR 예시**:
-- ADR-010: 95% coverage 필수
-- ADR-035: pytest 사용
-- ADR-036: Given-When-Then 패턴
-
-**주요 내용**:
-- Test 구조 (Given-When-Then)
-- Fixture 사용법
-- Mocking 규칙
-- Coverage requirements (95% unit, 85% integration)
-- Enforcement (pytest-cov, CI)
-
-### 2-2. Optional Standards (프로젝트 필요에 따라)
-
-#### 06. Database (`06_database.md`)
-**When Needed**: DB를 사용하는 프로젝트
-
-**출처 ADR 예시**:
-- ADR-040: PostgreSQL 사용
-- ADR-041: SQLAlchemy ORM
-- ADR-042: Migration with Alembic
-
-**주요 내용**:
-- Connection management
-- Repository pattern
-- Migration 규칙
-- Transaction 관리
-
-#### 07. API (`07_api.md`)
-**When Needed**: API를 제공하는 프로젝트
-
-**출처 ADR 예시**:
-- ADR-025: FastAPI + OpenAPI
-- ADR-045: RESTful conventions
-- ADR-046: Rate limiting
-
-**주요 내용**:
-- Endpoint naming
-- HTTP methods, status codes
-- Request/Response models (Pydantic)
-- Error responses
-- Enforcement (OpenAPI validation)
-
-#### 08. Authentication (`08_authentication.md`)
-**When Needed**: 사용자 인증이 필요한 프로젝트
-
-**출처 ADR 예시**:
-- ADR-050: JWT tokens
-- ADR-051: OAuth2 + OIDC
-- ADR-052: Session management
-
-#### 09. Performance (`09_performance.md`)
-**When Needed**: 성능 최적화가 필요한 프로젝트
-
-**출처 ADR 예시**:
-- ADR-055: Redis caching
-- ADR-056: async/await 규칙
-- ADR-057: DB query optimization
-
-#### 10. Architecture (`10_architecture.md`)
-**When Needed**: 복잡한 시스템 (Clean Architecture 등)
-
-**출처 ADR 예시**:
-- ADR-001: Clean Architecture
-- ADR-002: DDD patterns
-- ADR-003: Dependency injection
-
-### 2-3. Universal Standards
-
-#### 99. Common Mistakes (`99_common_mistakes.md`)
-**항상 필요**: 모든 Task에 적용되는 범용 실수 집합
-
-**출처**:
-- 여러 ADR의 Consequences (harder)
-- 과거 프로젝트 경험
-- 코드 리뷰에서 발견된 패턴
-
-**구조**:
-```markdown
-# 99. Common Mistakes
-
-## Category: Imports
-**Mistake 1: 상대 import 남용**
-❌ from ..domain import User
-✅ from src.domain import User
-
-## Category: Error Handling
-**Mistake 2: 빈 except**
-❌ try: ... except: pass
-✅ try: ... except SpecificError as e: logger.error(...)
-
-## Category: Type Hints
-**Mistake 3: Any 남용**
-❌ def process(data: Any) -> Any
-✅ def process(data: dict[str, int]) -> ProcessResult
+# 금지 3: 타입 힌트 누락
+def create_order(user_id, amount):  # ❌ MyPy strict 위반
+    ...
 ```
 
-### 2-4. Standards 우선순위
-
-**프로젝트 시작 시** (Week 1):
-1. ✅ Mandatory 5개 (01-05) - 즉시 작성
-2. ✅ 99_common_mistakes.md - 초기 버전 작성
-
-**필요 시점에 추가**:
-- Week 2: API 개발 시작 → 07_api.md 작성
-- Week 3: DB 연동 시작 → 06_database.md 작성
-- Week 4: 인증 구현 → 08_authentication.md 작성
-
-**나중에 추가** (최적화 단계):
-- Month 2: 성능 이슈 발생 → 09_performance.md 작성
-- Month 3: 아키텍처 정리 → 10_architecture.md 작성
-
----
-
-## 3. Standards 파일 구조
-
-### 3-1. 파일 분리 전략
-
-**원칙**: 각 표준은 독립된 파일, 150-200 lines
-
-**디렉토리 구조**:
-```
-PROJECT_STANDARDS/
-├── 00_index.md (100 lines)        # 전체 인덱스, ADR 매핑
-├── 01_logging.md (150 lines)      # Mandatory
-├── 02_error_handling.md (180 lines)
-├── 03_configuration.md (120 lines)
-├── 04_type_hints.md (160 lines)
-├── 05_testing.md (200 lines)
-├── 06_database.md (180 lines)     # Optional
-├── 07_api.md (200 lines)
-├── 08_authentication.md (150 lines)
-├── 09_performance.md (140 lines)
-├── 10_architecture.md (220 lines)
-└── 99_common_mistakes.md (200 lines)  # Universal
+### MyPy 규칙
+- `strict = true`: 모든 함수에 타입 힌트 필수
+- `warn_return_any = true`: Any 반환 경고
+- `disallow_any_explicit = true`: 명시적 Any 금지
 ```
 
-**파일 크기 기준**:
-- ✅ 150-200 lines: 이상적
-- ⚠️ 100-150 lines: 괜찮음 (간단한 표준)
-- ⚠️ 200-250 lines: 괜찮음 (복잡한 표준)
-- ❌ 250+ lines: 파일 분리 검토 (예: 07_api.md → 07_api_rest.md, 07_api_graphql.md)
-
-### 3-2. Individual File 구조 (5개 섹션)
-
-**모든 Standards 파일은 동일한 5개 섹션 구조**:
+#### Step 4: Errors 규칙
 
 ```markdown
-# XX. [Standard Name]
+## Error Handling (DNA 4)
 
-> **출처**: ADR-XXX, ADR-YYY
-> **업데이트**: YYYY-MM-DD
+### DO ✅
 
-## 1. [Core Section 1] (Line 1-40)
-핵심 규칙, import, 기본 패턴
-
-## 2. [Core Section 2] (Line 41-80)
-상세 규칙, 고급 패턴
-
-## 3. [Core Section 3] (Line 81-120)
-특수 케이스, 예외 처리
-
-## 4. Common Mistakes (Line 121-160)
-자주 하는 실수 (❌/✅ Before/After)
-
-## 5. Enforcement (Line 161-200)
-검증 메커니즘 (pre-commit, CI, Quality Gates)
-```
-
-**Line 범위 표시 이유**:
-- Task 문서에서 정확히 참조: "01_logging.md Line 41-80"
-- Agent가 읽을 범위 명확: 전체 150 lines가 아닌 40 lines만
-- Progressive disclosure: 필요한 부분만
-
-### 3-3. 00_index.md 구조
-
-**목적**: ADR → Standards 매핑, 빠른 네비게이션
-
-```markdown
-# 00. Project Standards Index
-
-> **Last Updated**: 2025-01-15
-> **Project**: MyProject v1.0
-
-## Standards Overview
-
-### Mandatory Standards (5)
-- ✅ 01_logging.md - Logging rules (structlog)
-- ✅ 02_error_handling.md - Exception handling
-- ✅ 03_configuration.md - Settings management
-- ✅ 04_type_hints.md - Type safety
-- ✅ 05_testing.md - Testing practices
-
-### Optional Standards (5)
-- ✅ 06_database.md - PostgreSQL + SQLAlchemy
-- ✅ 07_api.md - FastAPI + OpenAPI
-- ⏳ 08_authentication.md - (Planned Week 5)
-- ⏳ 09_performance.md - (Planned Month 2)
-- ⏳ 10_architecture.md - (Planned Month 3)
-
-### Universal Standards
-- ✅ 99_common_mistakes.md - Common pitfalls
-
----
-
-## ADR → Standards Mapping
-
-| ADR | 제목 | 생성 Standards | 날짜 |
-|-----|------|----------------|------|
-| ADR-001 | Clean Architecture | 10_architecture.md | 2025-01-05 |
-| ADR-010 | 95% Coverage | 05_testing.md Section 4 | 2025-01-10 |
-| ADR-015 | structlog 사용 | 01_logging.md 전체 | 2025-01-15 |
-| ADR-020 | Domain → Infra 금지 | 10_architecture.md Section 2 | 2025-01-20 |
-| ADR-025 | FastAPI + OpenAPI | 07_api.md 전체 | 2025-01-25 |
-
----
-
-## When to Read Which Standard
-
-**JWT 토큰 생성 구현 시**:
-- 01_logging.md Line 31-60 (Event format)
-- 02_error_handling.md Line 41-80 (Custom exceptions)
-- 04_type_hints.md Line 81-120 (Pydantic models)
-- 08_authentication.md Line 1-40 (JWT basics)
-
-**API endpoint 추가 시**:
-- 01_logging.md Line 61-90 (Request context)
-- 07_api.md Line 1-120 (Endpoint, models, errors)
-- 05_testing.md Line 81-120 (API testing)
-
-**Database query 작성 시**:
-- 06_database.md Line 1-80 (Repository pattern)
-- 02_error_handling.md Line 81-120 (DB errors)
-- 09_performance.md Line 41-80 (Query optimization)
-
----
-
-## Cross-References
-
-**01_logging.md references**:
-- 02_error_handling.md: Exception 로깅 규칙
-- 07_api.md: Request ID binding
-
-**07_api.md references**:
-- 01_logging.md: API 로깅
-- 04_type_hints.md: Pydantic models
-- 02_error_handling.md: Error responses
-```
-
----
-
-## 4. ADR → Standards 변환 상세 절차
-
-### 4-1. 변환 절차 Overview
-
-```
-ADR Document
-    ↓ Step 1: 섹션 매핑
-Decision → Standards Sections 1-3
-Compliance → Standards Section 5
-Consequences (harder) → Standards Section 4
-    ↓ Step 2: 형식 변환
-서술형 (why) → 명령형 (how)
-예시 추가 (Good/Bad)
-Line 범위 할당
-    ↓ Step 3: Enforcement 추가
-Pre-commit hooks
-CI pipeline
-Quality Gates
-    ↓ Output
-Standards/XX_name.md (150-200 lines)
-```
-
-### 4-2. Step 1: ADR 섹션 → Standards 섹션 매핑
-
-#### ADR Decision → Standards Sections 1-3
-
-**ADR Decision 예시** (ADR-015):
-```markdown
-## Decision
-모든 로깅은 structlog 사용.
-
-Import:
 ```python
-from structlog import get_logger
-logger = get_logger()
+# 올바른 사용
+from core.errors import ValidationError, NotFoundError, KISAPIError
+
+# 도메인 에러
+if not items:
+    raise ValidationError("주문 항목이 비어있습니다", field="items")
+
+# 리소스 없음
+if not order:
+    raise NotFoundError("Order", order_id)
+
+# 외부 API 에러
+if response.status_code != 200:
+    raise KISAPIError("KIS API 호출 실패", status_code=response.status_code)
 ```
 
-Pattern:
+### DON'T ❌
+
 ```python
-logger.info("event_name", key=value)
-```
+# 금지 1: 일반 Exception
+raise Exception("Something went wrong")  # ❌ 에러 코드 없음
 
-Forbidden:
-- print()
-- import logging
-```
-
-**→ Standards Section 1-3 변환**:
-
-**Section 1: Import and Setup** (Line 1-40)
-```markdown
-## 1. Import and Setup (Line 1-40)
-
-**Mandatory Import**:
-```python
-from structlog import get_logger
-logger = get_logger()
-```
-
-**Configuration** (main.py 또는 settings.py):
-```python
-import structlog
-
-structlog.configure(
-    processors=[
-        structlog.stdlib.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.JSONRenderer(),
-    ],
-)
-```
-
-**Forbidden Imports**:
-❌ `import logging` - 표준 logging 모듈 사용 금지
-❌ `from logging import getLogger` - 모든 logging 모듈 금지
-
-**Why**: ELK stack 연동을 위해 structlog만 사용
-```
-
-**Section 2: Event Format** (Line 41-80)
-```markdown
-## 2. Event Format (Line 41-80)
-
-**Pattern**: `logger.info("event_name", key=value)`
-
-**Event Naming Rules**:
-- snake_case 사용 (user_login, not UserLogin)
-- 동사_명사 형태 (token_generated, order_created)
-- 과거형 사용 안 함 (user_logged_in ❌)
-
-**Good Examples**:
-```python
-✅ logger.info("user_login", user_id=user.id, ip=request.ip)
-✅ logger.error("token_expired", token_id=token.jti, user_id=user.id)
-✅ logger.warning("rate_limit_exceeded", user_id=user.id, limit=100)
-```
-
-**Bad Examples**:
-```python
-❌ logger.info(f"User {user.id} logged in")  # 문자열 포맷 사용
-❌ logger.info("login")                       # Context 없음
-❌ logger.info("User Login")                  # CamelCase
-❌ print(f"User logged in: {user.id}")       # print 사용
-```
-
-**Why**:
-- ELK stack은 key-value 필요 (문자열 파싱 불가)
-- Request ID로 필터링 가능
-- 성능 분석 (duration 자동 기록)
-```
-
-**Section 3: Context Binding** (Line 81-120)
-```markdown
-## 3. Context Binding (Line 81-120)
-
-**Request ID Auto-binding** (FastAPI):
-```python
-from structlog import get_logger
-import uuid
-
-@app.middleware("http")
-async def bind_request_id(request: Request, call_next):
-    request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
-    logger = get_logger().bind(request_id=request_id)
-    # request.state.logger = logger (store for later use)
-    response = await call_next(request)
-    return response
-```
-
-**User Context Binding**:
-```python
-logger = get_logger().bind(user_id=current_user.id)
-logger.info("order_created", order_id=order.id)
-# Output: {"event": "order_created", "order_id": 123, "user_id": 456, "request_id": "abc-123", ...}
-```
-
-**Exception Logging**:
-```python
+# 금지 2: except: pass
 try:
-    token = generate_token(user_id)
-except TokenGenerationError as e:
-    logger.error("token_generation_failed", user_id=user_id, exc_info=True)
+    ...
+except:  # ❌ 모든 에러 삼킴
+    pass
+
+# 금지 3: bare except
+try:
+    ...
+except Exception:  # ❌ 너무 광범위
+    logger.error("Error")
+
+# 올바른: 구체적 예외 처리
+try:
+    ...
+except ValidationError as e:
+    logger.warning("검증 실패", error=e.message)
+    raise
+except KISAPIError as e:
+    logger.error("외부 API 실패", error=e.message)
     raise
 ```
 
-**Why**: Context binding으로 모든 로그에 request_id, user_id 자동 포함
+### Ruff 규칙
+- `E722`: bare except 금지
+- `B001`: assert 대신 raise 사용
 ```
 
-#### ADR Consequences (Harder) → Standards Section 4
+#### Step 5: Database 규칙
 
-**ADR Consequences 예시**:
 ```markdown
-## Consequences
-❌ **Harder**:
-- 초기 설정 복잡도
-- 팀 교육 필요 (structlog API)
-- Migration 작업 (500+ print() 제거)
+## Database (DNA 5)
+
+### DO ✅
+
+```python
+# 올바른 사용
+from core.database import get_session
+
+# 세션 사용 (컨텍스트 매니저)
+async with get_session() as session:
+    order = Order(user_id=user_id, amount=amount)
+    session.add(order)
+    await session.commit()
+
+# 쿼리
+async with get_session() as session:
+    result = await session.execute(
+        select(Order).where(Order.user_id == user_id)
+    )
+    orders = result.scalars().all()
 ```
 
-**→ Standards Section 4: Common Mistakes**:
+### DON'T ❌
+
+```python
+# 금지 1: 직접 SQL 문자열
+cursor.execute(f"SELECT * FROM orders WHERE id = {order_id}")  # ❌ SQL Injection!
+
+# 금지 2: 세션 수동 관리
+session = Session()
+try:
+    ...
+finally:
+    session.close()  # ❌ 컨텍스트 매니저 사용
+
+# 금지 3: 트랜잭션 없이 여러 쓰기
+session.add(order)
+session.commit()
+session.add(payment)
+session.commit()  # ❌ 원자성 위반
+```
+
+### 보안 규칙
+- `S608`: SQL Injection 가능 코드 감지
+```
+
+
+
+### Part 2: 품질 기준 설정 (30분)
+
+#### Zero Tolerance 기준
+
 ```markdown
-## 4. Common Mistakes (Line 121-160)
+## 품질 기준 (Zero Tolerance)
 
-**Mistake 1: 문자열 포맷 사용**
-```python
-❌ Before: logger.info(f"Processing {count} items")
-✅ After:  logger.info("processing_items", count=count)
-```
-**Why**: ELK stack은 key-value 필요, f-string은 파싱 불가
-**출처**: ADR-015 Consequences (Migration 작업 중 발견)
+### 정적 분석
 
-**Mistake 2: print() 사용**
-```python
-❌ Before: print(f"User {user.id} logged in")
-✅ After:  logger.info("user_login", user_id=user.id)
-```
-**Why**: print()는 파일 저장 안 됨, ELK 수집 불가
-**출처**: ADR-015 Decision (print 금지)
+| 도구 | 기준 | 위반 시 |
+|------|-----|--------|
+| Ruff | 0 violations | 커밋 차단 |
+| MyPy | 0 errors | 커밋 차단 |
+| pytest | 0 failures | 머지 차단 |
+| Coverage | 95%+ | 머지 차단 |
 
-**Mistake 3: 민감 정보 로깅**
-```python
-❌ Before: logger.info("auth", password=password, token=token)
-✅ After:  logger.info("auth", user_id=user.id)
-```
-**Why**: 보안 이슈, GDPR 위반, 감사 실패
-**출처**: 과거 프로젝트 보안 감사에서 발견
+### Ruff 규칙 (필수)
 
-**Mistake 4: Exception 로깅 시 context 누락**
-```python
-❌ Before: logger.error("Error occurred")
-✅ After:  logger.error("token_generation_failed", user_id=user.id, exc_info=True)
-```
-**Why**: 디버깅을 위한 context 필수, exc_info=True로 스택 트레이스 포함
-```
-
-#### ADR Compliance → Standards Section 5
-
-**ADR Compliance 예시**:
-```markdown
-## Compliance
-1. Automated: pre-commit hook (print 차단)
-2. Automated: ruff T201
-3. Semi-automated: PR 체크리스트
-4. Manual: 민감 정보 로깅 리뷰
-```
-
-**→ Standards Section 5: Enforcement**:
-```markdown
-## 5. Enforcement (Line 161-200)
-
-### 5-1. Pre-commit Hook
-
-**설정** (`.pre-commit-config.yaml`):
-```yaml
-- repo: local
-  hooks:
-    - id: no-print
-      name: Detect print()
-      entry: python scripts/check_no_print.py
-      language: python
-      types: [python]
-```
-
-**스크립트** (`scripts/check_no_print.py`):
-```python
-import sys
-import re
-
-def check_file(filename):
-    with open(filename) as f:
-        content = f.read()
-    if re.search(r'\bprint\s*\(', content):
-        print(f"❌ {filename}: print() 사용 금지. logger.info() 사용.")
-        return False
-    return True
-
-if __name__ == "__main__":
-    files = sys.argv[1:]
-    if not all(check_file(f) for f in files):
-        sys.exit(1)
-```
-
-### 5-2. Ruff Configuration
-
-**설정** (`pyproject.toml`):
 ```toml
 [tool.ruff]
-select = ["T201"]  # Detect print()
+line-length = 88
+target-version = "py312"
 
-[tool.ruff.lint]
-ignore = []
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort
+    "T201",   # print 금지
+    "G004",   # f-string in logging 금지
+    "B",      # bugbear
+    "S",      # security
+    "E722",   # bare except 금지
+]
+
+ignore = [
+    "E501",   # line too long (formatter가 처리)
+]
 ```
 
-**실행**:
-```bash
-ruff check .
-# Output: src/main.py:10:5: T201 `print` found
+### MyPy 규칙 (필수)
+
+```toml
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_any_explicit = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
 ```
 
-### 5-3. CI Pipeline
+### pytest 규칙 (필수)
 
-**GitHub Actions** (`.github/workflows/ci.yml`):
+```toml
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = """
+    --cov=src
+    --cov-fail-under=95
+    --cov-report=term-missing
+    -q
+"""
+testpaths = ["tests"]
+```
+```
+
+### Part 3: 자동화 설정 (1시간)
+
+#### Step 1: pre-commit 설정
+
 ```yaml
+# .pre-commit-config.yaml
+
+repos:
+  # Ruff (린팅 + 포맷팅)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # MyPy (타입 체크)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies: 
+          - pydantic>=2.0
+          - pydantic-settings>=2.0
+        args: [--strict]
+
+  # pytest (로컬 테스트)
+  - repo: local
+    hooks:
+      - id: pytest-unit
+        name: pytest unit tests
+        entry: pytest tests/unit -q --no-cov
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # import-linter (아키텍처 검증)
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: import-linter
+        entry: lint-imports
+        language: system
+        pass_filenames: false
+        always_run: true
+```
+
+#### Step 2: import-linter 설정
+
+```ini
+# .importlinter
+
+[importlinter]
+root_package = src
+
+[importlinter:contract:core-independence]
+name = Core는 Domain/API에 의존하지 않음
+type = forbidden
+source_modules = 
+    src.core
+forbidden_modules = 
+    src.domain
+    src.api
+
+[importlinter:contract:domain-independence]
+name = Domain은 API에 의존하지 않음
+type = forbidden
+source_modules = 
+    src.domain
+forbidden_modules = 
+    src.api
+
+[importlinter:contract:layers]
+name = Clean Architecture 레이어
+type = layers
+layers = 
+    src.api
+    src.domain
+    src.core
+```
+
+**의존성 방향**:
+```
+허용:
+api → domain → core
+
+금지:
+core → domain (역방향!)
+domain → api (역방향!)
+core → api (건너뛰기!)
+```
+
+#### Step 3: CI 파이프라인 (GitHub Actions)
+
+```yaml
+# .github/workflows/ci.yml
+
 name: CI
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Install dependencies
+        run: uv sync
+      
+      - name: Ruff (lint)
+        run: uv run ruff check src tests
+      
+      - name: Ruff (format)
+        run: uv run ruff format --check src tests
+      
+      - name: MyPy
+        run: uv run mypy src --strict
+      
+      - name: import-linter
+        run: uv run lint-imports
+      
+      - name: pytest
+        run: uv run pytest --cov=src --cov-fail-under=95
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true
+```
+
+### Part 4: 자동화 성숙도 로드맵 (30분)
+
+#### Day 1: 기본 정적 분석
+
+```bash
+# pre-commit 설치
+uv add --dev pre-commit
+pre-commit install
+
+# 첫 검증
+pre-commit run --all-files
+```
+
+**이 시점의 강제**:
+- ✅ Ruff (린팅 + 포맷팅)
+- ✅ MyPy (타입 체크)
+- ✅ 기본 테스트
+
+#### Week 2: 아키텍처 검증
+
+```bash
+# import-linter 설치
+uv add --dev import-linter
+
+# 검증
+lint-imports
+```
+
+**이 시점의 강제**:
+- ✅ Day 1 모든 것
+- ✅ 레이어 의존성 (core ← domain ← api)
+- ✅ 역방향 의존성 차단
+
+#### Month 1+: CI/CD 통합
+
+```bash
+# GitHub Actions 설정
+mkdir -p .github/workflows
+cp templates/ci.yml .github/workflows/
+```
+
+**이 시점의 강제**:
+- ✅ Week 2 모든 것
+- ✅ PR 머지 게이트
+- ✅ 커버리지 리포트
+- ✅ 배포 파이프라인
+
+---
+
+## 📄 PROJECT_STANDARDS.md 템플릿
+
+### 06D-01_project_standards.md
+
+```markdown
+# Project Standards
+
+> **프로젝트**: [프로젝트명]
+> **버전**: v1.0
+> **작성일**: YYYY-MM-DD
+> **기반 ADR**: 03A-401 ~ 03A-411 (DNA 시스템)
+
+---
+
+## 1. 코드 스타일
+
+### 1.1 포맷팅
+- **도구**: Ruff formatter
+- **줄 길이**: 88자
+- **들여쓰기**: 4 spaces
+- **인용부호**: 큰따옴표 (")
+
+### 1.2 네이밍
+| 대상 | 규칙 | 예시 |
+|------|-----|------|
+| 클래스 | PascalCase | `OrderService` |
+| 함수/변수 | snake_case | `create_order` |
+| 상수 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
+| 비공개 | _prefix | `_internal_method` |
+
+### 1.3 Import 순서
+```python
+# 1. 표준 라이브러리
+import os
+from datetime import datetime
+
+# 2. 서드파티
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+# 3. 로컬 (core → domain → api 순)
+from core.logging import get_logger
+from domain.orders import OrderService
+```
+
+---
+
+## 2. DNA 시스템 사용 규칙
+
+### 2.1 Logging
+
+**DO ✅**
+```python
+from core.logging import get_logger
+logger = get_logger(__name__)
+logger.info("주문 생성", order_id=order_id)
+```
+
+**DON'T ❌**
+```python
+print("debug")                    # T201 위반
+import logging                    # 직접 사용 금지
+logger.info(f"Order {id}")        # G004 위반
+```
+
+### 2.2 Configuration
+
+**DO ✅**
+```python
+from core.config import get_settings
+settings = get_settings()
+db_url = settings.database_url
+```
+
+**DON'T ❌**
+```python
+import os
+os.environ.get("DB_URL")          # 타입 안전성 없음
+db_url = "postgresql://..."       # 하드코딩 금지
+```
+
+### 2.3 Types
+
+**DO ✅**
+```python
+from core.types import UserId, OrderId, Money
+
+def create_order(user_id: UserId, amount: Money) -> OrderId:
+    ...
+```
+
+**DON'T ❌**
+```python
+def create_order(user_id, amount):  # 타입 힌트 누락
+    ...
+
+def process(data: Any) -> Any:      # Any 금지
+    ...
+```
+
+### 2.4 Error Handling
+
+**DO ✅**
+```python
+from core.errors import ValidationError, NotFoundError
+
+if not items:
+    raise ValidationError("항목 필요", field="items")
+```
+
+**DON'T ❌**
+```python
+raise Exception("error")           # 일반 Exception 금지
+except:                            # bare except 금지
+    pass
+```
+
+### 2.5 Database
+
+**DO ✅**
+```python
+from core.database import get_session
+
+async with get_session() as session:
+    session.add(order)
+    await session.commit()
+```
+
+**DON'T ❌**
+```python
+cursor.execute(f"SELECT * WHERE id = {id}")  # SQL Injection!
+session = Session()                           # 수동 관리 금지
+```
+
+---
+
+## 3. 품질 기준
+
+### 3.1 Zero Tolerance
+
+| 항목 | 기준 | 검증 명령어 |
+|------|-----|-----------|
+| Ruff | 0 violations | `ruff check src tests` |
+| MyPy | 0 errors | `mypy src --strict` |
+| pytest | 0 failures | `pytest tests` |
+| Coverage | 95%+ | `pytest --cov-fail-under=95` |
+
+### 3.2 커밋 전 필수
+
+```bash
+# 모든 검증 통과 필수
+pre-commit run --all-files
+```
+
+위반 시 커밋 차단됨.
+
+---
+
+## 4. 아키텍처 규칙
+
+### 4.1 레이어 구조
+
+```
+src/
+├── core/      # DNA 시스템 (공통 인프라)
+├── domain/    # 비즈니스 로직
+└── api/       # HTTP 인터페이스
+```
+
+### 4.2 의존성 방향
+
+```
+허용: api → domain → core
+금지: core → domain, domain → api
+```
+
+### 4.3 import-linter로 강제
+
+```bash
+# 검증
+lint-imports
+
+# 위반 시
+FAILED: Core는 Domain/API에 의존하지 않음
+  src.core.database imports src.domain.orders
+```
+
+---
+
+## 5. Git 규칙
+
+### 5.1 커밋 메시지
+
+```
+<type>(<scope>): <subject>
+
+feat(orders): 주문 생성 API 추가
+fix(auth): 토큰 만료 처리 수정
+refactor(core): 로깅 설정 개선
+test(orders): 주문 서비스 테스트 추가
+docs(readme): 설치 가이드 업데이트
+```
+
+### 5.2 브랜치 전략
+
+```
+main         ← 운영 (보호됨)
+develop      ← 개발 통합
+feature/*    ← 기능 개발
+fix/*        ← 버그 수정
+```
+
+### 5.3 PR 규칙
+
+- [ ] 모든 CI 통과
+- [ ] 리뷰어 1명 이상 승인
+- [ ] 커버리지 유지 또는 증가
+
+---
+
+## 6. 참조
+
+- ADR: `docs/adr/03A-401~411_*.md`
+- DNA 구현: `src/core/`
+- 자동화 설정: `pyproject.toml`, `.pre-commit-config.yaml`
+```
+
+
+
+---
+
+## ✏️ 작성 예시: 주식 거래 플랫폼
+
+### 예시 1: DNA 사용 규칙 (Logging 상세)
+
+```markdown
+## 2.1 Logging
+
+> **ADR 참조**: ADR-401 (structlog 선택)
+
+### 목적
+모든 로그는 JSON 구조화 형식으로, trace_id를 포함하여 추적 가능해야 함.
+
+### DO ✅ (필수 사용법)
+
+```python
+# 1. 로거 초기화
+from core.logging import get_logger, bind_context
+
+logger = get_logger(__name__)
+
+# 2. 요청 시작 시 컨텍스트 바인딩
+@app.middleware("http")
+async def logging_middleware(request: Request, call_next):
+    bind_context(
+        trace_id=request.headers.get("X-Trace-ID", str(uuid4())[:8]),
+        user_id=getattr(request.state, "user_id", "anonymous"),
+    )
+    return await call_next(request)
+
+# 3. 비즈니스 로직에서 로깅
+async def create_order(self, data: CreateOrderRequest) -> OrderId:
+    logger.info("주문 생성 시작", symbol=data.symbol, quantity=data.quantity)
+    
+    try:
+        order = await self._process_order(data)
+        logger.info("주문 생성 완료", order_id=str(order.id))
+        return order.id
+    except KISAPIError as e:
+        logger.error("KIS API 실패", error=str(e), symbol=data.symbol)
+        raise
+```
+
+### DON'T ❌ (금지 사항)
+
+```python
+# 금지 1: print() 사용
+# Ruff T201 위반 → 커밋 차단
+print(f"Order created: {order_id}")
+
+# 금지 2: logging 직접 사용
+# 구조화 로깅 불가, trace_id 누락
+import logging
+logging.info("Order created")
+
+# 금지 3: f-string 메시지
+# Ruff G004 위반 → 검색/필터링 어려움
+logger.info(f"Order {order_id} created by {user_id}")
+# 올바른: logger.info("Order created", order_id=order_id, user_id=user_id)
+
+# 금지 4: 예외 정보 누락
+try:
+    ...
+except Exception:
+    logger.error("실패")  # ❌ 예외 정보 없음
+# 올바른: logger.exception("실패", exc_info=True)
+```
+
+### 검증 방법
+
+```bash
+# Ruff로 print 검사
+ruff check src --select=T201,G004
+
+# 결과 (위반 시)
+src/domain/orders/service.py:45:5: T201 `print` found
+src/domain/orders/service.py:52:9: G004 Logging statement uses f-string
+```
+
+### 로그 출력 예시
+
+```json
+{
+  "event": "주문 생성 완료",
+  "trace_id": "abc12345",
+  "user_id": "user-789",
+  "order_id": "order-456",
+  "timestamp": "2025-12-03T10:30:00Z",
+  "level": "info",
+  "logger": "domain.orders.service"
+}
+```
+```
+
+### 예시 2: 자동화 설정 (전체)
+
+```markdown
+## 자동화 설정
+
+### pyproject.toml (완전판)
+
+```toml
+[project]
+name = "stock-trading-platform"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi>=0.115.0",
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.6.0",
+    "structlog>=24.1.0",
+    "sqlalchemy>=2.0.0",
+    "redis>=5.0.0",
+    "httpx>=0.27.0",
+    "uvloop>=0.21.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+    "import-linter>=2.0.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort
+    "T201",   # print 금지
+    "G004",   # f-string in logging 금지
+    "B",      # bugbear
+    "S",      # security (SQL injection 등)
+    "E722",   # bare except 금지
+    "UP",     # pyupgrade
+]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = "--cov=src --cov-fail-under=95 --cov-report=term-missing -q"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+```
+
+### .pre-commit-config.yaml (완전판)
+
+```yaml
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic>=2.0
+          - pydantic-settings>=2.0
+          - sqlalchemy>=2.0
+        args: [--strict]
+        pass_filenames: false
+        entry: mypy src
+
+  - repo: local
+    hooks:
+      - id: pytest-unit
+        name: pytest unit tests
+        entry: pytest tests/unit -q --no-cov
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: import-linter
+        name: import-linter
+        entry: lint-imports
+        language: system
+        pass_filenames: false
+        always_run: true
+```
+
+### .importlinter (완전판)
+
+```ini
+[importlinter]
+root_package = src
+
+[importlinter:contract:core-independence]
+name = Core는 Domain/API에 의존하지 않음
+type = forbidden
+source_modules =
+    src.core
+forbidden_modules =
+    src.domain
+    src.api
+
+[importlinter:contract:domain-independence]
+name = Domain은 API에 의존하지 않음
+type = forbidden
+source_modules =
+    src.domain
+forbidden_modules =
+    src.api
+
+[importlinter:contract:clean-layers]
+name = Clean Architecture 레이어 순서
+type = layers
+layers =
+    src.api
+    src.domain
+    src.core
+```
+```
+
+### 예시 3: CI 파이프라인 (GitHub Actions)
+
+```yaml
+# .github/workflows/ci.yml
+
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: '3.12'
 
 jobs:
   lint:
+    name: Lint & Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install uv
+        run: pip install uv
+      
       - name: Install dependencies
-        run: pip install ruff
-      - name: Check print()
-        run: ruff check .
-```
+        run: uv sync --dev
+      
+      - name: Ruff lint
+        run: uv run ruff check src tests
+      
+      - name: Ruff format
+        run: uv run ruff format --check src tests
 
-### 5-4. Quality Gates (Phase 5B)
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Install dependencies
+        run: uv sync --dev
+      
+      - name: MyPy
+        run: uv run mypy src --strict
 
-**Agent 자가 검증** (`~/.claude/hooks/spark_quality_gates.py`):
-```python
-def check_logging_standards():
-    """Check logging standards compliance."""
-    # Ruff check
-    result = subprocess.run(["ruff", "check", "."], capture_output=True)
-    if result.returncode != 0:
-        return False, "Ruff violations (T201 print detected)"
+  architecture:
+    name: Architecture Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Install dependencies
+        run: uv sync --dev
+      
+      - name: import-linter
+        run: uv run lint-imports
 
-    # Grep check (backup)
-    result = subprocess.run(["grep", "-r", "print(", "src/"], capture_output=True)
-    if result.returncode == 0:
-        return False, "print() detected in src/"
-
-    return True, "Logging standards OK"
-```
-
-### 5-5. PR Checklist
-
-**PR Template** (`.github/pull_request_template.md`):
-```markdown
-## Logging Checklist
-- [ ] print() 없음 (logger.info() 사용)
-- [ ] logger.info("event", key=value) 형식 준수
-- [ ] 민감 정보(password, token) 로깅 없음
-- [ ] Exception 로깅 시 exc_info=True 포함
-```
-
-### 5-6. Manual Review (주 1회)
-
-**리뷰 항목**:
-1. 민감 정보 로깅 여부 (password, token, API key)
-2. Event naming convention 준수 (snake_case, 동사_명사)
-3. Context binding 적절성 (request_id, user_id)
-4. 로그 레벨 적절성 (info vs warning vs error)
-
-**리뷰 주기**: 매주 금요일 오후 2시
-```
-
-### 4-3. Step 2: 형식 변환 (서술형 → 명령형)
-
-**ADR Decision (서술형)**:
-```markdown
-우리는 structlog를 사용하기로 결정했습니다.
-이는 ELK stack과의 연동을 위해 JSON 포맷이 필요하기 때문입니다.
-```
-
-**→ Standards (명령형)**:
-```markdown
-**모든 로깅은 structlog 사용.**
-
-```python
-from structlog import get_logger
-logger = get_logger()
-logger.info("event_name", key=value)
-```
-
-**Why**: ELK stack 연동 (JSON 포맷 필요)
-```
-
-**변환 원칙**:
-- ❌ "우리는 ~하기로 결정했습니다" (과거형, 설명)
-- ✅ "~하라", "~사용", "~금지" (명령형, 직접적)
-- ❌ "이는 ~때문입니다" (이유 중심)
-- ✅ "**Why**: ~" (선택적 이유, 짧게)
-
-### 4-4. Step 3: 예시 추가 (Good/Bad)
-
-**ADR에는 예시가 적거나 없을 수 있음**:
-```markdown
-## Decision
-logger.info("event_name", key=value) 형식 사용
-```
-
-**→ Standards에는 충분한 예시 필요**:
-```markdown
-**Good Examples**:
-```python
-✅ logger.info("user_login", user_id=user.id, ip=request.ip)
-✅ logger.error("token_expired", token_id=token.jti, user_id=user.id)
-✅ logger.warning("rate_limit_exceeded", user_id=user.id, limit=100)
-```
-
-**Bad Examples**:
-```python
-❌ logger.info(f"User {user.id} logged in")  # 문자열 포맷
-❌ logger.info("login")                       # Context 없음
-❌ logger.info("User Login")                  # CamelCase
-```
-```
-
-**예시 작성 원칙**:
-- Good 3개, Bad 3개 (최소)
-- Bad는 실제로 하기 쉬운 실수
-- 각 Bad에 주석으로 이유 설명
-- Before/After 쌍으로 제시
-
-### 4-5. Step 4: Line 범위 할당
-
-**각 섹션에 Line 범위 명시**:
-```markdown
-## 1. Import and Setup (Line 1-40)
-[40 lines of content]
-
-## 2. Event Format (Line 41-80)
-[40 lines of content]
-
-## 3. Context Binding (Line 81-120)
-[40 lines of content]
-
-## 4. Common Mistakes (Line 121-160)
-[40 lines of content]
-
-## 5. Enforcement (Line 161-200)
-[40 lines of content]
-```
-
-**Line 범위 계산**:
-- 섹션당 평균 40 lines
-- 복잡한 섹션 50-60 lines
-- 간단한 섹션 30 lines
-- 총합 150-200 lines
-
-**Why Line 범위 필요**:
-```markdown
-Task 문서에서:
-"이 Task에 필요한 Standards:
-- 01_logging.md Line 41-80 (Event format만)
-- 04_type_hints.md Line 81-120 (Pydantic models만)"
-
-→ Agent는 전체 150 lines가 아닌 40 lines씩만 읽음!
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, architecture]
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Install dependencies
+        run: uv sync --dev
+      
+      - name: Run tests
+        run: uv run pytest --cov=src --cov-fail-under=95 --cov-report=xml
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          REDIS_URL: redis://localhost:6379
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: true
 ```
 
 ---
 
-## 5. Individual Standard 작성하기
+## ✅ Stage 6 완료 체크리스트
 
-### 5-1. 01_logging.md 완성 예시
+### DNA 사용 규칙
 
-**전체 구조** (150 lines):
-```markdown
-# 01. Logging Standards
+- [ ] Logging DO/DON'T 작성
+- [ ] Config DO/DON'T 작성
+- [ ] Types DO/DON'T 작성
+- [ ] Errors DO/DON'T 작성
+- [ ] Database DO/DON'T 작성 (패밀리별)
 
-> **출처**: ADR-015 (structlog 사용)
-> **업데이트**: 2025-01-15
+### 품질 기준
 
-## 1. Import and Setup (Line 1-40)
-[Mandatory import, configuration, forbidden]
+- [ ] Zero Tolerance 기준 명시 (Ruff 0, MyPy 0, Coverage 95%)
+- [ ] pyproject.toml [tool.ruff] 설정
+- [ ] pyproject.toml [tool.mypy] 설정
+- [ ] pyproject.toml [tool.pytest] 설정
 
-## 2. Event Format (Line 41-80)
-[Pattern, naming, good/bad examples]
+### 자동화 설정
 
-## 3. Context Binding (Line 81-120)
-[Request ID, user context, exception logging]
+- [ ] .pre-commit-config.yaml 작성
+- [ ] pre-commit install 실행
+- [ ] .importlinter 설정
+- [ ] lint-imports 검증
 
-## 4. Common Mistakes (Line 121-160)
-[4-5 mistakes with before/after]
+### CI/CD (선택)
 
-## 5. Enforcement (Line 161-200)
-[Pre-commit, ruff, CI, Quality Gates, PR checklist, manual review]
+- [ ] GitHub Actions workflow 작성
+- [ ] PR 머지 게이트 설정
+- [ ] 커버리지 리포트 설정
+
+### 산출물 생성
+
+- [ ] `06D-01_project_standards.md` 작성
+- [ ] `06D-02_automation_config.md` 작성 (선택)
+- [ ] 모든 설정 파일 프로젝트 루트에 배치
+
+### 검증
+
+- [ ] `pre-commit run --all-files` 통과
+- [ ] `lint-imports` 통과
+- [ ] 기존 코드 모두 규칙 준수 확인
+
+---
+
+## 🔗 Stage 6 → Stage 7 연결
+
+### Stage 7에 전달하는 것
+
+| 전달 항목 | 내용 | 용도 |
+|----------|------|------|
+| PROJECT_STANDARDS.md | DNA 사용 규칙 | 도메인 코드 작성 기준 |
+| 자동화 설정 | pre-commit, CI | 품질 강제 |
+| 아키텍처 규칙 | import-linter | 의존성 방향 강제 |
+
+### Bridge 완료!
+
+```
+Bridge(Stage 4-6) 완료:
+
+Stage 4: DNA 청사진 ✅
+  └─ 무엇을 만들지 설계
+
+Stage 5: DNA 구현 ✅
+  └─ 실제 코드 작성
+
+Stage 6: Project Standards ✅ ← 지금 여기!
+  └─ 강제 규칙 + 자동화
+
+결과:
+├─ src/core/ DNA 모듈 완성
+├─ PROJECT_STANDARDS.md 규칙 문서
+├─ pre-commit, import-linter 자동화
+└─ CI 파이프라인 (선택)
+
+이제 도메인 코드를 안전하게 작성할 수 있는 "환경" 완성!
 ```
 
-### 5-2. 07_api.md 작성 예시 (FastAPI)
+### Stage 7 미리보기
 
-**출처 ADR**:
-- ADR-025: FastAPI + OpenAPI
-- ADR-045: RESTful conventions
-- ADR-046: Rate limiting
-
-**Section 1: Endpoint Naming** (Line 1-50):
-```markdown
-## 1. Endpoint Naming (Line 1-50)
-
-**Pattern**: `/api/v1/{resource}`
-
-**Collection Endpoints**:
-```python
-@app.get("/api/v1/users")
-async def list_users(
-    skip: int = 0,
-    limit: int = 100,
-) -> List[UserResponse]:
-    """List all users with pagination."""
-    ...
-
-@app.post("/api/v1/users")
-async def create_user(user: UserCreateRequest) -> UserResponse:
-    """Create a new user."""
-    ...
 ```
-
-**Item Endpoints**:
-```python
-@app.get("/api/v1/users/{user_id}")
-async def get_user(user_id: int) -> UserResponse:
-    """Get user by ID."""
-    ...
-
-@app.patch("/api/v1/users/{user_id}")
-async def update_user(
-    user_id: int,
-    update: UserUpdateRequest,
-) -> UserResponse:
-    """Update user (partial)."""
-    ...
-
-@app.delete("/api/v1/users/{user_id}")
-async def delete_user(user_id: int) -> None:
-    """Delete user."""
-    ...
-```
-
-**Action Endpoints** (non-CRUD):
-```python
-@app.post("/api/v1/users/{user_id}/activate")
-async def activate_user(user_id: int) -> UserResponse:
-    """Activate user account."""
-    ...
-
-@app.post("/api/v1/users/{user_id}/send-email")
-async def send_email(user_id: int, email: EmailRequest) -> None:
-    """Send email to user."""
-    ...
-```
-
-**Forbidden Patterns**:
-❌ `/users` - API prefix 누락
-❌ `/api/user` - 단수형 (복수형 사용!)
-❌ `/api/v1/activate/{user_id}` - Action이 앞에 (뒤에!)
-❌ `/api/v1/users/get` - GET 중복 (메서드로 충분)
-
-**Why**: RESTful convention, OpenAPI 자동 생성 최적화
-```
-
-**Section 2: Request/Response Models** (Line 51-100):
-```markdown
-## 2. Request/Response Models (Line 51-100)
-
-**모든 request/response는 Pydantic models 사용.**
-
-**Request Models**:
-```python
-from pydantic import BaseModel, EmailStr, Field
-
-class UserCreateRequest(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=8, max_length=100)
-    name: str = Field(min_length=1, max_length=100)
-
-class UserUpdateRequest(BaseModel):
-    email: EmailStr | None = None
-    name: str | None = None
-    # password는 별도 endpoint (PATCH /users/{id}/password)
-```
-
-**Response Models**:
-```python
-from datetime import datetime
-
-class UserResponse(BaseModel):
-    id: int
-    email: EmailStr
-    name: str
-    created_at: datetime
-    is_active: bool
-
-    class Config:
-        from_attributes = True  # SQLAlchemy ORM 지원
-```
-
-**Good Examples**:
-```python
-✅ class UserCreateRequest(BaseModel):
-       email: EmailStr  # EmailStr로 validation
-       password: str = Field(min_length=8)  # Field로 제약
-
-✅ class UserResponse(BaseModel):
-       id: int
-       email: EmailStr
-       # password 포함 안 함! (보안)
-```
-
-**Bad Examples**:
-```python
-❌ @app.post("/api/v1/users")
-   async def create_user(email: str, password: str):  # dict 대신 개별 파라미터
-       ...
-
-❌ class UserResponse(BaseModel):
-       password_hash: str  # 민감 정보 노출!
-
-❌ async def get_user(user_id: int) -> dict:  # dict 대신 Pydantic model
-```
-
-**Why**: 자동 validation, OpenAPI schema 생성, Type safety
-```
-
-**Section 3: HTTP Status Codes** (Line 101-140):
-```markdown
-## 3. HTTP Status Codes (Line 101-140)
-
-**Status Code Rules**:
-- **200 OK**: GET, PATCH 성공
-- **201 Created**: POST 성공 (생성)
-- **204 No Content**: DELETE 성공
-- **400 Bad Request**: Client error (validation)
-- **401 Unauthorized**: 인증 실패
-- **403 Forbidden**: 권한 없음
-- **404 Not Found**: 리소스 없음
-- **422 Unprocessable Entity**: Pydantic validation 실패
-- **500 Internal Server Error**: Server error
-
-**Good Examples**:
-```python
-✅ @app.post("/api/v1/users", status_code=201)  # 201 Created
-   async def create_user(user: UserCreateRequest) -> UserResponse:
-       ...
-
-✅ @app.delete("/api/v1/users/{user_id}", status_code=204)
-   async def delete_user(user_id: int) -> None:  # None = 204
-       ...
-
-✅ @app.get("/api/v1/users/{user_id}")
-   async def get_user(user_id: int) -> UserResponse:
-       user = await get_user_by_id(user_id)
-       if not user:
-           raise HTTPException(status_code=404, detail="User not found")
-       return user
-```
-
-**Bad Examples**:
-```python
-❌ @app.post("/api/v1/users")  # status_code 누락 (200 리턴됨)
-   async def create_user(...) -> UserResponse:
-
-❌ @app.delete("/api/v1/users/{user_id}")
-   async def delete_user(...) -> dict:
-       return {"message": "Deleted"}  # 204 대신 200 + body
-
-❌ @app.get("/api/v1/users/{user_id}")
-   async def get_user(...) -> UserResponse | None:
-       return None  # 404 대신 200 + null
-```
-
-**Why**: RESTful convention, Client가 status code로 결과 판단
-```
-
-**Section 4: Common Mistakes** (Line 141-180):
-```markdown
-## 4. Common Mistakes (Line 141-180)
-
-**Mistake 1: dict 사용**
-```python
-❌ Before:
-   @app.post("/api/v1/users")
-   async def create_user(data: dict) -> dict:
-       email = data["email"]  # KeyError 가능
-       ...
-
-✅ After:
-   @app.post("/api/v1/users")
-   async def create_user(user: UserCreateRequest) -> UserResponse:
-       # Pydantic이 자동 validation
-```
-
-**Mistake 2: Response에 민감 정보 포함**
-```python
-❌ Before:
-   class UserResponse(BaseModel):
-       id: int
-       email: EmailStr
-       password_hash: str  # 노출됨!
-
-✅ After:
-   class UserResponse(BaseModel):
-       id: int
-       email: EmailStr
-       # password 관련 필드 제외
-```
-
-**Mistake 3: Error 세부사항 노출**
-```python
-❌ Before:
-   except Exception as e:
-       raise HTTPException(500, detail=str(e))  # 스택 트레이스 노출
-
-✅ After:
-   except SpecificError as e:
-       logger.error("user_creation_failed", exc_info=True)
-       raise HTTPException(500, detail="Internal server error")
-```
-
-**Mistake 4: status_code 누락**
-```python
-❌ Before:
-   @app.post("/api/v1/users")  # 200 리턴
-   async def create_user(...):
-
-✅ After:
-   @app.post("/api/v1/users", status_code=201)
-   async def create_user(...):
-```
-```
-
-**Section 5: Enforcement** (Line 181-220):
-```markdown
-## 5. Enforcement (Line 181-220)
-
-### 5-1. OpenAPI Schema Validation
-
-**자동 생성**:
-```python
-# FastAPI가 자동으로 /docs endpoint 생성
-# http://localhost:8000/docs
-```
-
-**Schema export**:
-```bash
-# OpenAPI spec export
-python scripts/export_openapi.py > openapi.json
-```
-
-**Validation** (CI):
-```yaml
-# .github/workflows/ci.yml
-- name: OpenAPI Schema Diff
-  run: |
-    python scripts/export_openapi.py > openapi_new.json
-    openapi-diff openapi_old.json openapi_new.json
-```
-
-### 5-2. Pydantic Validation (Runtime)
-
-**자동 검증** (FastAPI가 자동으로 실행):
-```python
-class UserCreateRequest(BaseModel):
-    email: EmailStr  # 자동 email validation
-    password: str = Field(min_length=8)  # 자동 length validation
-
-# Client가 잘못된 요청 보내면:
-# → 422 Unprocessable Entity (자동)
-```
-
-### 5-3. PR Checklist
-
-```markdown
-## API Checklist
-- [ ] Endpoint naming: /api/v1/{resource}
-- [ ] Pydantic models for request/response
-- [ ] status_code 명시 (201 for POST, 204 for DELETE)
-- [ ] 민감 정보(password) response에 없음
-- [ ] Error는 HTTPException 사용
-- [ ] OpenAPI docs 확인 (/docs)
-```
-
-### 5-4. Manual Review
-
-**리뷰 항목**:
-1. API 설계 일관성 (naming, status codes)
-2. Pydantic model 적절성
-3. 민감 정보 노출 여부
-4. Error handling 적절성
-
-**리뷰 주기**: 새 endpoint 추가 시 (PR에서)
+Stage 7: Project Blueprint
+├─ 도메인 모델 설계 (Entity, Value Object, Aggregate)
+├─ API 설계 (엔드포인트, 요청/응답)
+├─ 데이터베이스 스키마
+└─ DNA 환경 위에서 도메인 상세 설계
 ```
 
 ---
 
-## 6. Progressive Accumulation 전략
+## 💡 핵심 원칙 요약
 
-### 6-1. 프로젝트 시작 시 (Week 1)
-
-**Mandatory 5개 작성**:
-```
-PROJECT_STANDARDS/
-├── 00_index.md (50 lines) - 초기 버전
-├── 01_logging.md (150 lines) - ADR-015
-├── 02_error_handling.md (180 lines) - ADR-020, ADR-021
-├── 03_configuration.md (120 lines) - ADR-025
-├── 04_type_hints.md (160 lines) - ADR-030
-├── 05_testing.md (200 lines) - ADR-010, ADR-035
-└── 99_common_mistakes.md (100 lines) - 초기 버전 (10개 실수)
-```
-
-**작성 우선순위**:
-1. 01_logging.md - 모든 코드에 필요
-2. 04_type_hints.md - mypy 설정 전 필요
-3. 02_error_handling.md - Exception 패턴 통일
-4. 05_testing.md - TDD 시작 전 필요
-5. 03_configuration.md - 설정 관리 통일
-
-### 6-2. API 개발 시작 (Week 2-3)
-
-**Optional 추가**:
-```
-PROJECT_STANDARDS/
-├── [기존 Mandatory 5개]
-├── 07_api.md (200 lines) - NEW! ADR-025, ADR-045
-└── 99_common_mistakes.md (150 lines) - 업데이트 (API 실수 추가)
-```
-
-**00_index.md 업데이트**:
-```markdown
-## Optional Standards (1)
-- ✅ 07_api.md - FastAPI + OpenAPI (Added 2025-01-20)
-
-## ADR → Standards Mapping
-| ADR-025 | FastAPI + OpenAPI | 07_api.md 전체 | 2025-01-20 |
-```
-
-### 6-3. DB 연동 시작 (Week 3-4)
-
-**Optional 추가**:
-```
-PROJECT_STANDARDS/
-├── [기존 Mandatory 5개 + 07_api.md]
-├── 06_database.md (180 lines) - NEW! ADR-040, ADR-041, ADR-042
-└── 99_common_mistakes.md (180 lines) - 업데이트 (DB 실수 추가)
-```
-
-### 6-4. 인증 구현 (Week 4-5)
+### Project Standards의 3대 영역
 
 ```
-PROJECT_STANDARDS/
-├── [기존 6개]
-├── 08_authentication.md (150 lines) - NEW! ADR-050, ADR-051
-└── 99_common_mistakes.md (200 lines) - 최종 (50개 실수)
+1. DNA 사용 규칙 (DO/DON'T)
+────────────────────────────────
+각 DNA 시스템마다:
+├─ DO: 필수 사용법 + 코드 예시
+├─ DON'T: 금지 사항 + 이유
+└─ Ruff/MyPy 규칙 코드
+
+2. 품질 기준 (Zero Tolerance)
+────────────────────────────────
+절대 타협 없는 기준:
+├─ Ruff: 0 violations
+├─ MyPy: 0 errors
+├─ pytest: 0 failures
+└─ Coverage: 95%+
+
+3. 자동화 설정 (강제 메커니즘)
+────────────────────────────────
+3단계 강제:
+├─ Day 1: pre-commit (로컬)
+├─ Week 2: import-linter (아키텍처)
+└─ Month 1+: CI/CD (파이프라인)
 ```
 
-### 6-5. Progressive Accumulation 원칙
+### 규칙 vs 강제
 
-**원칙 1: 필요한 시점에 추가**
-- ❌ 프로젝트 시작 시 10개 파일 모두 작성
-- ✅ Week 1: Mandatory 5개
-- ✅ Week 2-3: API 시작하면 07_api.md
-- ✅ Week 3-4: DB 시작하면 06_database.md
+```
+규칙만 있으면:
+├─ 문서는 존재하지만 아무도 안 읽음
+├─ 코드 리뷰에서 "이번만 넘어가죠"
+└─ 3개월 후 "누가 이렇게 한 거야?!" 😱
 
-**원칙 2: 버전 관리**
-```bash
-# Week 1: Mandatory 5개
-git tag standards-v1.0
-
-# Week 2: API 추가
-git tag standards-v1.1
-
-# Week 4: DB + Auth 추가
-git tag standards-v2.0
+규칙 + 강제:
+├─ 커밋 자체가 차단됨
+├─ 개발자가 즉시 수정
+├─ 코드 리뷰 불필요 (자동 강제)
+└─ 운영 환경 100% 안전 ✅
 ```
 
-**원칙 3: 99_common_mistakes.md는 지속 업데이트**
-- Week 1: 10개 실수
-- Week 2: 20개 (API 실수 추가)
-- Week 4: 30개 (DB 실수 추가)
-- Month 2: 50개 (최종)
+### 자동화 성숙도 로드맵
 
----
-
-## 7. Standards 생명주기 관리
-
-### 7-1. Standards 업데이트 트리거
-
-**Trigger 1: ADR Accepted**
-→ 새 Standard 파일 생성 또는 기존 파일에 Section 추가
-
-**Trigger 2: ADR Superseded**
-→ Standard 업데이트 (Before/After 표시)
-
-**Trigger 3: 코드 리뷰에서 새로운 패턴 발견**
-→ 99_common_mistakes.md 업데이트
-
-**Trigger 4: 버그 발생**
-→ Common Mistakes에 추가
-
-### 7-2. ADR Accepted → Standards 생성
-
-**Example**: ADR-055 (Redis caching) 승인
-
-**Step 1**: 09_performance.md 생성
-```markdown
-# 09. Performance Standards
-
-> **출처**: ADR-055 (Redis caching)
-> **업데이트**: 2025-02-01
-
-## 1. Caching Strategy (Line 1-40)
-[Redis caching 규칙]
-
-## 2. Cache Keys (Line 41-80)
-[Key naming, TTL]
-
-## 3. Cache Invalidation (Line 81-120)
-[Invalidation 패턴]
-
-## 4. Common Mistakes (Line 121-160)
-[Caching 실수]
-
-## 5. Enforcement (Line 161-200)
-[Cache hit rate monitoring]
 ```
+Day 1: pre-commit
+├─ Ruff (린팅 + 포맷팅)
+├─ MyPy (타입 체크)
+└─ 기본 테스트
 
-**Step 2**: 00_index.md 업데이트
-```markdown
-## Optional Standards (6)
-- ✅ 09_performance.md - Redis caching (Added 2025-02-01)
+Week 2: import-linter
+├─ 레이어 의존성 강제
+└─ 역방향 의존성 차단
 
-## ADR → Standards Mapping
-| ADR-055 | Redis caching | 09_performance.md | 2025-02-01 |
-```
-
-### 7-3. ADR Superseded → Standards 업데이트
-
-**Example**: ADR-015 (structlog) → ADR-065 (Python logging)
-
-**Step 1**: 01_logging.md 업데이트
-```markdown
-# 01. Logging Standards
-
-> **출처**: ADR-065 (Python logging + JSON)
-> **이전**: ADR-015 (structlog) - Superseded 2025-03-01
-
-## Before/After (Migration Guide)
-
-**Before** (ADR-015):
-```python
-from structlog import get_logger
-logger = get_logger()
-logger.info("user_login", user_id=user.id)
-```
-
-**After** (ADR-065):
-```python
-import logging
-from pythonjsonlogger import jsonlogger
-
-logger = logging.getLogger(__name__)
-logger.info("user_login", extra={"user_id": user.id})
-```
-
-[나머지 섹션은 ADR-065 기준으로 업데이트]
-```
-
-**Step 2**: 00_index.md 업데이트
-```markdown
-| ADR-065 | Python logging | 01_logging.md 전체 (업데이트) | 2025-03-01 |
-| ~~ADR-015~~ | ~~structlog~~ | ~~Superseded by ADR-065~~ | ~~2025-01-15~~ |
-```
-
-### 7-4. 새로운 패턴 발견 → 99_common_mistakes.md 업데이트
-
-**Trigger**: 코드 리뷰에서 동일한 실수 3번 발견
-
-**Step 1**: 실수 분석
-```
-User A: async 함수에서 sync DB 호출 → 블로킹
-User B: 동일한 실수
-User C: 동일한 실수
-→ Common mistake!
-```
-
-**Step 2**: 99_common_mistakes.md에 추가
-```markdown
-# 99. Common Mistakes
-
-## Category: Async/Await
-
-**Mistake 15: async 함수에서 sync DB 호출** (Added 2025-02-15)
-```python
-❌ Before:
-   async def get_user(user_id: int):
-       user = session.query(User).filter_by(id=user_id).first()  # Blocking!
-       return user
-
-✅ After:
-   async def get_user(user_id: int):
-       async with async_session() as session:
-           result = await session.execute(select(User).filter_by(id=user_id))
-           return result.scalar_one_or_none()
-```
-**Why**: sync DB 호출은 event loop 블로킹
-**출처**: 코드 리뷰 3건 (2025-02-10 ~ 2025-02-15)
+Month 1+: CI/CD
+├─ PR 머지 게이트
+├─ 커버리지 리포트
+└─ 배포 파이프라인
 ```
 
 ---
 
-## 8. 다음 단계 연결
+**Remember**: 
+- 규칙 없는 자동화 = 무엇을 강제할지 모름
+- 자동화 없는 규칙 = 아무도 안 지킴
+- 둘 다 있어야 = 100% 품질 보장
+- Bridge 완료 = 도메인 코드 작성 환경 완성!
 
-### 8-1. 문서 흐름에서 Standards의 위치
-
-```
-ADR_GUIDE.md
-    ↓ 결정 기록
-Individual ADR documents
-    ↓ 변환 (이 가이드!)
-PROJECT_STANDARDS_GUIDE.md (이 문서)
-    ↓ 표준 규칙
-PROJECT_STANDARDS/ directory
-    ↓ 적용
-BLUEPRINT_GUIDE.md ← 다음 단계!
-    ↓
-TASK_BREAKDOWN_GUIDE.md
-    ↓
-CHECKLIST_GUIDE.md
-```
-
-### 8-2. 다음 단계: BLUEPRINT_GUIDE.md
-
-**다음 가이드에서 배울 내용**:
-1. ADR + Standards를 사용하여 Blueprint 작성
-2. 기능 단위 명세 (30-50 lines per feature)
-3. Level 3 구현 힌트 (40 lines 스켈레톤)
-4. Blueprint 파일 분리 (500 lines per system)
-5. Blueprint → Task 연결
-
-**지금 PROJECT_STANDARDS_GUIDE.md에서 배운 것**:
-- ✅ ADR → Standards 변환 절차
-- ✅ Mandatory 5개 vs Optional standards
-- ✅ Standards 파일 구조 (5개 섹션, Line 범위)
-- ✅ Progressive accumulation 전략
-- ✅ Standards 생명주기 관리
-
-**Standards가 Blueprint에 어떻게 사용되나**:
-
-**Blueprint 작성 시**:
-```markdown
-# blueprints/01_auth_system.md
-
-## 2.1 JWT 토큰 생성 (Line 51-100)
-
-**프로젝트 표준 적용**:
-- 01_logging.md Line 31-60: Event format
-- 02_error_handling.md Line 41-80: TokenGenerationError
-- 04_type_hints.md Line 81-120: Pydantic for payload
-
-**구현 힌트** (Level 3 스켈레톤):
-```python
-# 01_logging.md Line 31-60 적용
-from structlog import get_logger
-logger = get_logger()
-
-# 04_type_hints.md Line 81-120 적용
-from pydantic import BaseModel
-class TokenPayload(BaseModel):
-    user_id: int
-    exp: datetime
-
-def create_token(user_id: int) -> str:
-    payload = TokenPayload(user_id=user_id, exp=...)
-    secret_key = config.get_secret("JWT_SECRET_KEY")
-    token = jwt.encode(payload.dict(), secret_key, algorithm="HS256")
-    logger.info("token_generated", user_id=user_id)  # 01_logging.md
-    return token
-```
-
-→ Blueprint는 Standards를 참조하여 작성됨!
-```
-
-**다음 가이드로 이동**: `BLUEPRINT_GUIDE.md`
-
----
-
-## 부록: Quick Reference
-
-### Standards 파일 템플릿
-
-```markdown
-# XX. [Standard Name]
-
-> **출처**: ADR-XXX, ADR-YYY
-> **업데이트**: YYYY-MM-DD
-
-## 1. [Core Section 1] (Line 1-40)
-**Mandatory**: [필수 import, 기본 패턴]
-
-**Good Examples**:
-```python
-✅ [예시 코드]
-```
-
-**Bad Examples**:
-```python
-❌ [나쁜 예시]
-```
-
-**Forbidden**:
-❌ [금지 사항]
-
-**Why**: [이유]
-
----
-
-## 2. [Core Section 2] (Line 41-80)
-[상세 규칙, 고급 패턴]
-
----
-
-## 3. [Core Section 3] (Line 81-120)
-[특수 케이스, 예외 처리]
-
----
-
-## 4. Common Mistakes (Line 121-160)
-
-**Mistake 1: [실수 제목]**
-```python
-❌ Before: [나쁜 코드]
-✅ After:  [좋은 코드]
-```
-**Why**: [이유]
-**출처**: [ADR 또는 코드 리뷰]
-
-[3-4개 더...]
-
----
-
-## 5. Enforcement (Line 161-200)
-
-### 5-1. Pre-commit Hook
-[설정, 스크립트]
-
-### 5-2. Ruff/Mypy Configuration
-[pyproject.toml 설정]
-
-### 5-3. CI Pipeline
-[GitHub Actions]
-
-### 5-4. Quality Gates
-[Phase 5B 검증]
-
-### 5-5. PR Checklist
-[체크리스트 항목]
-
-### 5-6. Manual Review
-[리뷰 항목, 주기]
-```
-
-### ADR → Standards 체크리스트
-
-ADR을 Standards로 변환할 때:
-
-- [ ] Decision → Sections 1-3 매핑 완료
-- [ ] Compliance → Section 5 매핑 완료
-- [ ] Consequences (harder) → Section 4 매핑 완료
-- [ ] 서술형 → 명령형 변환 완료
-- [ ] Good/Bad 예시 각 3개 이상
-- [ ] Line 범위 할당 (각 섹션 30-50 lines)
-- [ ] 총 길이 150-200 lines
-- [ ] Pre-commit hook 추가
-- [ ] CI pipeline 추가
-- [ ] Quality Gates 연결
-- [ ] 00_index.md 업데이트
-
-**모두 ✅면 완성!**
-
----
-
-**이 가이드 완료!** 다음: `BLUEPRINT_GUIDE.md`
+*Stage 6으로 Bridge(Stage 4-6)가 완료됩니다. 이제 Stage 7부터 도메인 코드를 안전하게 작성할 수 있습니다.*
