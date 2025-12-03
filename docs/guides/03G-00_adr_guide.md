@@ -2,7 +2,7 @@
 
 > **목적**: Stage 2에서 결정된 기술 스택과 충돌 해결을 공식 ADR로 문서화
 >
-> **버전**: v5.0 (2025-12-03)
+> **버전**: v4.1 (2025-12-03)
 >
 > - v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
 > - v3.0 (2025-11-13): Stage 3 분리
@@ -24,6 +24,347 @@ Tier 3: 이 문서 (Stage 3 실행 가이드) ← 지금 여기!
 **참조 문서**:
 - **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 4
 - **실전 사례**: `IMPLEMENTATION_CASES.md`
+
+---
+
+## 🧬 DNA 방법론 4대 핵심 원칙 (Stage 3 적용)
+
+> **"AI가 한 세션에서 최고 성과를 낼 수 있는 크기로 작업하고, 완전해질 때까지 반복하며, 오류 발견 시 되돌아가서 수정한다"**
+
+Stage 3 (ADR 작성)에서 DNA 4대 핵심 원칙이 적용되는 방식:
+
+---
+
+### DNA 핵심 원칙 1: AI 최적 크기
+
+**"컨텍스트 범위 내에서 작업한다"**
+
+#### Stage 3의 작업 크기 전략
+
+```
+❌ 잘못된 접근: 모든 ADR 한 번에
+"20개 ADR을 한 세션에서 모두 작성하세요"
+→ 컨텍스트 초과 (200K 토큰 한계)
+→ 후반부 ADR 품질 저하
+→ 일관성 없는 형식
+
+✅ 올바른 접근: 카테고리별 순차 작성
+Session 1: 외부 제약 ADR (03A-001 ~ 03A-00N)
+Session 2: 충돌 해결 ADR (03A-101 ~ 03A-1NN)
+Session 3: 기술 스택 ADR (03A-201 ~ 03A-2NN)
+Session 4: 도메인 기술 ADR (03A-301 ~ 03A-3NN)
+Session 5: DNA 시스템 ADR (03A-401 ~ 03A-4NN)
+
+각 세션: 3-5개 ADR, 80-90K 토큰 범위
+```
+
+#### 컨텍스트 구성 (각 세션)
+
+```
+Claude 200K 토큰 윈도우:
+├─ 시스템 프롬프트: ~30K 토큰
+├─ 대화 히스토리: ~20K 토큰
+├─ Stage 2 참조 문서: ~30-40K 토큰
+│   ├─ 02C-01_external_constraints.md
+│   ├─ 02C-02_conflict_patterns.md
+│   └─ 02D-01_tech_stack.md
+├─ ADR 템플릿: ~10K 토큰
+├─ 작업 중 ADR 작성: ~20K 토큰 (3-5개 × 4-6K)
+└─ 응답 생성 여유: ~80K 토큰
+```
+
+#### 세션당 작업량 기준
+
+| 카테고리 | 평균 ADR 수 | 세션 수 | 세션당 ADR 수 |
+|---------|------------|--------|--------------|
+| 외부 제약 | 3-5개 | 1 session | 3-5개 |
+| 충돌 해결 | 5-10개 | 2 sessions | 3-5개 |
+| 기술 스택 | 10-15개 | 3 sessions | 3-5개 |
+| 도메인 기술 | 5-10개 | 2 sessions | 3-5개 |
+| DNA 시스템 | 11개 | 3 sessions | 3-4개 |
+
+**핵심**: 한 세션에 3-5개 ADR이 최적 (각 4-6K 토큰)
+
+---
+
+### DNA 핵심 원칙 2: 완전해질 때까지 반복
+
+**"부족하면 반복해서 부족함이 없어질 때까지"**
+
+#### ADR 완전성 기준
+
+각 ADR은 다음 5가지 섹션을 모두 포함해야 함:
+
+```
+✅ 완전한 ADR 체크리스트:
+□ 1. Status & Context (상태 및 맥락)
+   - 상태: Proposed/Accepted/Deprecated/Superseded
+   - 날짜: 작성일, 승인일, 폐기일
+   - 맥락: 왜 이 결정이 필요한가?
+
+□ 2. Decision (결정 사항)
+   - 무엇을 선택했는가?
+   - 구체적 기술/방법 명시
+
+□ 3. Rationale (근거)
+   - 왜 이것을 선택했는가?
+   - 어떤 대안이 있었는가?
+   - 각 대안의 장단점은?
+
+□ 4. Consequences (결과)
+   - 긍정적 결과 (이점)
+   - 부정적 결과 (트레이드오프)
+   - 영향받는 시스템/모듈
+
+□ 5. Compliance (준수 사항)
+   - 검증 방법 (어떻게 확인?)
+   - 위반 시 조치 (어떻게 강제?)
+   - 재검토 조건 (언제 다시 평가?)
+```
+
+#### 3단계 검증 프로토콜
+
+```python
+def validate_adr_session(adrs: list[ADR]) -> ValidationResult:
+    """ADR 세션 완전성 검증."""
+
+    # 검증 1: 각 ADR 구조 검증
+    for adr in adrs:
+        if not all([
+            adr.has_status_and_context(),
+            adr.has_decision(),
+            adr.has_rationale(),
+            adr.has_consequences(),
+            adr.has_compliance()
+        ]):
+            return ValidationResult(
+                passed=False,
+                message=f"ADR {adr.id}: 5개 섹션 중 누락 발견",
+                action="해당 ADR 재작성"
+            )
+
+    # 검증 2: 카테고리 일관성 검증
+    category = adrs[0].category
+    if not all(adr.category == category for adr in adrs):
+        return ValidationResult(
+            passed=False,
+            message="한 세션에 여러 카테고리 혼재",
+            action="카테고리별로 세션 분리"
+        )
+
+    # 검증 3: Stage 2 추적성 검증
+    for adr in adrs:
+        if not adr.has_stage2_reference():
+            return ValidationResult(
+                passed=False,
+                message=f"ADR {adr.id}: Stage 2 참조 누락",
+                action="Stage 2 문서 참조 추가"
+            )
+
+    return ValidationResult(passed=True)
+```
+
+#### 불완전 → 재작성 사례
+
+```markdown
+## 사례: ADR-201 데이터베이스 선택
+
+### ❌ 불완전한 버전 (1차 작성)
+**결정**: PostgreSQL 사용
+**이유**: 관계형 데이터베이스가 필요해서
+
+❌ 문제점:
+- 대안 검토 없음 (MySQL, MongoDB는?)
+- 구체적 근거 없음 ("필요해서"는 설명 아님)
+- 결과/영향 명시 없음
+- 준수 사항 없음
+
+### ✅ 완전한 버전 (2차 재작성)
+**맥락**: 주문 데이터는 ACID 보장 필요, 복잡한 조인 쿼리 빈번
+
+**결정**: PostgreSQL 13+ 사용
+
+**근거**:
+- 검토한 대안:
+  1. PostgreSQL: ACID 완벽, JSON 지원, 성능 우수
+  2. MySQL: ACID 지원하나 JSON 기능 제한적
+  3. MongoDB: 유연하나 트랜잭션 복잡
+- 선택 이유: 주문 데이터의 ACID 필수, JSON 컬럼 필요
+
+**결과**:
+- 긍정: 데이터 일관성 보장, 복잡한 쿼리 가능
+- 부정: NoSQL 대비 스키마 변경 부담
+- 영향: DNA Database 시스템, Order 도메인
+
+**준수**:
+- 검증: SQLAlchemy ORM으로만 접근
+- 위반 시: pre-commit hook으로 raw SQL 차단
+- 재검토: 쓰기 속도 < 100 TPS 시
+```
+
+---
+
+### DNA 핵심 원칙 3: 기능별 분해 + 연결부 + 조립
+
+**"모듈이 크면 기능별로 나누고, 연결부 설계 후 조립"**
+
+#### Stage 3에서의 적용
+
+Stage 3는 "문서 작성" 단계이므로 원칙 3은 직접 적용되지 않습니다.
+
+다만, ADR 자체가 "연결부" 역할을 합니다:
+
+```
+Stage 2 (결정) ←─┐
+                  ├─ ADR (연결부) ─→ Stage 4 (DNA 계획)
+Stage 8 (작업)  ←─┘                     ↓
+   ↓                                 Stage 5 (DNA 구현)
+Stage 9 (체크리스트)
+
+ADR의 연결 역할:
+├─ Stage 2 결정을 공식 기록
+├─ Stage 4-5에서 참조
+└─ Stage 8-9 작업 시 검증 기준
+```
+
+#### ADR 간 연결 관리
+
+```markdown
+## ADR 간 의존성 예시
+
+ADR-001: Python 3.11+ 사용
+   ↓ supersedes
+ADR-005: Python 3.9+ 사용 (폐기됨)
+
+ADR-201: PostgreSQL 사용
+   ↓ related to
+ADR-401: DNA Database 시스템 (SQLAlchemy 2.0)
+
+ADR-102: 캐시는 조회만 사용
+   ↓ enforced by
+ADR-402: DNA Cache 시스템 (Redis 구조)
+```
+
+---
+
+### DNA 핵심 원칙 4: 역방향 수정 프로토콜
+
+**"앞선 결정의 오류 발견 시 → 되돌아가서 수정 → 다시 현재까지 진행"**
+
+#### Stage 3에서 역방향 수정이 발생하는 경우
+
+```
+시나리오 1: Stage 2 결정 오류 발견
+├─ Stage 3 ADR 작성 중
+├─ Stage 2 충돌 해결이 잘못됨을 발견
+├─ → Stage 2로 돌아가 수정
+├─ → Stage 3 ADR 재작성
+└─ → 추적성 업데이트
+
+시나리오 2: Stage 4-5에서 ADR 오류 발견
+├─ Stage 5 DNA 구현 중
+├─ ADR-201 (PostgreSQL) 제약 불가능 발견
+├─ → Stage 3로 돌아가 ADR-201 수정
+├─ → Stage 4 청사진 업데이트
+├─ → Stage 5 구현 재진행
+└─ → 추적성 업데이트
+```
+
+#### 6단계 수정 프로토콜
+
+```markdown
+## 실제 사례: ADR-102 캐시 전략 수정
+
+### Step 1: 오류 발견 및 문서화
+**발견 시점**: Stage 5 (DNA Cache 시스템 구현 중)
+**파일**: `docs/adr/category-2-conflict/03A-102_cache_strategy.md`
+**문제**: "조회만 캐시 사용"인데, 통계 데이터도 캐시 필요함을 발견
+
+### Step 2: 영향 범위 파악
+**영향받는 문서**:
+- Stage 2: `02D-01_tech_stack.md` (Line 234-256)
+- Stage 3: `03A-102_cache_strategy.md` (전체)
+- Stage 4: `04D-02_dna_cache_blueprint.md` (Line 45-67)
+
+**영향받는 구현**: 없음 (아직 구현 전)
+
+### Step 3: 해당 Stage로 이동 및 수정
+```bash
+# Stage 2 재검토
+$ edit 02D-01_tech_stack.md
+  Line 234-256: "조회 + 통계 데이터에 캐시 사용" 으로 수정
+
+# Stage 3 ADR 수정
+$ edit 03A-102_cache_strategy.md
+  - Status: Accepted → Superseded
+  - Superseded by: 03A-102-v2
+
+$ create 03A-102-v2_cache_strategy_updated.md
+  - 새로운 결정: 조회 + 통계 → 캐시
+  - 주문/결제 → 캐시 없음
+```
+
+### Step 4: 중간 Stage 전파
+```bash
+# Stage 4 청사진 업데이트
+$ edit 04D-02_dna_cache_blueprint.md
+  Line 45-67: 통계 데이터 캐시 구조 추가
+  Ref: 03A-102-v2 (Line 23-45)
+```
+
+### Step 5: 현재 Stage 재진행
+```bash
+# Stage 5 재구현
+$ implement src/core/cache/
+  - stats_cache.py 추가
+  - Ref: 03A-102-v2
+```
+
+### Step 6: 재진행 결과 검증
+**검증 항목**:
+- [ ] Stage 2 충돌 재분석 완료
+- [ ] ADR-102-v2 5개 섹션 완전
+- [ ] Stage 4 청사진 ADR 참조 업데이트
+- [ ] Stage 5 구현 ADR 준수
+- [ ] 모든 파일에 추적성 명시
+```
+
+#### 추적성 (Traceability) 유지
+
+**모든 수정은 명시적으로 참조**:
+
+```markdown
+## Stage 2 문서 (02D-01_tech_stack.md)
+Line 234-256: 캐시 전략
+> **History**:
+> - v1.0 (2024-11-10): "조회만 캐시"
+> - v2.0 (2024-11-15): "조회 + 통계 캐시" (Reason: ADR-102-v2)
+
+## Stage 3 ADR (03A-102-v2_cache_strategy_updated.md)
+**Supersedes**: ADR-102 (2024-11-10)
+**Reason**: 통계 데이터 캐시 필요성 발견
+**Impact**: Stage 4 (04D-02, Line 45-67), Stage 5 (src/core/cache/)
+
+## Stage 4 청사진 (04D-02_dna_cache_blueprint.md)
+Line 45-67: 통계 데이터 캐시 구조
+> **Ref**: ADR-102-v2 (Line 23-45)
+> **Updated**: 2024-11-15 (Reason: ADR 수정)
+
+## Stage 5 구현 (src/core/cache/stats_cache.py)
+Line 1: # Ref: ADR-102-v2 (docs/adr/category-2-conflict/03A-102-v2)
+Line 5: # Updated: 2024-11-15 (통계 데이터 캐시 추가)
+```
+
+---
+
+## 🎯 DNA 원칙 적용 요약 (Stage 3)
+
+| 원칙 | Stage 3 적용 방법 | 체크포인트 |
+|------|------------------|-----------|
+| **1. AI 최적 크기** | 카테고리별 세션 분리 (3-5 ADR/세션) | 세션당 80-90K 토큰 |
+| **2. 완전해질 때까지** | 5개 섹션 완전성, 3단계 검증 | 모든 ADR 5 sections |
+| **3. 기능별 분해** | (문서 단계라 직접 적용 안 됨) | ADR 자체가 연결부 |
+| **4. 역방향 수정** | 6단계 프로토콜, 추적성 유지 | Superseded/History |
 
 ---
 
@@ -733,6 +1074,78 @@ CRUD/트랜잭션 패밀리(A-A-B)로, ACID 준수 DB 필요.
 - 🔄 공통 컴포넌트 인터페이스 정의
 
 **다음 문서**: `04G-00_dna_system_blueprint_guide.md`
+
+---
+
+## ⏪ 이전 Stage 검증 및 수정 프로토콜
+
+### 검증 시점
+- Stage 3 시작 전 필수 체크
+- 각 ADR 카테고리 작성 완료 후 재검증
+
+### 검증 대상
+
+| Stage | 산출물 | 검증 항목 |
+|-------|--------|----------|
+| Stage 1 | 01C-01_*.md (패밀리) | ADR이 패밀리 특성과 일치? |
+| Stage 1 | 01C-01_*.md (NFR) | ADR이 NFR 우선순위 반영? |
+| Stage 2 | 02C-01_*.md (제약) | 기술 제약이 ADR에 반영? |
+| Stage 2 | 02C-01_*.md (충돌) | 충돌 해결이 ADR로 문서화? |
+
+### 오류 발견 시 프로토콜
+
+```
+Stage 3에서 Stage 1-2 오류 발견 시:
+
+Step 1: 오류 발견 및 문서화
+├─ 발견 위치: ADR-[NNN] 작성 중
+├─ 오류 내용: [구체적 설명]
+├─ 영향 Stage: Stage [1 또는 2]
+└─ 기록: 해당 ADR에 "발견된 이슈" 추가
+
+Step 2: 영향 범위 파악
+├─ Stage 1 영향: 패밀리/NFR 수정 필요?
+├─ Stage 2 영향: 제약/충돌 분석 수정 필요?
+├─ 재작업 예상: [X]시간
+└─ 기록 완료
+
+Step 3: 해당 Stage로 이동 → 수정
+├─ 01C-01 또는 02C-01 수정
+├─ 버전 업데이트
+└─ 수정 검증
+
+Step 4: Stage 3 재진행
+├─ 수정된 입력으로 ADR 재검토
+├─ 관련 ADR 업데이트
+└─ 일관성 확인
+
+Step 5: 검증
+├─ 오류 해결 확인
+└─ Stage 4 전달 가능 ✅
+```
+
+### 흔한 오류 패턴
+
+| 오류 유형 | 예시 | 해결 |
+|----------|------|------|
+| NFR 충돌 누락 | 성능 vs 보안 충돌 미식별 | Stage 2 충돌 분석 추가 |
+| 제약 미반영 | 예산으로 SaaS 불가인데 ADR에 SaaS 선택 | Stage 2 제약 재검토 |
+| 패밀리 불일치 | 실시간 패밀리인데 배치 DB 선택 | Stage 1 재검토 또는 ADR 수정 |
+
+### 추적성
+
+```
+수정 이력 파일: docs/revision_log.md
+
+기록 형식:
+## [날짜] Stage 3 → Stage [N] 수정
+- **발견 ADR**: ADR-[NNN]
+- **오류**: [오류 내용]
+- **수정 Stage**: Stage [N]
+- **수정 내용**: [구체적 수정]
+- **영향 ADR**: [재검토 필요한 ADR 목록]
+- **검증**: [검증 결과]
+```
 
 ---
 

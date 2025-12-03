@@ -2,7 +2,7 @@
 
 > **목적**: Stage 4 청사진 기반으로 src/core/ DNA 시스템 실제 구현
 >
-> **버전**: v5.0 (2025-12-03)
+> **버전**: v4.1 (2025-12-03)
 >
 > - v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
 > - v1.0 (2025-11-13): 초기 버전
@@ -24,6 +24,703 @@ Tier 3: 이 문서 (Stage 5 실행 가이드) ← 지금 여기!
 **참조 문서**:
 - **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 5
 - **DNA 상세**: `DNA_Systems_11_Complete_Guide.md`
+
+---
+
+## 🧬 DNA 방법론 4대 핵심 원칙 (Stage 5 적용)
+
+> **"AI가 한 세션에서 최고 성과를 낼 수 있는 크기로 작업하고, 완전해질 때까지 반복하며, 기능별로 분해하여 조립한다"**
+
+Stage 5 (DNA 시스템 구현)에서 DNA 4대 핵심 원칙이 적용되는 방식:
+
+---
+
+### DNA 핵심 원칙 1: AI 최적 크기
+
+**"컨텍스트 범위 내에서 작업한다"**
+
+#### Stage 5의 작업 크기 전략
+
+```
+❌ 잘못된 접근: 11개 DNA 시스템 한 번에 구현
+"11개 DNA 시스템을 한 세션에서 모두 구현하세요"
+→ 컨텍스트 초과 (200K 토큰 한계)
+→ 후반부 구현 품질 저하
+→ 테스트 누락, 타입 오류, print() 사용 등
+→ 품질 게이트 실패
+
+✅ 올바른 접근: 시스템별 순차 구현
+Session 1: Logging 시스템 구현 (완전)
+Session 2: Types 시스템 구현 (완전)
+Session 3: Database 시스템 구현 (완전)
+Session 4: Cache 시스템 구현 (완전)
+...
+Session 11: Error 시스템 구현 (완전)
+
+각 세션: 1개 시스템 완전 구현 + 테스트, 80-90K 토큰
+```
+
+#### 컨텍스트 구성 (각 세션)
+
+```
+Claude 200K 토큰 윈도우:
+├─ 시스템 프롬프트: ~30K 토큰
+├─ 대화 히스토리: ~20K 토큰
+├─ Stage 4 청사진: ~10-15K 토큰
+│   └─ 04D-0X_dna_XXX_blueprint.md (해당 시스템)
+├─ Stage 6 프로젝트 표준: ~10-15K 토큰
+│   └─ 06D-01_project_standards.md (관련 섹션)
+├─ Stage 3 ADR 참조: ~5-10K 토큰
+│   └─ 03A-40X_dna_XXX.md
+├─ 구현 코드 작성: ~20-25K 토큰
+│   ├─ src/core/XXX/*.py (구현)
+│   └─ tests/core/XXX/*.py (테스트)
+└─ 응답 생성 여유: ~80-90K 토큰
+```
+
+#### 세션당 작업량 기준
+
+| DNA 시스템 | 파일 수 | 테스트 파일 | 총 토큰 | 세션 수 |
+|-----------|--------|-----------|---------|---------|
+| Types | 3-4개 | 3-4개 | ~15K | 1 session |
+| Config | 2-3개 | 2-3개 | ~12K | 1 session |
+| Error | 3-4개 | 3-4개 | ~15K | 1 session |
+| Logging | 5-6개 | 5-6개 | ~20K | 1 session |
+| Cache | 4-5개 | 4-5개 | ~18K | 1 session |
+| Testing | 4-5개 | 4-5개 | ~18K | 1 session |
+| Security | 6-7개 | 6-7개 | ~22K | 1 session |
+| Monitoring | 5-6개 | 5-6개 | ~20K | 1 session |
+| Messaging | 6-7개 | 6-7개 | ~22K | 1 session |
+| API Gateway | 6-7개 | 6-7개 | ~22K | 1 session |
+| Database | 8-10개 | 8-10개 | ~28K | **2 sessions** |
+
+**핵심**: 대부분 시스템은 1 세션, Database만 2 세션
+
+#### Database 시스템 분해 전략 (유일한 예외)
+
+```
+Database는 유일하게 2 세션 필요:
+
+Session 1: Database 기초 (Connection + Session)
+├─ connection.py: Connection Pool
+├─ session.py: Session Manager
+├─ protocols.py: ConnectionProvider, SessionProvider
+└─ 테스트 (각 모듈 격리)
+  → ~25K 토큰
+
+Session 2: Database 고급 (Query + Migration)
+├─ query.py: Query Builder
+├─ migration.py: Schema Migration
+├─ integration.py: 모듈 통합
+└─ 테스트 (통합 테스트 포함)
+  → ~25K 토큰
+```
+
+---
+
+### DNA 핵심 원칙 2: 완전해질 때까지 반복
+
+**"부족하면 반복해서 부족함이 없어질 때까지"**
+
+#### DNA 시스템 구현 완전성 기준
+
+각 DNA 시스템 구현은 다음을 모두 포함해야 함:
+
+```
+✅ 완전한 DNA 구현 체크리스트:
+□ 1. 공개 API 구현
+   - 청사진의 모든 함수/클래스 구현
+   - 타입 힌트 완전 (mypy 0 오류)
+   - Docstring (Google style)
+
+□ 2. 내부 헬퍼 구현
+   - Private 함수/클래스
+   - 유틸리티 모듈
+   - 상수/설정
+
+□ 3. 에러 처리
+   - try-except 적절히 배치
+   - 커스텀 예외 정의
+   - 에러 로깅 (print() 절대 금지!)
+
+□ 4. 로깅 통합
+   - from core.logging import get_logger
+   - logger = get_logger(__name__)
+   - 모든 중요 시점에 로그
+
+□ 5. 테스트 작성 (TDD)
+   - 단위 테스트: 각 함수/클래스
+   - 통합 테스트: 모듈 간 상호작용
+   - 커버리지: 95%+
+   - pytest + pytest-cov
+
+□ 6. 품질 검증 (Zero-Tolerance)
+   - ruff check: 0 오류
+   - mypy: 0 오류
+   - import-linter: 0 위반
+   - pytest: 100% pass
+
+□ 7. 문서화
+   - __init__.py: 공개 API 노출
+   - README.md: 사용 예시
+   - 주석: 복잡한 로직 설명
+```
+
+#### 3단계 검증 프로토콜
+
+```python
+def validate_dna_implementation(system_name: str) -> ValidationResult:
+    """DNA 시스템 구현 완전성 검증."""
+
+    # 검증 1: 청사진 대비 완성도
+    blueprint = read_blueprint(f"04D-0X_dna_{system_name}_blueprint.md")
+    impl_files = glob(f"src/core/{system_name}/*.py")
+
+    for api in blueprint.public_apis:
+        if not api_implemented(api, impl_files):
+            return ValidationResult(
+                passed=False,
+                message=f"{system_name}: 공개 API {api} 미구현",
+                action="해당 API 구현"
+            )
+
+    # 검증 2: 품질 게이트 (Zero-Tolerance)
+    quality_results = run_quality_checks(system_name)
+    if quality_results.ruff_errors > 0:
+        return ValidationResult(
+            passed=False,
+            message=f"{system_name}: ruff 오류 {quality_results.ruff_errors}개",
+            action="ruff 오류 수정"
+        )
+
+    if quality_results.mypy_errors > 0:
+        return ValidationResult(
+            passed=False,
+            message=f"{system_name}: mypy 오류 {quality_results.mypy_errors}개",
+            action="타입 힌트 수정"
+        )
+
+    # 검증 3: 테스트 커버리지
+    coverage = run_pytest_coverage(f"tests/core/{system_name}/")
+    if coverage < 0.95:
+        return ValidationResult(
+            passed=False,
+            message=f"{system_name}: 커버리지 {coverage*100:.1f}% (목표: 95%+)",
+            action="테스트 추가"
+        )
+
+    return ValidationResult(passed=True)
+```
+
+#### 불완전 → 재구현 사례
+
+```markdown
+## 사례: DNA Logging 시스템 구현
+
+### ❌ 불완전한 버전 (1차 구현)
+
+```python
+# src/core/logging/logger.py
+import logging
+
+def get_logger(name):  # ❌ 타입 힌트 없음
+    return logging.getLogger(name)
+
+class Logger:
+    def info(self, msg):  # ❌ 타입 힌트 없음
+        print(f"INFO: {msg}")  # ❌ print() 사용!
+```
+
+**품질 검증 실패**:
+```bash
+$ mypy src/core/logging/
+  logger.py:3: error: Missing return type
+  logger.py:6: error: Missing type for 'msg'
+  → mypy: 2 errors
+
+$ ruff check src/core/logging/
+  logger.py:8: T201 `print` found
+  → ruff: 1 error
+
+$ pytest tests/core/logging/ --cov
+  → Coverage: 45% (목표: 95%)
+```
+
+❌ 문제점:
+- 타입 힌트 누락 → mypy 오류
+- print() 사용 → ruff 위반
+- 테스트 부족 → 커버리지 45%
+- 청사진의 context() 미구현
+
+### ✅ 완전한 버전 (2차 재구현)
+
+```python
+# src/core/logging/logger.py
+from typing import Any
+import structlog
+from core.types import LogLevel
+
+def get_logger(name: str) -> "Logger":
+    """로거 인스턴스 반환.
+
+    Args:
+        name: 로거 이름 (__name__ 권장)
+
+    Returns:
+        Logger: 구조화된 로거 인스턴스
+    """
+    return Logger(structlog.get_logger(name))
+
+class Logger:
+    """구조화된 로거 래퍼."""
+
+    def __init__(self, logger: Any) -> None:
+        self._logger = logger
+
+    def info(self, msg: str, **kwargs: Any) -> None:
+        """INFO 레벨 로그 출력.
+
+        Args:
+            msg: 로그 메시지
+            **kwargs: 추가 컨텍스트
+        """
+        self._logger.info(msg, **kwargs)  # ✅ structlog 사용
+
+    def context(self, **kwargs: Any) -> "LogContext":
+        """컨텍스트 관리자 반환."""
+        return LogContext(self._logger, kwargs)
+```
+
+```python
+# tests/core/logging/test_logger.py
+import pytest
+from core.logging import get_logger
+
+def test_get_logger_returns_logger():
+    """get_logger는 Logger 인스턴스를 반환한다."""
+    logger = get_logger("test")
+    assert isinstance(logger, Logger)
+
+def test_logger_info_logs_message(caplog):
+    """info()는 메시지를 로그에 기록한다."""
+    logger = get_logger("test")
+    logger.info("테스트 메시지", key="value")
+
+    assert "테스트 메시지" in caplog.text
+    assert "key" in caplog.text
+
+def test_logger_context_adds_context():
+    """context()는 컨텍스트를 추가한다."""
+    logger = get_logger("test")
+
+    with logger.context(request_id="123"):
+        logger.info("요청 처리")
+        # request_id가 자동으로 추가되어야 함
+```
+
+**품질 검증 성공**:
+```bash
+$ mypy src/core/logging/
+  → Success: no issues found
+
+$ ruff check src/core/logging/
+  → All checks passed!
+
+$ pytest tests/core/logging/ --cov
+  → Coverage: 97% ✅
+```
+
+---
+
+### DNA 핵심 원칙 3: 기능별 분해 + 연결부 + 조립
+
+**"모듈이 크면 기능별로 나누고, 연결부 설계 후 조립"**
+
+#### Stage 5에서의 적용 (가장 중요!)
+
+Stage 5는 **실제 코드 구현** 단계이므로 원칙 3이 **직접 적용**됩니다!
+
+```
+DNA 시스템 크기별 전략:
+
+작은 시스템 (< 5 파일):
+├─ 한 세션에 전체 구현
+└─ 분해 불필요
+    예: Types, Config, Error
+
+중간 시스템 (5-7 파일):
+├─ 한 세션에 구현 가능
+├─ 모듈 간 의존성 관리
+└─ Protocol 정의
+    예: Logging, Cache, Testing
+
+큰 시스템 (8+ 파일):
+├─ 기능별 분해 필수!
+├─ Protocol 정의 (연결부)
+├─ 각 기능 독립 구현
+└─ 마지막에 조립
+    예: Database (유일한 케이스!)
+```
+
+#### Database 시스템 분해 실전 (필수 학습!)
+
+```markdown
+## Task 000: Protocol 정의 (연결부)
+
+```python
+# src/core/database/protocols.py
+from typing import Protocol, AsyncContextManager
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
+
+class ConnectionProvider(Protocol):
+    """연결 제공 인터페이스."""
+
+    async def get_connection(self) -> AsyncContextManager[AsyncConnection]:
+        """비동기 연결 반환."""
+        ...
+
+class SessionProvider(Protocol):
+    """세션 제공 인터페이스."""
+
+    async def get_session(self) -> AsyncContextManager[AsyncSession]:
+        """비동기 세션 반환."""
+        ...
+```
+
+## Task 001: Connection Pool 구현
+
+```python
+# src/core/database/connection.py
+from typing import AsyncContextManager
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
+from core.logging import get_logger
+
+logger = get_logger(__name__)
+
+class ConnectionPool:
+    """데이터베이스 연결 풀 관리.
+
+    Protocol: ConnectionProvider 구현
+    """
+
+    def __init__(self, url: str) -> None:
+        self._engine = create_async_engine(url)
+        logger.info("연결 풀 생성", url=url)
+
+    async def get_connection(self) -> AsyncContextManager[AsyncConnection]:
+        """연결 반환."""
+        return self._engine.connect()
+```
+
+```python
+# tests/core/database/test_connection.py
+import pytest
+from core.database.connection import ConnectionPool
+
+@pytest.mark.asyncio
+async def test_connection_pool_provides_connection():
+    """ConnectionPool은 연결을 제공한다."""
+    pool = ConnectionPool("sqlite+aiosqlite:///:memory:")
+
+    async with pool.get_connection() as conn:
+        result = await conn.execute("SELECT 1")
+        assert result is not None
+```
+
+## Task 002: Session Manager 구현
+
+```python
+# src/core/database/session.py
+from typing import AsyncContextManager
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from core.database.protocols import ConnectionProvider  # ← Protocol 의존!
+from core.logging import get_logger
+
+logger = get_logger(__name__)
+
+class SessionManager:
+    """세션 관리자.
+
+    Protocol: SessionProvider 구현
+    Dependency: ConnectionProvider (Protocol)
+    """
+
+    def __init__(self, connection_provider: ConnectionProvider) -> None:
+        # ✅ 실제 ConnectionPool이 아니라 Protocol에 의존!
+        self._connection_provider = connection_provider
+        self._session_maker = async_sessionmaker()
+        logger.info("세션 관리자 생성")
+
+    async def get_session(self) -> AsyncContextManager[AsyncSession]:
+        """세션 반환."""
+        async with self._connection_provider.get_connection() as conn:
+            yield self._session_maker(bind=conn)
+```
+
+```python
+# tests/core/database/test_session.py
+import pytest
+from unittest.mock import AsyncMock, Mock
+from core.database.session import SessionManager
+from core.database.protocols import ConnectionProvider
+
+@pytest.fixture
+def mock_connection_provider():
+    """Mock ConnectionProvider 반환."""
+    provider = Mock(spec=ConnectionProvider)
+    provider.get_connection = AsyncMock()
+    return provider
+
+@pytest.mark.asyncio
+async def test_session_manager_provides_session(mock_connection_provider):
+    """SessionManager는 세션을 제공한다."""
+    manager = SessionManager(mock_connection_provider)
+
+    async with manager.get_session() as session:
+        assert session is not None
+        # ConnectionProvider.get_connection() 호출 확인
+        mock_connection_provider.get_connection.assert_called_once()
+```
+
+**핵심**: Mock을 사용하여 의존성 격리!
+
+## Task 999: Database 통합 (조립)
+
+```python
+# src/core/database/__init__.py
+from core.database.connection import ConnectionPool
+from core.database.session import SessionManager
+from core.database.protocols import ConnectionProvider, SessionProvider
+
+# 실제 구현체 생성
+_connection_pool: ConnectionProvider = ConnectionPool("postgresql://...")
+_session_manager: SessionProvider = SessionManager(_connection_pool)
+
+# 공개 API
+def get_session():
+    """세션 반환."""
+    return _session_manager.get_session()
+```
+
+```python
+# tests/core/database/test_integration.py
+import pytest
+from core.database import get_session
+
+@pytest.mark.asyncio
+async def test_database_integration_e2e():
+    """Database 시스템 E2E 테스트."""
+    async with get_session() as session:
+        result = await session.execute("SELECT 1")
+        assert result is not None
+```
+```
+
+#### 작은/중간 시스템 구현 전략
+
+```markdown
+## 사례: DNA Types 시스템 (작은 시스템, 분해 불필요)
+
+### 한 세션에 전체 구현
+
+```python
+# src/core/types/ids.py
+from uuid import UUID
+from typing import NewType
+
+UserId = NewType("UserId", UUID)
+OrderId = NewType("OrderId", UUID)
+```
+
+```python
+# src/core/types/enums.py
+from enum import Enum
+
+class LogLevel(str, Enum):
+    DEBUG = "debug"
+    INFO = "info"
+    ERROR = "error"
+```
+
+```python
+# tests/core/types/test_ids.py
+from uuid import uuid4
+from core.types import UserId
+
+def test_user_id_creation():
+    """UserId는 UUID로 생성된다."""
+    user_id = UserId(uuid4())
+    assert isinstance(user_id, UUID)
+```
+
+**구현 완료**: 1 세션에 전체 완성 (분해 불필요)
+```
+
+---
+
+### DNA 핵심 원칙 4: 역방향 수정 프로토콜
+
+**"앞선 결정의 오류 발견 시 → 되돌아가서 수정 → 다시 현재까지 진행"**
+
+#### Stage 5에서 역방향 수정이 발생하는 경우
+
+```
+시나리오 1: Stage 4 청사진 오류 발견
+├─ Stage 5 Logging 구현 중
+├─ 청사진에 비동기 로그 쓰기 누락 발견
+├─ → Stage 4로 돌아가 청사진 보완
+├─ → Stage 5 재구현
+└─ → 추적성 업데이트
+
+시나리오 2: Stage 3 ADR 오류 발견
+├─ Stage 5 Database 구현 중
+├─ ADR-402 "PostgreSQL 13+"가 실제로는 14+ 필요
+├─ → Stage 3로 돌아가 ADR-402 수정
+├─ → Stage 4 청사진 업데이트
+├─ → Stage 5 재구현
+└─ → 추적성 업데이트
+
+시나리오 3: 구현 중 설계 결함 발견
+├─ Stage 5 Cache 구현 중
+├─ Redis 연결 풀 전략이 청사진과 다르게 필요
+├─ → Stage 4 청사진 수정
+├─ → Stage 5 재구현
+└─ → 추적성 업데이트
+```
+
+#### 6단계 수정 프로토콜
+
+```markdown
+## 실제 사례: Logging 시스템 비동기 쓰기 추가
+
+### Step 1: 오류 발견 및 문서화
+**발견 시점**: Stage 5 (Logging 시스템 구현 중)
+**파일**: `src/core/logging/handlers.py`
+**문제**: 파일 핸들러가 동기 쓰기라 성능 저하
+          청사진에 비동기 쓰기 언급 없음
+
+### Step 2: 영향 범위 파악
+**영향받는 문서**:
+- Stage 4: `04D-01_dna_logging_blueprint.md` (청사진 수정 필요)
+- Stage 3: `03A-401_dna_logging.md` (ADR 확인 - 수정 불필요)
+
+**영향받는 구현**:
+- `src/core/logging/handlers.py` (재구현 필요)
+- `tests/core/logging/test_handlers.py` (재작성 필요)
+
+### Step 3: 해당 Stage로 이동 및 수정
+```bash
+# Stage 4 청사진 수정
+$ edit 04D-01_dna_logging_blueprint.md
+  Line 67: 동기 파일 쓰기 → 비동기 파일 쓰기
+  Line 78: aiofiles 의존성 추가
+  Line 89: FileHandler → AsyncFileHandler
+
+# 수정 이유 명시
+> **History**:
+> - v1.0 (2024-11-10): 초기 청사진
+> - v1.1 (2024-11-12): 비동기 쓰기 추가 (성능 개선)
+```
+
+### Step 4: 중간 Stage 전파
+Stage 5 진행 중이므로 즉시 반영
+
+### Step 5: 현재 Stage 재진행
+```bash
+# Stage 5 Logging 재구현
+$ rm src/core/logging/handlers.py
+$ rm tests/core/logging/test_handlers.py
+
+$ implement src/core/logging/handlers.py
+  # 비동기 파일 쓰기 구현
+  import aiofiles
+
+  class AsyncFileHandler:
+      async def write(self, msg: str) -> None:
+          async with aiofiles.open(self.path, "a") as f:
+              await f.write(msg)
+
+$ implement tests/core/logging/test_handlers.py
+  # 비동기 테스트
+  @pytest.mark.asyncio
+  async def test_async_file_handler_writes():
+      handler = AsyncFileHandler("/tmp/test.log")
+      await handler.write("test message")
+
+      async with aiofiles.open("/tmp/test.log", "r") as f:
+          content = await f.read()
+
+      assert "test message" in content
+```
+
+### Step 6: 재진행 결과 검증
+```bash
+$ mypy src/core/logging/
+  → Success: no issues found ✅
+
+$ ruff check src/core/logging/
+  → All checks passed! ✅
+
+$ pytest tests/core/logging/ --cov
+  → Coverage: 97% ✅
+
+**검증 항목**:
+- [ ] 청사진 v1.1 반영 확인
+- [ ] 비동기 쓰기 구현 완료
+- [ ] aiofiles 의존성 추가
+- [ ] 품질 게이트 통과 (ruff 0, mypy 0)
+- [ ] 테스트 커버리지 95%+
+- [ ] 추적성 명시 (Ref: 04D-01 v1.1)
+```
+```
+
+#### 추적성 (Traceability) 유지
+
+**모든 수정은 명시적으로 참조**:
+
+```python
+# src/core/logging/handlers.py
+"""비동기 파일 핸들러.
+
+Ref: 04D-01_dna_logging_blueprint.md v1.1 (Line 67-89)
+Updated: 2024-11-12 (비동기 쓰기로 변경)
+
+Reason: 동기 쓰기 성능 저하 → 비동기 쓰기 필요
+"""
+import aiofiles
+from typing import Any
+
+class AsyncFileHandler:
+    """비동기 파일 핸들러."""
+
+    async def write(self, msg: str) -> None:
+        """메시지를 비동기로 파일에 쓴다."""
+        async with aiofiles.open(self.path, "a") as f:
+            await f.write(msg)
+```
+
+```markdown
+## Stage 4 청사진 (04D-01_dna_logging_blueprint.md)
+> **History**:
+> - v1.0 (2024-11-10): 초기 청사진
+> - v1.1 (2024-11-12): 비동기 쓰기 추가 (Stage 5에서 성능 이슈 발견)
+
+Line 67: ## 파일 핸들러
+Line 68: **전략**: 비동기 쓰기
+Line 69: **라이브러리**: aiofiles==23.2.1
+Line 70: **Ref**: Stage 5 구현 중 성능 이슈 발견
+```
+
+---
+
+## 🎯 DNA 원칙 적용 요약 (Stage 5)
+
+| 원칙 | Stage 5 적용 방법 | 체크포인트 |
+|------|------------------|-----------|
+| **1. AI 최적 크기** | 시스템별 순차 구현 (1개/세션) | Database만 2 sessions |
+| **2. 완전해질 때까지** | 7개 항목 완전성, Zero-Tolerance | ruff 0, mypy 0, coverage 95%+ |
+| **3. 기능별 분해** | Database 시스템만 분해 (Protocol + Mock + 조립) | Protocol 정의 필수 |
+| **4. 역방향 수정** | 6단계 프로토콜, 추적성 유지 | Ref + Updated 명시 |
 
 ---
 
@@ -1412,6 +2109,71 @@ Stage 6: Project Standards
 │   - import-linter
 │   - CI 파이프라인
 └─ 강제 규칙 검증
+```
+
+---
+
+## ⏪ 이전 Stage 검증 및 수정 프로토콜
+
+### 검증 시점
+- Stage 5 시작 전 필수 체크
+- 각 DNA 시스템 구현 완료 후 청사진과 교차 검증
+
+### 검증 대상
+
+| Stage | 산출물 | 검증 항목 |
+|-------|--------|----------|
+| Stage 1 | 01C-01_*.md | 구현 수준이 NFR 만족? |
+| Stage 2 | 02C-01_*.md | 기술 제약 내에서 구현? |
+| Stage 3 | 03A-*_*.md | ADR 결정대로 구현? |
+| Stage 4 | 04B-01_*.md | DNA 청사진대로 구현? |
+
+### 오류 발견 시 프로토콜
+
+```
+Stage 5에서 Stage 1-4 오류 발견 시:
+
+Step 1: 오류 발견 및 문서화
+├─ 발견 위치: DNA 시스템 [N] 구현 중
+├─ 오류 내용: [구체적 설명]
+├─ 영향 Stage: Stage [1, 2, 3, 또는 4]
+└─ 기록: 05D-01에 "발견된 이슈" 추가
+
+Step 2: 영향 범위 파악
+├─ 청사진(Stage 4) 수정 필요?
+├─ ADR(Stage 3) 수정 필요?
+├─ 제약(Stage 2) 재검토 필요?
+└─ 재작업 예상: [X]시간
+
+Step 3: 해당 Stage로 이동 → 수정
+├─ 해당 산출물 수정
+├─ 버전 업데이트
+└─ 수정 검증
+
+Step 4: 중간 Stage 전파
+├─ Stage 4, 5 영향 확인
+└─ 필요 시 청사진 업데이트
+
+Step 5: Stage 5 재진행
+├─ 수정된 청사진으로 구현 재검토
+└─ 코드 일관성 확인
+
+Step 6: 검증 → Stage 6 전달 ✅
+```
+
+### 흔한 오류 패턴
+
+| 오류 유형 | 예시 | 해결 |
+|----------|------|------|
+| 청사진 불완전 | 인터페이스 정의 누락 | Stage 4 청사진 보완 |
+| ADR 미반영 | 로깅 포맷 ADR과 구현 불일치 | 구현 수정 또는 ADR 갱신 |
+| 의존성 오류 | 순환 의존성 발생 | Stage 4 설계 재검토 |
+
+### 추적성
+
+```
+수정 이력: docs/revision_log.md
+코드 주석: # Stage 5 구현 - ADR-XXX 참조
 ```
 
 ---
