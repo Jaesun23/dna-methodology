@@ -4,7 +4,7 @@
 >
 > **버전**: v4.1 (2025-12-03)
 >
-> - v6.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+> - v4.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 > - v2.0 (2025-11-12): 입력/출력 문서 추가
 > - v1.0 (2025-11-10): 초기 버전
 
@@ -15,15 +15,42 @@
 ```
 DNA 방법론 문서 체계:
 
-Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
            ↓
-Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리) - Part 5.4
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리)
            ↓
 Tier 3: 이 문서 (Stage 6 실행 가이드) ← 지금 여기!
 ```
 
 **참조 문서**:
-- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 5.4
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` **Part 5.4**
+
+---
+
+## 📖 이 가이드의 구성
+
+이 가이드는 **언어 무관 개념 + Python 생태계 예시**로 구성됩니다:
+
+```
+개념 (언어 무관):
+├─ DNA 사용 규칙 (DO/DON'T)
+├─ 품질 기준 (Zero Tolerance)
+├─ 자동화 전략 (3단계 성숙도)
+└─ 강제 메커니즘 (pre-commit, CI/CD)
+
+Python 생태계 예시:
+├─ 도구: Ruff, MyPy, pytest, pre-commit
+├─ 설정: pyproject.toml, .pre-commit-config.yaml
+└─ CI/CD: GitHub Actions
+
+다른 언어:
+└─ 해당 언어 매뉴얼 참조
+    ├─ TypeScript: ESLint, TypeScript, Jest, Husky
+    ├─ Rust: Clippy, rustc, Cargo test
+    └─ Go: golangci-lint, go test
+```
+
+**참조**: 구체적 도구/설정은 언어별 매뉴얼 참조
 
 ---
 
@@ -82,7 +109,7 @@ domain/orders/service.py:
 PROJECT_STANDARDS.md:
 "print() 대신 logger를 사용하세요"
 
-자동화:
+자동화 (Python 예시):
 pyproject.toml:
     select = ["T201"]  # T201 = print 금지
 
@@ -99,6 +126,8 @@ Ruff.....Failed
 ├─ 개발자가 즉시 수정
 ├─ 코드 리뷰 불필요 (자동 강제)
 └─ 운영 환경 100% 안전
+
+**참조**: 다른 언어의 린터 설정은 해당 언어 매뉴얼 참조
 ```
 
 ### 비유: 교통 법규 vs 과속 카메라
@@ -158,49 +187,70 @@ docs/
 DO (필수):
 ├─ 어떤 API를 사용해야 하는지
 ├─ 어떤 패턴을 따라야 하는지
-└─ 코드 예시
+└─ 코드 예시 (언어별)
 
 DON'T (금지):
 ├─ 어떤 것을 사용하면 안 되는지
 ├─ 왜 금지인지
-└─ Ruff/MyPy 규칙 코드
+└─ 린터/타입 체커 규칙 코드
+
+**참조**: 구체적 규칙 코드는 언어별 매뉴얼 참조
+  - Python: Ruff, MyPy 규칙
+  - TypeScript: ESLint, TSConfig 규칙
+  - Rust: Clippy lints
+  - Go: golangci-lint 규칙
 ```
 
 ### 영역 2: 품질 기준 (Zero Tolerance)
 
 ```
-절대 타협 없는 기준:
+절대 타협 없는 기준 (언어 무관):
 
-Ruff:     0 violations
-MyPy:     0 errors
-pytest:   0 failures
-Coverage: 95%+
+린터:       0 violations
+타입 체커:   0 errors
+테스트:     0 failures
+커버리지:   95%+
 
 위반 시:
-├─ 커밋 차단 (pre-commit)
+├─ 커밋 차단 (pre-commit hook)
 ├─ PR 머지 차단 (CI)
 └─ 배포 차단 (CD)
+
+**Python 예시**:
+├─ 린터: Ruff
+├─ 타입 체커: MyPy
+├─ 테스트: pytest
+└─ 커버리지: pytest-cov
+
+**참조**: 다른 언어의 도구는 해당 언어 매뉴얼 참조
 ```
 
 ### 영역 3: 자동화 설정 (강제 메커니즘)
 
 ```
-3단계 강제:
+3단계 강제 (언어 무관 전략):
 
-Day 1: 로컬 (pre-commit)
-├─ Ruff (린팅 + 포맷팅)
-├─ MyPy (타입 체크)
-└─ 기본 테스트
+Day 1: 로컬 강제 (commit hook)
+├─ 린터 (포맷팅 + 스타일)
+├─ 타입 체커
+└─ 빠른 테스트 (unit)
 
-Week 2: 아키텍처 (import-linter)
+Week 2: 아키텍처 강제 (dependency checker)
 ├─ core → domain 금지
 ├─ domain → api 금지
-└─ 의존성 방향 강제
+└─ 레이어 의존성 방향 강제
 
-Month 1+: CI/CD
-├─ GitHub Actions
-├─ 커버리지 게이트
-└─ 배포 파이프라인
+Month 1+: CI/CD 파이프라인
+├─ 전체 테스트 + 커버리지 게이트
+├─ 보안 스캔
+└─ 자동 배포
+
+**Python 예시**:
+├─ Day 1: pre-commit (Ruff, MyPy, pytest)
+├─ Week 2: import-linter
+└─ Month 1+: GitHub Actions
+
+**참조**: 다른 언어의 도구/파이프라인은 해당 언어 매뉴얼 참조
 ```
 
 ---
@@ -215,6 +265,8 @@ Month 1+: CI/CD
 ## Logging (DNA 1)
 
 ### DO ✅
+
+**사용 패턴 (Python 예시)**:
 
 ```python
 # 올바른 사용
@@ -235,9 +287,11 @@ bind_context(trace_id=trace_id, user_id=user_id)
 
 ### DON'T ❌
 
+**금지 패턴 (Python 예시)**:
+
 ```python
 # 금지 1: print() 사용
-print(f"Creating order: {data}")  # ❌ T201 위반!
+print(f"Creating order: {data}")  # ❌ Ruff T201 위반!
 
 # 금지 2: logging 직접 사용
 import logging
@@ -248,9 +302,11 @@ logger.info(f"Order {order_id} created")  # ❌ 구조화 파괴
 # 올바른: logger.info("Order created", order_id=order_id)
 ```
 
-### Ruff 규칙
+### 린터 규칙 (Python - Ruff)
 - `T201`: print 금지
 - `G004`: f-string in logging 금지
+
+**참조**: 다른 언어의 로깅 규칙은 해당 언어 매뉴얼 참조
 ```
 
 #### Step 2: Config 규칙
@@ -259,6 +315,8 @@ logger.info(f"Order {order_id} created")  # ❌ 구조화 파괴
 ## Configuration (DNA 2)
 
 ### DO ✅
+
+**사용 패턴 (Python 예시)**:
 
 ```python
 # 올바른 사용
@@ -277,6 +335,8 @@ if settings.is_production:
 
 ### DON'T ❌
 
+**금지 패턴 (Python 예시)**:
+
 ```python
 # 금지 1: os.environ 직접 접근
 import os
@@ -290,8 +350,10 @@ import json
 config = json.load(open("config.json"))  # ❌ 검증 없음
 ```
 
-### Ruff 규칙
-- 커스텀 규칙으로 `os.environ` 사용 감지 (import-linter)
+### 의존성 규칙 (Python - import-linter)
+- 커스텀 규칙으로 `os.environ` 직접 사용 감지
+
+**참조**: 다른 언어의 설정 관리 규칙은 해당 언어 매뉴얼 참조
 ```
 
 #### Step 3: Types 규칙
@@ -300,6 +362,8 @@ config = json.load(open("config.json"))  # ❌ 검증 없음
 ## Types (DNA 3)
 
 ### DO ✅
+
+**사용 패턴 (Python 예시)**:
 
 ```python
 # 올바른 사용
@@ -317,6 +381,8 @@ price = Money(amount=Decimal("50000"), currency="KRW")
 
 ### DON'T ❌
 
+**금지 패턴 (Python 예시)**:
+
 ```python
 # 금지 1: Any 타입
 def process(data: Any) -> Any:  # ❌ 타입 안전성 없음
@@ -331,10 +397,12 @@ def create_order(user_id, amount):  # ❌ MyPy strict 위반
     ...
 ```
 
-### MyPy 규칙
+### 타입 체커 규칙 (Python - MyPy)
 - `strict = true`: 모든 함수에 타입 힌트 필수
 - `warn_return_any = true`: Any 반환 경고
 - `disallow_any_explicit = true`: 명시적 Any 금지
+
+**참조**: 다른 언어의 타입 규칙은 해당 언어 매뉴얼 참조
 ```
 
 #### Step 4: Errors 규칙
@@ -343,6 +411,8 @@ def create_order(user_id, amount):  # ❌ MyPy strict 위반
 ## Error Handling (DNA 4)
 
 ### DO ✅
+
+**사용 패턴 (Python 예시)**:
 
 ```python
 # 올바른 사용
@@ -362,6 +432,8 @@ if response.status_code != 200:
 ```
 
 ### DON'T ❌
+
+**금지 패턴 (Python 예시)**:
 
 ```python
 # 금지 1: 일반 Exception
@@ -390,9 +462,11 @@ except KISAPIError as e:
     raise
 ```
 
-### Ruff 규칙
+### 린터 규칙 (Python - Ruff)
 - `E722`: bare except 금지
 - `B001`: assert 대신 raise 사용
+
+**참조**: 다른 언어의 에러 처리 규칙은 해당 언어 매뉴얼 참조
 ```
 
 #### Step 5: Database 규칙
@@ -401,6 +475,8 @@ except KISAPIError as e:
 ## Database (DNA 5)
 
 ### DO ✅
+
+**사용 패턴 (Python 예시)**:
 
 ```python
 # 올바른 사용
@@ -422,6 +498,8 @@ async with get_session() as session:
 
 ### DON'T ❌
 
+**금지 패턴 (Python 예시)**:
+
 ```python
 # 금지 1: 직접 SQL 문자열
 cursor.execute(f"SELECT * FROM orders WHERE id = {order_id}")  # ❌ SQL Injection!
@@ -440,8 +518,10 @@ session.add(payment)
 session.commit()  # ❌ 원자성 위반
 ```
 
-### 보안 규칙
+### 보안 규칙 (Python - Ruff)
 - `S608`: SQL Injection 가능 코드 감지
+
+**참조**: 다른 언어의 데이터베이스 규칙은 해당 언어 매뉴얼 참조
 ```
 
 
@@ -453,16 +533,18 @@ session.commit()  # ❌ 원자성 위반
 ```markdown
 ## 품질 기준 (Zero Tolerance)
 
-### 정적 분석
+### 정적 분석 (언어 무관 기준)
 
-| 도구 | 기준 | 위반 시 |
-|------|-----|--------|
-| Ruff | 0 violations | 커밋 차단 |
-| MyPy | 0 errors | 커밋 차단 |
-| pytest | 0 failures | 머지 차단 |
-| Coverage | 95%+ | 머지 차단 |
+| 도구 유형 | 기준 | 위반 시 |
+|----------|-----|--------|
+| 린터 | 0 violations | 커밋 차단 |
+| 타입 체커 | 0 errors | 커밋 차단 |
+| 테스트 | 0 failures | 머지 차단 |
+| 커버리지 | 95%+ | 머지 차단 |
 
-### Ruff 규칙 (필수)
+**Python 예시**: Ruff (린터), MyPy (타입 체커), pytest (테스트)
+
+### 린터 규칙 (Python - Ruff)
 
 ```toml
 [tool.ruff]
@@ -485,7 +567,7 @@ ignore = [
 ]
 ```
 
-### MyPy 규칙 (필수)
+### 타입 체커 규칙 (Python - MyPy)
 
 ```toml
 [tool.mypy]
@@ -501,7 +583,7 @@ module = "tests.*"
 disallow_untyped_defs = false
 ```
 
-### pytest 규칙 (필수)
+### 테스트 규칙 (Python - pytest)
 
 ```toml
 [tool.pytest.ini_options]
@@ -514,11 +596,23 @@ addopts = """
 """
 testpaths = ["tests"]
 ```
+
+**참조**: 다른 언어의 품질 기준 설정은 해당 언어 매뉴얼 참조
+  - TypeScript: ESLint, TSConfig, Jest
+  - Rust: Clippy, rustc, Cargo test
+  - Go: golangci-lint, go test
 ```
 
 ### Part 3: 자동화 설정 (1시간)
 
-#### Step 1: pre-commit 설정
+#### Step 1: Commit Hook 설정
+
+**개념 (언어 무관)**:
+- 커밋 전에 자동으로 실행되는 검증 스크립트
+- 린터, 타입 체커, 빠른 테스트 실행
+- 위반 시 커밋 차단
+
+**Python 예시 (.pre-commit-config.yaml)**:
 
 ```yaml
 # .pre-commit-config.yaml
@@ -537,7 +631,7 @@ repos:
     rev: v1.13.0
     hooks:
       - id: mypy
-        additional_dependencies: 
+        additional_dependencies:
           - pydantic>=2.0
           - pydantic-settings>=2.0
         args: [--strict]
@@ -563,7 +657,20 @@ repos:
         always_run: true
 ```
 
-#### Step 2: import-linter 설정
+**참조**: 다른 언어의 commit hook 설정은 해당 언어 매뉴얼 참조
+  - TypeScript: Husky + lint-staged
+  - Rust: cargo-husky
+  - Go: pre-commit with golangci-lint
+```
+
+#### Step 2: 아키텍처 의존성 검증 설정
+
+**개념 (언어 무관)**:
+- 레이어 간 의존성 방향 강제
+- 역방향 의존성 차단
+- Clean Architecture 레이어 순서 보장
+
+**Python 예시 (.importlinter)**:
 
 ```ini
 # .importlinter
@@ -574,30 +681,30 @@ root_package = src
 [importlinter:contract:core-independence]
 name = Core는 Domain/API에 의존하지 않음
 type = forbidden
-source_modules = 
+source_modules =
     src.core
-forbidden_modules = 
+forbidden_modules =
     src.domain
     src.api
 
 [importlinter:contract:domain-independence]
 name = Domain은 API에 의존하지 않음
 type = forbidden
-source_modules = 
+source_modules =
     src.domain
-forbidden_modules = 
+forbidden_modules =
     src.api
 
 [importlinter:contract:layers]
 name = Clean Architecture 레이어
 type = layers
-layers = 
+layers =
     src.api
     src.domain
     src.core
 ```
 
-**의존성 방향**:
+**의존성 방향 (언어 무관 규칙)**:
 ```
 허용:
 api → domain → core
@@ -608,7 +715,21 @@ domain → api (역방향!)
 core → api (건너뛰기!)
 ```
 
-#### Step 3: CI 파이프라인 (GitHub Actions)
+**참조**: 다른 언어의 의존성 검증 도구는 해당 언어 매뉴얼 참조
+  - TypeScript: dependency-cruiser, eslint-plugin-import
+  - Rust: cargo-modules, cargo-deny
+  - Go: go-mod-outdated, go list
+```
+
+#### Step 3: CI 파이프라인 설정
+
+**개념 (언어 무관)**:
+- PR 머지 전 자동 검증
+- 전체 테스트 + 커버리지 체크
+- 보안 스캔 (선택)
+- 배포 게이트
+
+**Python 예시 (GitHub Actions)**:
 
 ```yaml
 # .github/workflows/ci.yml
@@ -624,46 +745,56 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      
+
       - name: Install uv
         run: pip install uv
-      
+
       - name: Install dependencies
         run: uv sync
-      
+
       - name: Ruff (lint)
         run: uv run ruff check src tests
-      
+
       - name: Ruff (format)
         run: uv run ruff format --check src tests
-      
+
       - name: MyPy
         run: uv run mypy src --strict
-      
+
       - name: import-linter
         run: uv run lint-imports
-      
+
       - name: pytest
         run: uv run pytest --cov=src --cov-fail-under=95
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
 ```
 
+**참조**: 다른 언어/플랫폼의 CI 설정은 해당 언어 매뉴얼 참조
+  - TypeScript: GitHub Actions with Node.js
+  - Rust: GitHub Actions with Cargo
+  - Go: GitHub Actions with Go
+  - GitLab CI, CircleCI, Jenkins 등
+```
+
 ### Part 4: 자동화 성숙도 로드맵 (30분)
 
-#### Day 1: 기본 정적 분석
+#### Day 1: 로컬 강제 (Commit Hook)
 
+**개념**: 개발자 로컬에서 즉시 검증
+
+**Python 예시**:
 ```bash
 # pre-commit 설치
 uv add --dev pre-commit
@@ -673,13 +804,16 @@ pre-commit install
 pre-commit run --all-files
 ```
 
-**이 시점의 강제**:
-- ✅ Ruff (린팅 + 포맷팅)
-- ✅ MyPy (타입 체크)
-- ✅ 기본 테스트
+**이 시점의 강제 (언어 무관)**:
+- ✅ 린터 (포맷팅 + 스타일)
+- ✅ 타입 체커
+- ✅ 빠른 테스트 (unit)
 
-#### Week 2: 아키텍처 검증
+#### Week 2: 아키텍처 강제 (Dependency Check)
 
+**개념**: 레이어 간 의존성 방향 검증
+
+**Python 예시**:
 ```bash
 # import-linter 설치
 uv add --dev import-linter
@@ -688,30 +822,37 @@ uv add --dev import-linter
 lint-imports
 ```
 
-**이 시점의 강제**:
+**이 시점의 강제 (언어 무관)**:
 - ✅ Day 1 모든 것
 - ✅ 레이어 의존성 (core ← domain ← api)
 - ✅ 역방향 의존성 차단
 
-#### Month 1+: CI/CD 통합
+#### Month 1+: CI/CD 파이프라인
 
+**개념**: PR 머지 전 전체 검증 + 배포 자동화
+
+**Python 예시**:
 ```bash
 # GitHub Actions 설정
 mkdir -p .github/workflows
 cp templates/ci.yml .github/workflows/
 ```
 
-**이 시점의 강제**:
+**이 시점의 강제 (언어 무관)**:
 - ✅ Week 2 모든 것
 - ✅ PR 머지 게이트
 - ✅ 커버리지 리포트
 - ✅ 배포 파이프라인
 
+**참조**: 다른 언어의 자동화 로드맵은 해당 언어 매뉴얼 참조
+
 ---
 
 ## 📄 PROJECT_STANDARDS.md 템플릿
 
-### 06D-01_project_standards.md
+> **참고**: 이 템플릿은 Python 예시입니다. 다른 언어는 해당 언어 매뉴얼의 템플릿을 참조하세요.
+
+### 06D-01_project_standards.md (Python)
 
 ```markdown
 # Project Standards
@@ -720,6 +861,7 @@ cp templates/ci.yml .github/workflows/
 > **버전**: v1.0
 > **작성일**: YYYY-MM-DD
 > **기반 ADR**: 03A-401 ~ 03A-411 (DNA 시스템)
+> **언어**: Python 3.12+
 
 ---
 
@@ -942,7 +1084,9 @@ fix/*        ← 버그 수정
 
 ## ✏️ 작성 예시: 주식 거래 플랫폼
 
-### 예시 1: DNA 사용 규칙 (Logging 상세)
+> **참고**: 이 예시들은 Python 생태계 기반입니다. 다른 언어는 해당 언어 매뉴얼의 예시를 참조하세요.
+
+### 예시 1: DNA 사용 규칙 (Logging 상세) - Python
 
 ```markdown
 ## 2.1 Logging
@@ -1033,10 +1177,10 @@ src/domain/orders/service.py:52:9: G004 Logging statement uses f-string
 ```
 ```
 
-### 예시 2: 자동화 설정 (전체)
+### 예시 2: 자동화 설정 (전체) - Python
 
 ```markdown
-## 자동화 설정
+## 자동화 설정 (Python)
 
 ### pyproject.toml (완전판)
 
@@ -1189,7 +1333,7 @@ layers =
 ```
 ```
 
-### 예시 3: CI 파이프라인 (GitHub Actions)
+### 예시 3: CI 파이프라인 - Python (GitHub Actions)
 
 ```yaml
 # .github/workflows/ci.yml

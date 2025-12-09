@@ -4,7 +4,7 @@
 >
 > **버전**: v4.1 (2025-12-03)
 >
-> - v8.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+> - v4.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 > - v2.0 (2025-11-12): 입력/출력 문서 추가
 > - v1.0 (2025-11-10): 초기 버전
 
@@ -15,15 +15,15 @@
 ```
 DNA 방법론 문서 체계:
 
-Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
            ↓
-Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리) - Part 6.2
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리)
            ↓
 Tier 3: 이 문서 (Stage 8 실행 가이드) ← 지금 여기!
 ```
 
 **참조 문서**:
-- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 6.2
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` Part 6.2
 
 ---
 
@@ -78,30 +78,30 @@ Claude 컨텍스트 윈도우: 200K 토큰
 
 ### 크기 판단 공식
 
-```python
-def is_optimal_task_size(task: Task) -> bool:
+```
+FUNCTION is_optimal_task_size(task):
     """Task 크기가 AI 최적인지 판단"""
     
     # 1. 체크리스트 줄 수
     checklist_lines = estimate_checklist_lines(task)
-    if not (80 <= checklist_lines <= 180):
-        return False  # 80줄 미만 = 너무 작음, 180줄 초과 = 너무 큼
+    IF NOT (80 <= checklist_lines <= 180):
+        RETURN False  # 80줄 미만 = 너무 작음, 180줄 초과 = 너무 큼
     
     # 2. 참조 문서 크기
     reference_tokens = estimate_reference_tokens(task)
-    if reference_tokens > 50_000:
-        return False  # 참조 문서가 너무 많음
+    IF reference_tokens > 50,000:
+        RETURN False  # 참조 문서가 너무 많음
     
     # 3. 예상 생성 코드
     code_lines = estimate_code_lines(task)
-    if code_lines > 300:
-        return False  # 생성할 코드가 너무 많음
+    IF code_lines > 300:
+        RETURN False  # 생성할 코드가 너무 많음
     
     # 4. 테스트 포함 여부
-    if not task.includes_tests:
-        return False  # 테스트 없는 Task는 불완전
+    IF NOT task.includes_tests:
+        RETURN False  # 테스트 없는 Task는 불완전
     
-    return True
+    RETURN True
 
 # 적용 예시
 is_optimal_task_size(Task("User 엔티티 + 테스트"))  # True (120줄)
@@ -177,8 +177,8 @@ Task 003: 값 객체 + 열거형 (1.5h)
 Session 1: Task 001
 ├─ 목표: User 엔티티만 집중
 ├─ 입력: Blueprint Section 3.1
-├─ 출력: src/domain/user.py + tests/
-├─ 완료! ✅ (MyPy 0, Ruff 0, Coverage 95%)
+├─ 출력: src/domain/user + tests/
+├─ 완료! ✅ (타입 체커 0, 린터 0, Coverage 95%)
 
 Session 2: Task 002
 ├─ 목표: Order 엔티티만 집중
@@ -282,8 +282,8 @@ docs/
 ├─ 테스트 작성 가능
 ├─ 성공/실패 판단 명확
 ├─ 품질 기준 적용 가능
-│   ├─ MyPy 0 errors
-│   ├─ Ruff 0 violations
+│   ├─ 타입 체커 0 errors
+│   ├─ 린터 0 violations
 │   └─ Coverage 95%+
 └─ "이 Task 완료 = 이 기능 작동"
 
@@ -365,7 +365,7 @@ Task Breakdown의 목표:
 │ □ 입력: 모든 참조 문서/코드 명시?                         │
 │ □ 출력: 생성될 파일 경로 명시?                            │
 │ □ 제약: MUST/MUST NOT 명시?                             │
-│ □ 완료 조건: 측정 가능? (MyPy 0, Ruff 0, Coverage 95%)   │
+│ □ 완료 조건: 측정 가능? (타입 체커 0, 린터 0, Coverage 95%) │
 │ □ 테스트: 구체적 케이스 3개 이상?                         │
 │                                                         │
 │ 실패 시 → Task 상세 보완 후 재검증                        │
@@ -412,8 +412,8 @@ Task 002: Order 엔티티 + Aggregate + 테스트
   - MUST: 도메인 이벤트 발행
   - MUST NOT: DB 접근 코드
 완료 조건:
-  - MyPy 0 errors
-  - Ruff 0 violations  
+  - 타입 체커 0 errors
+  - 린터 0 violations  
   - Coverage 95%+
   - 상태 전이 테스트 4개 포함
 테스트 케이스:
@@ -467,27 +467,27 @@ Blueprint 섹션 → Task 후보:
 
 #### Step 2: Task 크기 검증
 
-```python
+```
 # 각 Task 크기 검증
 
-def validate_task_size(task):
+FUNCTION validate_task_size(task):
     """Task 크기가 적절한지 검증"""
     
     # 체크리스트 예상 줄 수
     checklist_lines = estimate_checklist_lines(task)
-    if checklist_lines < 80:
-        return "너무 작음 - 다른 Task와 합치기"
-    if checklist_lines > 180:
-        return "너무 큼 - 분할 필요"
+    IF checklist_lines < 80:
+        RETURN "너무 작음 - 다른 Task와 합치기"
+    IF checklist_lines > 180:
+        RETURN "너무 큼 - 분할 필요"
     
     # 예상 시간
     estimated_hours = estimate_hours(task)
-    if estimated_hours < 1.5:
-        return "너무 작음"
-    if estimated_hours > 5:
-        return "너무 큼"
+    IF estimated_hours < 1.5:
+        RETURN "너무 작음"
+    IF estimated_hours > 5:
+        RETURN "너무 큼"
     
-    return "적절함 ✅"
+    RETURN "적절함 ✅"
 
 # 예시
 validate_task_size("User 엔티티 + 테스트")  # → "적절함 ✅" (2시간)
@@ -667,15 +667,15 @@ User 엔티티 클래스 구현 및 단위 테스트 작성
 - 커버리지 95%+
 
 ### 제약
-- MUST: Pydantic BaseModel 사용
+- MUST: 검증 라이브러리 사용 (타입 안전 모델)
 - MUST: UserId (UUID) 타입 사용
 - MUST: created_at, updated_at UTC 시간
-- MUST NOT: SQLAlchemy 직접 사용 (Infrastructure 레이어)
+- MUST NOT: ORM 직접 사용 (Infrastructure 레이어)
 
 ### 완료 조건
-- [ ] MyPy 0 errors
-- [ ] Ruff 0 violations
-- [ ] pytest 통과
+- [ ] 타입 체커 0 errors
+- [ ] 린터 0 violations
+- [ ] 테스트 프레임워크 통과
 - [ ] Coverage 95%+
 
 ---
@@ -708,9 +708,9 @@ Order Aggregate Root 구현 (엔티티 + 도메인 로직 + 테스트)
 - MUST NOT: 데이터베이스 접근 코드
 
 ### 완료 조건
-- [ ] MyPy 0 errors
-- [ ] Ruff 0 violations
-- [ ] pytest 통과
+- [ ] 타입 체커 0 errors
+- [ ] 린터 0 violations
+- [ ] 테스트 프레임워크 통과
 - [ ] 상태 전이 테스트 포함
 - [ ] Coverage 95%+
 ```
@@ -835,9 +835,9 @@ Phase 3:    ▼
 - MUST NOT: [금지 사항]
 
 #### 완료 조건
-- [ ] MyPy 0 errors
-- [ ] Ruff 0 violations
-- [ ] pytest 통과
+- [ ] 타입 체커 0 errors
+- [ ] 린터 0 violations
+- [ ] 테스트 프레임워크 통과
 - [ ] Coverage 95%+
 
 ---
@@ -1106,7 +1106,7 @@ tests/unit/application/orders/
 ```
 
 ### 제약
-- MUST: CreateOrderCommand (Pydantic) 사용
+- MUST: CreateOrderCommand (타입 안전 모델) 사용
 - MUST: Order Aggregate 도메인 규칙 적용
 - MUST: OrderCreated 이벤트 발행
 - MUST: 잔고 검증 포함
@@ -1114,37 +1114,22 @@ tests/unit/application/orders/
 - MUST NOT: 직접 DB 접근 (리포지토리 사용)
 - MUST NOT: API 레이어 의존
 
-### 핵심 로직
+### 핵심 로직 (의사코드)
 
-```python
-# src/application/orders/services.py
-
-class OrderService:
-    def __init__(
-        self,
-        order_repo: OrderRepository,
-        portfolio_repo: PortfolioRepository,
-        event_publisher: EventPublisher,
-        logger: Logger,
-    ) -> None:
-        self._order_repo = order_repo
-        self._portfolio_repo = portfolio_repo
-        self._event_publisher = event_publisher
-        self._logger = logger
-
-    async def create_order(
-        self,
-        command: CreateOrderCommand,
-    ) -> Order:
+```
+CLASS OrderService:
+    CONSTRUCTOR(order_repo, portfolio_repo, event_publisher, logger)
+    
+    METHOD create_order(command: CreateOrderCommand) -> Order:
         """주문 생성"""
-        self._logger.info("주문 생성 시작", user_id=str(command.user_id))
+        logger.info("주문 생성 시작", user_id=command.user_id)
         
         # 1. 잔고 검증
-        portfolio = await self._portfolio_repo.get_by_user_id(command.user_id)
-        if not portfolio.has_sufficient_balance(command.total_amount):
-            raise InsufficientBalanceError(
+        portfolio = portfolio_repo.get_by_user_id(command.user_id)
+        IF NOT portfolio.has_sufficient_balance(command.total_amount):
+            THROW InsufficientBalanceError(
                 required=command.total_amount,
-                available=portfolio.cash_balance,
+                available=portfolio.cash_balance
             )
         
         # 2. Order Aggregate 생성
@@ -1154,87 +1139,57 @@ class OrderService:
             side=command.side,
             order_type=command.order_type,
             quantity=command.quantity,
-            price=command.price,
+            price=command.price
         )
         
         # 3. 저장
-        await self._order_repo.save(order)
+        order_repo.save(order)
         
         # 4. 이벤트 발행
-        for event in order.domain_events:
-            await self._event_publisher.publish(event)
+        FOR EACH event IN order.domain_events:
+            event_publisher.publish(event)
         
-        self._logger.info("주문 생성 완료", order_id=str(order.id))
-        return order
+        logger.info("주문 생성 완료", order_id=order.id)
+        RETURN order
 ```
 
-### 테스트 케이스
+**언어별 구현 예시**: docs/manuals/ 참조
 
-```python
-# tests/unit/application/orders/test_order_service.py
+### 테스트 케이스 (설계)
 
-class TestOrderService:
-    """주문 생성 서비스 테스트"""
-    
-    async def test_create_order_success(self):
-        """정상 주문 생성"""
-        # Given
-        command = CreateOrderCommand(
-            user_id=UserId(uuid4()),
-            symbol="005930",
-            side=OrderSide.BUY,
-            order_type=OrderType.LIMIT,
-            quantity=10,
-            price=Money(70000),
-        )
-        
-        # When
-        order = await service.create_order(command)
-        
-        # Then
-        assert order.status == OrderStatus.PENDING
-        assert order.symbol == "005930"
-        assert len(order.domain_events) == 1
-        assert isinstance(order.domain_events[0], OrderCreated)
-    
-    async def test_create_order_insufficient_balance(self):
-        """잔고 부족 시 실패"""
-        # Given
-        portfolio_repo.get_by_user_id.return_value = Portfolio(
-            cash_balance=Money(100000)
-        )
-        command = CreateOrderCommand(
-            quantity=100,
-            price=Money(70000),  # 총 7,000,000원 필요
-        )
-        
-        # When/Then
-        with pytest.raises(InsufficientBalanceError):
-            await service.create_order(command)
-    
-    async def test_create_order_market_type_no_price(self):
-        """시장가 주문은 가격 없음"""
-        command = CreateOrderCommand(
-            order_type=OrderType.MARKET,
-            price=None,  # OK
-        )
-        order = await service.create_order(command)
-        assert order.price is None
-    
-    async def test_create_order_limit_type_requires_price(self):
-        """지정가 주문은 가격 필수"""
-        command = CreateOrderCommand(
-            order_type=OrderType.LIMIT,
-            price=None,  # Error!
-        )
-        with pytest.raises(ValidationError):
-            await service.create_order(command)
 ```
+테스트 클래스: OrderServiceTest
+
+1. test_create_order_success: 정상 주문 생성
+   Given: 유효한 CreateOrderCommand (symbol, side, order_type, quantity, price)
+   When: service.create_order(command) 호출
+   Then: 
+     - order.status == PENDING
+     - order.symbol == 입력값
+     - OrderCreated 이벤트 발행됨
+
+2. test_create_order_insufficient_balance: 잔고 부족 시 실패
+   Given: portfolio.cash_balance = 100,000원, 필요 금액 = 7,000,000원
+   When: service.create_order(command) 호출
+   Then: InsufficientBalanceError 발생
+
+3. test_create_order_market_type_no_price: 시장가 주문은 가격 없음
+   Given: order_type=MARKET, price=null
+   When: service.create_order(command) 호출
+   Then: order.price == null
+
+4. test_create_order_limit_type_requires_price: 지정가 주문은 가격 필수
+   Given: order_type=LIMIT, price=null
+   When: service.create_order(command) 호출
+   Then: ValidationError 발생
+```
+
+**언어별 테스트 구현**: docs/manuals/ 참조
 
 ### 완료 조건
-- [ ] MyPy 0 errors
-- [ ] Ruff 0 violations
-- [ ] pytest 통과 (4개 테스트 케이스)
+- [ ] 타입 체커 0 errors
+- [ ] 린터 0 violations
+- [ ] 테스트 프레임워크 통과 (4개 테스트 케이스)
 - [ ] Coverage 95%+
 - [ ] 잔고 검증 로직 작동
 - [ ] 도메인 이벤트 발행
@@ -1273,7 +1228,7 @@ class TestOrderService:
 - [ ] 각 Task 목표 (한 문장)
 - [ ] 각 Task 입력/출력 명시
 - [ ] 각 Task 제약 (MUST/MUST NOT)
-- [ ] 각 Task 완료 조건 (MyPy 0, Ruff 0, Coverage 95%)
+- [ ] 각 Task 완료 조건 (타입 체커 0, 린터 0, Coverage 95%)
 
 ### 일정 계획
 
@@ -1310,7 +1265,7 @@ Stage 9: 9-Step Checklist + 구현
 Step 1: 목표 이해 📖
 Step 2: 테스트 작성 🧪 (TDD - Red)
 Step 3: 구현 🔨 (TDD - Green)
-Step 4: 정적 검증 🔍 (Ruff, MyPy)
+Step 4: 정적 검증 🔍 (린터, 타입 체커)
 Step 5: 리팩토링 ✨ (TDD - Refactor)
 Step 6: 커버리지 📊 (95%+)
 Step 7: 통합 확인 🔗
@@ -1375,8 +1330,8 @@ Task 008 (주문 생성 서비스):
    └─ 롤백 가능
 
 3. 검증 가능:
-   ├─ MyPy 0 errors
-   ├─ Ruff 0 violations
+   ├─ Type Check 0 errors
+   ├─ Lint 0 violations
    └─ Coverage 95%+
 
 4. 가치 있음:
@@ -1549,14 +1504,14 @@ Task 004: Order 취소 기능 (Service + API)
 
 ### 연결부 (Interface) 설계
 
-```python
-# 기능별 분해 시 연결부가 핵심!
+```
+기능별 분해 시 연결부가 핵심!
 
-# ❌ 연결부 없이 분해:
+❌ 연결부 없이 분해:
 Task 001: User 기능 (UserService 직접 구현)
 Task 002: Order 기능 (UserService 필요... 어떻게?)
 
-# ✅ 연결부 먼저 정의:
+✅ 연결부 먼저 정의:
 Task 000: 인터페이스 정의 (연결부)
 ├─ IUserRepository
 ├─ IOrderRepository
@@ -1569,35 +1524,32 @@ Task 002: Order 기능 (IUserService 주입받아 사용)
 
 ### 연결부 설계 방법
 
-```python
-# src/domain/interfaces/repositories.py (Task 000에서 정의)
+```
+domain/interfaces/ (Task 000에서 정의)
 
-from abc import ABC, abstractmethod
-from typing import Protocol
+Interface: IUserRepository
+├─ get_by_id(user_id) → User?
+├─ get_by_email(email) → User?
+└─ save(user) → void
 
-class IUserRepository(Protocol):
-    """User 저장소 인터페이스"""
-    async def get_by_id(self, user_id: UserId) -> User | None: ...
-    async def get_by_email(self, email: str) -> User | None: ...
-    async def save(self, user: User) -> None: ...
+Interface: IOrderRepository
+├─ get_by_id(order_id) → Order?
+├─ get_by_user_id(user_id) → List<Order>
+└─ save(order) → void
 
-class IOrderRepository(Protocol):
-    """Order 저장소 인터페이스"""
-    async def get_by_id(self, order_id: OrderId) -> Order | None: ...
-    async def get_by_user_id(self, user_id: UserId) -> list[Order]: ...
-    async def save(self, order: Order) -> None: ...
+Interface: IUserService
+├─ get_user(user_id) → User
+└─ create_user(command) → User
 
-# src/application/interfaces/services.py (Task 000에서 정의)
+Interface: IOrderService
+├─ create_order(command) → Order
+└─ get_order(order_id) → Order
 
-class IUserService(Protocol):
-    """User 서비스 인터페이스"""
-    async def get_user(self, user_id: UserId) -> User: ...
-    async def create_user(self, command: CreateUserCommand) -> User: ...
-
-class IOrderService(Protocol):
-    """Order 서비스 인터페이스"""
-    async def create_order(self, command: CreateOrderCommand) -> Order: ...
-    async def get_order(self, order_id: OrderId) -> Order: ...
+* 언어별 구현: docs/manuals/ 참조
+  - Python: Protocol/ABC
+  - TypeScript: interface
+  - Java: interface
+  - Go: implicit interface
 ```
 
 ### 조립 전략
@@ -1629,48 +1581,43 @@ Phase 3: 연결 (Task 006-008)
 
 ### 조립 예시: 주문 생성 기능
 
-```python
-# Task 002: Order 생성 기능
+```
+Task 002: Order 생성 기능 (의사코드)
 
-# 1. 인터페이스 사용 (Task 000에서 정의된 것)
-from src.domain.interfaces import IOrderRepository, IUserRepository
+1. 인터페이스 사용 (Task 000에서 정의된 것):
+   - IOrderRepository
+   - IUserRepository
 
-# 2. 서비스 구현
-class OrderService:
-    def __init__(
-        self,
-        order_repo: IOrderRepository,  # 인터페이스!
-        user_repo: IUserRepository,    # 인터페이스!
-    ):
-        self._order_repo = order_repo
-        self._user_repo = user_repo
-    
-    async def create_order(self, command: CreateOrderCommand) -> Order:
-        # User 검증 (IUserRepository 사용)
-        user = await self._user_repo.get_by_id(command.user_id)
-        if not user:
-            raise UserNotFoundError(command.user_id)
-        
-        # Order 생성
-        order = Order.create(...)
-        
-        # 저장 (IOrderRepository 사용)
-        await self._order_repo.save(order)
-        return order
+2. 서비스 구현:
+   CLASS OrderService:
+     CONSTRUCTOR(order_repo: IOrderRepository, user_repo: IUserRepository)
+     
+     METHOD create_order(command):
+       // User 검증 (IUserRepository 사용)
+       user = user_repo.get_by_id(command.user_id)
+       IF NOT user:
+         THROW UserNotFoundError
+       
+       // Order 생성
+       order = Order.create(...)
+       
+       // 저장 (IOrderRepository 사용)
+       order_repo.save(order)
+       RETURN order
 
-# 3. 테스트 (Mock 사용)
-async def test_create_order():
-    # Mock 리포지토리
-    user_repo = Mock(spec=IUserRepository)
-    user_repo.get_by_id.return_value = User(...)
-    
-    order_repo = Mock(spec=IOrderRepository)
-    
-    service = OrderService(order_repo, user_repo)
-    order = await service.create_order(command)
-    
-    assert order.status == OrderStatus.PENDING
-    order_repo.save.assert_called_once()
+3. 테스트 (Mock 사용):
+   TEST create_order:
+     // Mock 리포지토리
+     user_repo = Mock(IUserRepository)
+     user_repo.get_by_id → returns User(...)
+     
+     order_repo = Mock(IOrderRepository)
+     
+     service = OrderService(order_repo, user_repo)
+     order = service.create_order(command)
+     
+     ASSERT order.status == PENDING
+     ASSERT order_repo.save called once
 ```
 
 ### 수정된 Task Breakdown 예시 (기능별)

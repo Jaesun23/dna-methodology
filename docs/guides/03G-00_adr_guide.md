@@ -4,7 +4,7 @@
 >
 > **버전**: v4.1 (2025-12-03)
 >
-> - v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+> - v4.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 > - v3.0 (2025-11-13): Stage 3 분리
 
 ---
@@ -14,15 +14,15 @@
 ```
 DNA 방법론 문서 체계:
 
-Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
            ↓
-Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리) - Part 4
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리) - Part 4
            ↓
 Tier 3: 이 문서 (Stage 3 실행 가이드) ← 지금 여기!
 ```
 
 **참조 문서**:
-- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 4
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` Part 4
 - **실전 사례**: `IMPLEMENTATION_CASES.md`
 
 ---
@@ -124,44 +124,30 @@ Claude 200K 토큰 윈도우:
 
 #### 3단계 검증 프로토콜
 
-```python
-def validate_adr_session(adrs: list[ADR]) -> ValidationResult:
-    """ADR 세션 완전성 검증."""
+```
+ADR 세션 완전성 검증 (의사코드):
 
+FUNCTION validate_adr_session(adrs):
+    
     # 검증 1: 각 ADR 구조 검증
-    for adr in adrs:
-        if not all([
-            adr.has_status_and_context(),
-            adr.has_decision(),
-            adr.has_rationale(),
-            adr.has_consequences(),
-            adr.has_compliance()
-        ]):
-            return ValidationResult(
-                passed=False,
-                message=f"ADR {adr.id}: 5개 섹션 중 누락 발견",
-                action="해당 ADR 재작성"
-            )
+    FOR EACH adr IN adrs:
+        IF adr가 5개 섹션 중 하나라도 누락:
+            - 상태/맥락, 결정, 근거, 결과, 준수
+            RETURN 실패: "ADR {id}: 5개 섹션 중 누락 발견"
+            ACTION: "해당 ADR 재작성"
 
     # 검증 2: 카테고리 일관성 검증
-    category = adrs[0].category
-    if not all(adr.category == category for adr in adrs):
-        return ValidationResult(
-            passed=False,
-            message="한 세션에 여러 카테고리 혼재",
-            action="카테고리별로 세션 분리"
-        )
+    IF adrs의 카테고리가 서로 다름:
+        RETURN 실패: "한 세션에 여러 카테고리 혼재"
+        ACTION: "카테고리별로 세션 분리"
 
     # 검증 3: Stage 2 추적성 검증
-    for adr in adrs:
-        if not adr.has_stage2_reference():
-            return ValidationResult(
-                passed=False,
-                message=f"ADR {adr.id}: Stage 2 참조 누락",
-                action="Stage 2 문서 참조 추가"
-            )
+    FOR EACH adr IN adrs:
+        IF adr에 Stage 2 참조가 없음:
+            RETURN 실패: "ADR {id}: Stage 2 참조 누락"
+            ACTION: "Stage 2 문서 참조 추가"
 
-    return ValidationResult(passed=True)
+    RETURN 성공
 ```
 
 #### 불완전 → 재작성 사례
@@ -479,7 +465,7 @@ docs/adr/
 **판단 기준**:
 ```
 ├─ 간단한 결정: ADR만 작성
-│   예: "로깅은 structlog 사용"
+│   예: "로깅 라이브러리 선택"
 │
 ├─ 복잡한 결정: Design Doc → ADR
 │   예: "DB 선택 (PostgreSQL vs MySQL vs MongoDB)"
@@ -553,7 +539,7 @@ docs/adr/
 | 영역 | 선택 | 대안 | ADR 제목 |
 |------|------|------|---------|
 | DB | PostgreSQL | MySQL, MongoDB | ADR-201: PostgreSQL 선택 |
-| 프레임워크 | FastAPI | Django, Flask | ADR-202: FastAPI 선택 |
+| 프레임워크 | [선택 프레임워크] | [대안들] | ADR-202: 프레임워크 선택 |
 | 메시지 큐 | Redis Streams | Kafka, RabbitMQ | ADR-203: Redis Streams 선택 |
 | 캐시 | Redis | Memcached | ADR-204: Redis 캐시 선택 |
 
@@ -596,10 +582,10 @@ docs/adr/
 **예시**:
 | 시스템 | 결정 내용 | ADR 제목 |
 |--------|----------|---------|
-| 로깅 | structlog + JSON | ADR-401: 로깅 표준화 |
+| 로깅 | 구조화 로깅 + JSON | ADR-401: 로깅 표준화 |
 | 에러 처리 | 예외 계층 + 에러 코드 | ADR-402: 에러 처리 표준 |
-| 설정 관리 | Pydantic Settings | ADR-403: 설정 관리 표준 |
-| 테스트 | pytest + 95% 커버리지 | ADR-404: 테스트 전략 |
+| 설정 관리 | 타입 안전 설정 | ADR-403: 설정 관리 표준 |
+| 테스트 | 테스트 프레임워크 + 95% 커버리지 | ADR-404: 테스트 전략 |
 | 인증 | JWT + RS256 | ADR-405: 인증 표준 |
 
 ---
@@ -832,7 +818,7 @@ Phase 5: 도메인 기술 ADR (카테고리 4)
 | 번호 | 제목 | 영역 | 선택 | 상태 |
 |------|------|------|------|------|
 | ADR-201 | [제목] | DB | PostgreSQL | Accepted |
-| ADR-202 | [제목] | Framework | FastAPI | Accepted |
+| ADR-202 | [제목] | Framework | [선택 프레임워크] | Accepted |
 
 ---
 
@@ -1153,9 +1139,9 @@ Step 5: 검증
 
 | 문서 | 용도 |
 |------|------|
-| `DNA_METHODOLOGY_DETAILED.md` Part 4 | Stage 3 상세 원리 |
+| `01_DNA_METHODOLOGY_DETAILED.md` Part 4 | Stage 3 상세 원리 |
 | `IMPLEMENTATION_CASES.md` | ADR 실전 사례 |
-| `./standards/00_STAGE_STRUCTURE.md` | Stage 간 연결 구조 |
+| `./standards/01_STAGE_STRUCTURE.md` | Stage 간 연결 구조 |
 
 ---
 
@@ -1193,7 +1179,7 @@ ADR 작성의 3가지 원칙:
 ---
 
 **버전 이력**:
-- v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+- v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 - v3.0 (2025-11-13): Stage 3 분리
 - v2.0 (2025-11-12): ADR 유형 구분
 - v1.0 (2025-11-10): 초기 버전

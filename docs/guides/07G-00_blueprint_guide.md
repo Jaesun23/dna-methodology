@@ -4,7 +4,7 @@
 >
 > **버전**: v4.1 (2025-12-03)
 >
-> - v7.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+> - v4.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 > - v2.0 (2025-11-12): 입력/출력 문서 추가
 > - v1.0 (2025-11-10): 초기 버전
 
@@ -15,15 +15,15 @@
 ```
 DNA 방법론 문서 체계:
 
-Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
            ↓
-Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리) - Part 6.1
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리)
            ↓
 Tier 3: 이 문서 (Stage 7 실행 가이드) ← 지금 여기!
 ```
 
 **참조 문서**:
-- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 6.1
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` **Part 6.1**
 
 ---
 
@@ -203,7 +203,7 @@ docs/
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Presentation Layer                    │
-│                  (FastAPI + WebSocket)                   │
+│              (API Framework + WebSocket)                 │
 ├─────────────────────────────────────────────────────────┤
 │                    Application Layer                     │
 │                (Use Cases / Services)                    │
@@ -249,7 +249,7 @@ src/
 │   ├── external/   # 외부 API 클라이언트
 │   └── messaging/  # 이벤트 발행
 └── api/            # 프레젠테이션 레이어
-    ├── routes/     # FastAPI 라우터
+    ├── routes/     # API 라우터
     ├── schemas/    # 요청/응답 스키마
     └── middleware/ # 미들웨어
 ```
@@ -310,33 +310,31 @@ src/
 ### 3.2 값 객체 (Value Objects)
 
 #### Money
-```python
-class Money(BaseModel):
-    amount: Decimal = Field(ge=0)
-    currency: str = Field(default="KRW", pattern="^[A-Z]{3}$")
-    
-    def __add__(self, other: "Money") -> "Money": ...
-    def __sub__(self, other: "Money") -> "Money": ...
+```
+Value Object: Money
+├─ amount: Decimal (>= 0)
+├─ currency: String (ISO 4217, 기본값: "KRW")
+└─ 연산: add, subtract (동일 통화만)
 ```
 
-**참조**: core/types/common.py (Stage 5 구현)
+**참조**: core/types/ 디렉토리 (Stage 5 구현)
 
 #### OrderSide
-```python
-class OrderSide(str, Enum):
-    BUY = "buy"
-    SELL = "sell"
+```
+Enum: OrderSide
+├─ BUY = "buy"
+└─ SELL = "sell"
 ```
 
 #### OrderStatus
-```python
-class OrderStatus(str, Enum):
-    PENDING = "pending"       # 생성됨
-    SUBMITTED = "submitted"   # KIS 제출됨
-    FILLED = "filled"         # 체결됨
-    PARTIALLY_FILLED = "partially_filled"  # 부분 체결
-    CANCELLED = "cancelled"   # 취소됨
-    REJECTED = "rejected"     # 거부됨
+```
+Enum: OrderStatus
+├─ PENDING = "pending"           # 생성됨
+├─ SUBMITTED = "submitted"       # 거래소 제출됨
+├─ FILLED = "filled"             # 체결됨
+├─ PARTIALLY_FILLED = "partial"  # 부분 체결
+├─ CANCELLED = "cancelled"       # 취소됨
+└─ REJECTED = "rejected"         # 거부됨
 ```
 
 ### 3.3 집계 (Aggregates)
@@ -407,36 +405,33 @@ Order (Root)
 #### POST /api/v1/orders - 주문 생성
 
 **Request**:
-```python
-class CreateOrderRequest(BaseModel):
-    symbol: str = Field(pattern="^[0-9]{6}$", description="종목 코드")
-    side: OrderSide
-    order_type: OrderType
-    quantity: int = Field(gt=0)
-    price: Decimal | None = Field(ge=0, default=None)  # 시장가는 None
+```
+CreateOrderRequest:
+├─ symbol: String (6자리 숫자, 종목 코드)
+├─ side: OrderSide (BUY | SELL)
+├─ order_type: OrderType (MARKET | LIMIT)
+├─ quantity: Integer (> 0)
+└─ price: Decimal? (>= 0, 지정가 주문 시 필수)
 
-    @model_validator(mode="after")
-    def validate_price(self) -> "CreateOrderRequest":
-        if self.order_type == OrderType.LIMIT and self.price is None:
-            raise ValueError("지정가 주문은 가격 필수")
-        return self
+검증 규칙:
+└─ order_type == LIMIT → price 필수
 ```
 
 **Response** (201 Created):
-```python
-class OrderResponse(BaseModel):
-    id: UUID
-    symbol: str
-    side: OrderSide
-    order_type: OrderType
-    quantity: int
-    price: Decimal | None
-    status: OrderStatus
-    created_at: datetime
+```
+OrderResponse:
+├─ id: UUID
+├─ symbol: String
+├─ side: OrderSide
+├─ order_type: OrderType
+├─ quantity: Integer
+├─ price: Decimal?
+├─ status: OrderStatus
+└─ created_at: DateTime
 
-class CreateOrderResponse(BaseModel):
-    order: OrderResponse
-    message: str = "주문이 생성되었습니다"
+CreateOrderResponse:
+├─ order: OrderResponse
+└─ message: String ("주문이 생성되었습니다")
 ```
 
 **Error Responses**:
@@ -716,8 +711,8 @@ alembic downgrade -1
 ### 8.1 인증 (Authentication)
 
 #### JWT 구조
-```python
-# Access Token (1시간)
+```json
+// Access Token (1시간)
 {
   "sub": "user-uuid",
   "email": "user@example.com",
@@ -726,7 +721,7 @@ alembic downgrade -1
   "type": "access"
 }
 
-# Refresh Token (7일)
+// Refresh Token (7일)
 {
   "sub": "user-uuid",
   "exp": 1700599999,
@@ -748,11 +743,12 @@ alembic downgrade -1
 | admin | 모든 사용자 조회, 시스템 설정 |
 
 #### 리소스 소유권 검증
-```python
-# 주문 조회 시
-order = await order_repo.get(order_id)
-if order.user_id != current_user.id:
-    raise ForbiddenError("접근 권한이 없습니다")
+```
+주문 조회 시 소유권 검증 (의사코드):
+
+order = repository.get(order_id)
+IF order.user_id != current_user.id:
+    THROW ForbiddenError("접근 권한이 없습니다")
 ```
 
 ### 8.3 데이터 보호
@@ -886,9 +882,10 @@ src/
 - [규칙2]
 
 ### 3.2 값 객체
-```python
-class [ValueObject](BaseModel):
-    [필드]: [타입]
+```
+Value Object: [ValueObject]
+├─ [필드1]: [타입]
+└─ [필드2]: [타입]
 ```
 
 ### 3.3 집계 (Aggregates)
@@ -919,15 +916,17 @@ class [ValueObject](BaseModel):
 
 #### [엔드포인트명]
 **Request**:
-```python
-class [RequestSchema](BaseModel):
-    [필드]: [타입]
+```
+[RequestSchema]:
+├─ [필드1]: [타입]
+└─ [필드2]: [타입]
 ```
 
 **Response**:
-```python
-class [ResponseSchema](BaseModel):
-    [필드]: [타입]
+```
+[ResponseSchema]:
+├─ [필드1]: [타입]
+└─ [필드2]: [타입]
 ```
 
 ### 4.3 참조
@@ -1067,36 +1066,27 @@ CREATE INDEX idx_[name] ON [table]([column]);
 3. filled 또는 cancelled 상태에서 수정 불가
 4. 취소는 pending/submitted 상태에서만 가능
 
-**Aggregate 메서드**:
-```python
-class Order:
-    def submit(self, kis_order_id: str) -> None:
-        """KIS에 제출됨"""
-        if self.status != OrderStatus.PENDING:
-            raise InvalidStateError("pending 상태에서만 제출 가능")
-        self.kis_order_id = kis_order_id
-        self.status = OrderStatus.SUBMITTED
-        self._add_event(OrderSubmitted(order_id=self.id, kis_order_id=kis_order_id))
+**Aggregate 메서드** (의사코드):
+```
+Order:
+  submit(external_order_id):
+    PRE: status == PENDING
+    POST: status = SUBMITTED, emit OrderSubmitted
     
-    def fill(self, filled_price: Money, filled_at: datetime) -> None:
-        """체결됨"""
-        if self.status != OrderStatus.SUBMITTED:
-            raise InvalidStateError("submitted 상태에서만 체결 가능")
-        self.status = OrderStatus.FILLED
-        self._add_event(OrderFilled(order_id=self.id, filled_price=filled_price))
+  fill(filled_price, filled_at):
+    PRE: status == SUBMITTED
+    POST: status = FILLED, emit OrderFilled
     
-    def cancel(self, reason: str) -> None:
-        """취소됨"""
-        if self.status not in (OrderStatus.PENDING, OrderStatus.SUBMITTED):
-            raise InvalidStateError("취소 불가 상태")
-        self.status = OrderStatus.CANCELLED
-        self._add_event(OrderCancelled(order_id=self.id, reason=reason))
+  cancel(reason):
+    PRE: status IN (PENDING, SUBMITTED)
+    POST: status = CANCELLED, emit OrderCancelled
 ```
 
 **참조**:
 - ADR-101: 주문 도메인 설계
 - core/types: UserId, OrderId, Money
-- PROJECT_STANDARDS.md Ln 45-60: 네이밍 규칙
+- PROJECT_STANDARDS.md: 네이밍 규칙
+- **언어별 구현**: docs/manuals/ 참조
 ```
 
 ### 예시: API 설계 섹션
@@ -1107,36 +1097,22 @@ class Order:
 ### 4.2 POST /api/v1/orders - 주문 생성
 
 **Request Schema**:
-```python
-from pydantic import BaseModel, Field, model_validator
-from decimal import Decimal
+```
+CreateOrderRequest:
+├─ symbol: String (6자리 숫자, 종목 코드)
+│   └─ pattern: "^[0-9]{6}$"
+├─ side: OrderSide (BUY | SELL)
+├─ order_type: OrderType (MARKET | LIMIT)
+├─ quantity: Integer (> 0)
+└─ price: Decimal? (>= 0, 시장가는 null)
 
-class CreateOrderRequest(BaseModel):
-    """주문 생성 요청"""
-    symbol: str = Field(
-        pattern="^[0-9]{6}$",
-        description="종목 코드 (6자리 숫자)",
-        examples=["005930", "000660"]
-    )
-    side: OrderSide = Field(description="매수/매도")
-    order_type: OrderType = Field(description="지정가/시장가")
-    quantity: int = Field(gt=0, description="주문 수량")
-    price: Decimal | None = Field(
-        ge=0,
-        default=None,
-        description="주문 가격 (시장가는 None)"
-    )
-    
-    @model_validator(mode="after")
-    def validate_price_for_limit_order(self) -> "CreateOrderRequest":
-        """지정가 주문 시 가격 필수"""
-        if self.order_type == OrderType.LIMIT and self.price is None:
-            raise ValueError("지정가 주문은 가격이 필수입니다")
-        if self.order_type == OrderType.MARKET and self.price is not None:
-            raise ValueError("시장가 주문은 가격을 지정할 수 없습니다")
-        return self
+검증 규칙:
+├─ order_type == LIMIT → price 필수
+└─ order_type == MARKET → price null 필수
+```
 
-# 예시 요청
+**예시 요청**:
+```json
 {
     "symbol": "005930",
     "side": "buy",
@@ -1147,26 +1123,26 @@ class CreateOrderRequest(BaseModel):
 ```
 
 **Response Schema** (201 Created):
-```python
-class OrderResponse(BaseModel):
-    """주문 응답"""
-    id: UUID
-    symbol: str
-    side: OrderSide
-    order_type: OrderType
-    quantity: int
-    price: Decimal | None
-    status: OrderStatus
-    kis_order_id: str | None
-    created_at: datetime
-    updated_at: datetime
+```
+OrderResponse:
+├─ id: UUID
+├─ symbol: String
+├─ side: OrderSide
+├─ order_type: OrderType
+├─ quantity: Integer
+├─ price: Decimal?
+├─ status: OrderStatus
+├─ external_order_id: String?
+├─ created_at: DateTime
+└─ updated_at: DateTime
 
-class CreateOrderResponse(BaseModel):
-    """주문 생성 응답"""
-    order: OrderResponse
-    message: str = "주문이 생성되었습니다"
+CreateOrderResponse:
+├─ order: OrderResponse
+└─ message: String
+```
 
-# 예시 응답
+**예시 응답**:
+```json
 {
     "order": {
         "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -1176,7 +1152,7 @@ class CreateOrderResponse(BaseModel):
         "quantity": 10,
         "price": 70000,
         "status": "pending",
-        "kis_order_id": null,
+        "external_order_id": null,
         "created_at": "2025-12-03T10:30:00Z",
         "updated_at": "2025-12-03T10:30:00Z"
     },
@@ -1211,63 +1187,38 @@ class CreateOrderResponse(BaseModel):
     }
 }
 
-// 502 Bad Gateway - KIS API 오류
+// 502 Bad Gateway - 외부 API 오류
 {
     "error": {
         "code": "2001",
-        "message": "KIS API 호출에 실패했습니다",
+        "message": "외부 API 호출에 실패했습니다",
         "details": {
-            "kis_code": "EGW00001",
-            "kis_message": "토큰이 만료되었습니다"
+            "external_code": "EGW00001",
+            "external_message": "토큰이 만료되었습니다"
         }
     }
 }
 ```
 
-**FastAPI 라우터 구현 가이드**:
-```python
-from fastapi import APIRouter, Depends, status
-from src.core.logging import get_logger
-from src.core.errors import ValidationError, KISAPIError
-
-router = APIRouter(prefix="/api/v1/orders", tags=["orders"])
-logger = get_logger(__name__)
-
-@router.post(
-    "",
-    response_model=CreateOrderResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="주문 생성",
-    description="새로운 매수/매도 주문을 생성합니다.",
-)
-async def create_order(
-    request: CreateOrderRequest,
-    current_user: User = Depends(get_current_user),
-    order_service: OrderService = Depends(get_order_service),
-) -> CreateOrderResponse:
-    logger.info(
-        "주문 생성 요청",
-        user_id=str(current_user.id),
-        symbol=request.symbol,
-        side=request.side,
-    )
-    
-    order = await order_service.create_order(
-        user_id=current_user.id,
-        symbol=request.symbol,
-        side=request.side,
-        order_type=request.order_type,
-        quantity=request.quantity,
-        price=request.price,
-    )
-    
-    logger.info("주문 생성 완료", order_id=str(order.id))
-    
-    return CreateOrderResponse(
-        order=OrderResponse.model_validate(order),
-        message="주문이 생성되었습니다",
-    )
+**라우터 구현 가이드** (의사코드):
 ```
+ENDPOINT POST /api/v1/orders
+  INPUT: CreateOrderRequest, current_user (인증됨)
+  OUTPUT: CreateOrderResponse (201 Created)
+  
+  STEPS:
+    1. 로깅: "주문 생성 요청", user_id, symbol, side
+    2. 서비스 호출: order_service.create_order(...)
+    3. 로깅: "주문 생성 완료", order_id
+    4. 응답 반환
+    
+  에러 처리:
+    ├─ ValidationError → 400
+    ├─ InsufficientBalanceError → 422
+    └─ ExternalAPIError → 502
+```
+
+**언어별 구현 예시**: docs/manuals/ 참조
 ```
 
 ---
@@ -1299,7 +1250,7 @@ async def create_order(
 ### API 설계 (섹션 4)
 
 - [ ] 엔드포인트 목록 (Method, Path, 인증)
-- [ ] 요청/응답 스키마 (Pydantic)
+- [ ] 요청/응답 스키마 (타입 검증 포함)
 - [ ] 에러 응답 형식
 - [ ] 인증 흐름
 

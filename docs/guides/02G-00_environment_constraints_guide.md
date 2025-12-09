@@ -4,8 +4,8 @@
 >
 > **버전**: v4.1 (2025-12-03)
 >
-> - v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
-> - v4.0 (2025-11-14): Stage 2 구조 확립
+> - v4.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
+> - v3.0 (2025-11-14): Stage 2 구조 확립
 
 ---
 
@@ -14,15 +14,15 @@
 ```
 DNA 방법론 문서 체계:
 
-Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
            ↓
-Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리)
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리)
            ↓
 Tier 3: 이 문서 (Stage 2 실행 가이드) ← 지금 여기!
 ```
 
 **참조 문서**:
-- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 3.2
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` Part 3.2
 - **실전 사례**: `./02E-01_stock_trading_case.md`
 
 ---
@@ -320,10 +320,12 @@ Stage 1에서 결정된 패밀리 기반 기술 후보군 확인
 ├─ MySQL: ACID, 대중적, Aurora 옵션
 └─ CockroachDB: 분산 ACID, 글로벌
 
-후보 프레임워크:
-├─ FastAPI: 비동기, 타입 안전, 현대적
-├─ Django: 풀스택, ORM 내장, 성숙
-└─ Spring Boot: 엔터프라이즈, Java
+후보 프레임워크 (언어별):
+├─ Python: FastAPI, Django
+├─ TypeScript: NestJS, Express
+├─ Java: Spring Boot
+├─ Go: Gin, Echo
+└─ Rust: Axum, Actix
 ```
 
 ---
@@ -334,16 +336,16 @@ Stage 1에서 결정된 패밀리 기반 기술 후보군 확인
 Part 1 조사 결과로 후보군 필터링
 
 필터링 기준:
-├─ 팀 역량: Python 중심 → Java 제외
-├─ 비용 제한: 오픈소스 우선 → Oracle 제외
+├─ 팀 역량: [팀 주력 언어] 중심 → 다른 언어 제외
+├─ 비용 제한: 오픈소스 우선 → 상용 라이선스 제외
 ├─ 규제 요건: 국내 서버 → 글로벌 분산 DB 제한
 ├─ 기존 인프라: 없음 → 제약 없음
-└─ 성능 요건: 비동기 필수 → Django 제외
+└─ 성능 요건: 비동기 필수 → 동기 전용 프레임워크 제외
 
 필터링 결과:
-├─ DB: PostgreSQL ✅
-├─ Framework: FastAPI ✅
-└─ Cache: Redis ✅
+├─ DB: [선택된 DB] ✅
+├─ Framework: [선택된 프레임워크] ✅
+└─ Cache: [선택된 캐시] ✅
 ```
 
 ---
@@ -378,21 +380,23 @@ Part 2의 트레이드오프 결정을 기술 스택에 반영
 
 | 영역 | 선택 | 대안 | 선택 근거 |
 |------|------|------|----------|
-| 언어 | Python 3.11+ | - | 팀 역량, 에코시스템 |
-| 프레임워크 | FastAPI | Django | 비동기, 타입 안전 |
+| 언어 | [프로젝트 선택 언어] | - | 팀 역량, 에코시스템 |
+| 프레임워크 | [선택 프레임워크] | [대안들] | 비동기, 타입 안전 |
 | DB | PostgreSQL 15 | MySQL | ACID, JSON, 성숙도 |
 | 캐시 | Redis | Memcached | 데이터 구조, 지속성 |
 | 메시징 | Redis Streams | Kafka | 규모 적합, 단순성 |
 
 ### DNA 시스템 기술
 
-| DNA 시스템 | 기술 | 비고 |
-|-----------|------|------|
-| Testing | pytest + pytest-cov | 95% 커버리지 목표 |
-| Code Quality | Ruff + MyPy | 0 violations |
-| Observability | structlog | JSON, trace_id |
-| Configuration | pydantic-settings | 타입 안전 |
-| Resilience | tenacity | 재시도, Circuit Breaker |
+| DNA 시스템 | 역할 | 언어별 도구 예시 |
+|-----------|------|-----------------|
+| Testing | 테스트 프레임워크 | pytest(Py), Jest(TS), JUnit(Java) |
+| Code Quality | 린터/타입 체커 | Ruff+MyPy(Py), ESLint+TSC(TS) |
+| Observability | 구조화 로깅 | structlog(Py), winston(TS), logback(Java) |
+| Configuration | 설정 관리 | pydantic-settings(Py), zod(TS) |
+| Resilience | 재시도/회복 | tenacity(Py), cockatiel(TS) |
+
+**참조**: 언어별 상세 도구는 `docs/manuals/` 참조
 
 ### 인프라
 
@@ -653,7 +657,7 @@ Part 2의 트레이드오프 결정을 기술 스택에 반영
 |------|------|-----------------|
 | 외부 제약 | API 호출 제한, 규제 | ADR 카테고리 1 (외부 제약) |
 | 충돌 해결 | 정확성 vs 속도 해결 | ADR 카테고리 2 (충돌 해결) |
-| 기술 스택 | PostgreSQL, FastAPI | ADR 카테고리 3 (기술 스택) |
+| 기술 스택 | PostgreSQL, [선택 프레임워크] | ADR 카테고리 3 (기술 스택) |
 | ADR 목록 | 예정된 ADR 3개 | Stage 3 작업 범위 |
 
 ### Stage 3에서 할 일
@@ -737,10 +741,10 @@ Step 5: 검증
 
 | 문서 | 용도 |
 |------|------|
-| `DNA_METHODOLOGY_DETAILED.md` Part 3.2 | Stage 2 상세 원리 |
+| `01_DNA_METHODOLOGY_DETAILED.md` Part 3.2 | Stage 2 상세 원리 |
 | `./family-tech-matrix/*.md` | 패밀리별 기술 선택 |
 | `./02E-01_stock_trading_case.md` | 실전 사례 (주식 거래) |
-| `./standards/00_STAGE_STRUCTURE.md` | Stage 간 연결 구조 |
+| `./standards/01_STAGE_STRUCTURE.md` | Stage 간 연결 구조 |
 
 ---
 
@@ -768,6 +772,6 @@ Stage 2의 본질:
 ---
 
 **버전 이력**:
-- v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+- v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 - v4.0 (2025-11-14): Stage 2 구조 확립
 - v3.0 (2025-11-12): 초기 버전

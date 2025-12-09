@@ -4,7 +4,7 @@
 >
 > **버전**: v4.1 (2025-12-03)
 >
-> - v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+> - v4.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 > - v1.0 (2025-11-13): 초기 버전
 
 ---
@@ -14,16 +14,16 @@
 ```
 DNA 방법론 문서 체계:
 
-Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
            ↓
-Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리) - Part 5
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리)
            ↓
 Tier 3: 이 문서 (Stage 4 실행 가이드) ← 지금 여기!
 ```
 
 **참조 문서**:
-- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 5
-- **DNA 상세**: `DNA_Systems_11_Complete_Guide.md`
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` Part 5
+- **DNA 상세**: `standards/03_DNA_SYSTEMS_GUIDE.md`
 
 ---
 
@@ -69,7 +69,7 @@ Claude 200K 토큰 윈도우:
 │   ├─ 03A-402_dna_types.md (ADR)
 │   └─ 03A-000_adr_index.md (인덱스)
 ├─ DNA 시스템 가이드: ~20K 토큰
-│   └─ DNA_Systems_11_Complete_Guide.md (해당 섹션)
+│   └─ standards/03_DNA_SYSTEMS_GUIDE.md (해당 섹션)
 ├─ 작업 중 청사진 작성: ~20K 토큰 (2-3개 × 8-10K)
 └─ 응답 생성 여유: ~80K 토큰
 ```
@@ -166,6 +166,8 @@ Claude 200K 토큰 윈도우:
 
 #### 3단계 검증 프로토콜
 
+**검증 프로토콜 (의사코드)**:
+
 ```python
 def validate_dna_blueprint_session(blueprints: list[Blueprint]) -> ValidationResult:
     """DNA 청사진 세션 완전성 검증."""
@@ -220,12 +222,12 @@ def validate_dna_blueprint_session(blueprints: list[Blueprint]) -> ValidationRes
 #### 불완전 → 재작성 사례
 
 ```markdown
-## 사례: DNA Logging 시스템 청사진
+## 사례: DNA Observability System (Logging) 청사진
 
 ### ❌ 불완전한 버전 (1차 작성)
 **목적**: 로그를 기록한다
-**API**: `log(message: str)`
-**구조**: `logging.py` 하나
+**API**: `log(message)`
+**구조**: 로깅 모듈 하나
 
 ❌ 문제점:
 - 범위 불명확 (콘솔? 파일? 외부 전송?)
@@ -241,44 +243,46 @@ def validate_dna_blueprint_session(blueprints: list[Blueprint]) -> ValidationRes
 #### 1. 목적 및 범위
 **문제**: 분산 시스템에서 추적 가능한 구조화된 로그 필요
 **범위**:
-- 구조화된 로그 (JSON)
+- 구조화된 로그 (JSON/structured format)
 - 컨텍스트 자동 추가 (request_id, user_id 등)
-- 다중 출력 (콘솔 + 파일 + 외부)
+- 다중 출력 (콘솔 + 파일 + 클라우드)
 **제외**: 로그 수집/분석 (외부 시스템)
 
-#### 2. 공개 API
-```python
-from core.logging import get_logger, LogLevel
+#### 2. 공개 API (개념)
+```
+기본 사용:
+├─ get_logger(module_name) → logger
+├─ logger.info(message, context_data)
+├─ logger.warning(message, context_data)
+└─ logger.error(message, context_data)
 
-# 기본 사용
-logger = get_logger(__name__)
-logger.info("주문 생성", order_id="123", amount=10000)
+컨텍스트 바인딩:
+└─ logger.bind(key=value) → 이후 로그에 자동 포함
 
-# 컨텍스트와 함께
-with logger.context(request_id="abc"):
-    logger.error("결제 실패", error_code="TIMEOUT")
+예외 로깅:
+└─ logger.exception(message) → 자동 스택트레이스 포함
 ```
 
-#### 3. 디렉토리 구조
+#### 3. 디렉토리 구조 (개념)
 ```
-src/core/logging/
-├─ __init__.py           # 공개 API 노출
-├─ logger.py             # Logger 클래스
-├─ config.py             # 설정
-├─ formatters.py         # JSON/Console 포맷터
-├─ handlers.py           # File/External 핸들러
-└─ context.py            # Context 관리
+core/logging/
+├─ [entry point]         # 공개 API 제공
+├─ [logger impl]         # Logger 구현
+├─ [config]              # 설정 (레벨, 포맷)
+├─ [formatters]          # JSON/Console 포맷터
+├─ [handlers]            # File/Cloud 핸들러
+└─ [context]             # Context 관리
 ```
 
 #### 4. 핵심 설계 결정
-- **Ref**: ADR-401 (structlog 사용)
+- **Ref**: ADR-401 (로깅 도구 선택)
 - **패턴**: Singleton Logger Factory
-- **성능**: 비동기 파일 쓰기 (aiofiles)
+- **성능**: 비동기 파일 쓰기
 
 #### 5. 의존성
-- External: `structlog==24.1.0`
-- External: `aiofiles==23.2.1`
-- DNA: Types (LogLevel Enum)
+- External: [로깅 라이브러리] (ADR-401 참조)
+- External: [비동기 I/O 라이브러리] (필요 시)
+- DNA: Type System (LogLevel 타입)
 
 #### 6. 테스트 전략
 - 단위: 각 포맷터/핸들러 격리 테스트
@@ -286,12 +290,14 @@ src/core/logging/
 - 커버리지: 95%+
 
 #### 7. 구현 우선순위
-1. `types.py` (LogLevel Enum) - 기초
-2. `config.py` (설정) - 설정
-3. `formatters.py` (포맷터) - 핵심
-4. `logger.py` (Logger 클래스) - 핵심
-5. `context.py` (Context) - 고급
-6. `handlers.py` (핸들러) - 확장
+1. LogLevel 타입 정의 - 기초
+2. 설정 모듈 - 설정
+3. 포맷터 - 핵심
+4. Logger 구현 - 핵심
+5. Context 관리 - 고급
+6. 핸들러 - 확장
+
+**참조**: 구체적 파일명/코드는 언어별 매뉴얼 참조
 ```
 
 ---
@@ -353,24 +359,31 @@ DNA 시스템 크기 판단:
 - `migrate_up()`
 - `migrate_down()`
 
-### 연결부 설계 (Protocol)
+### 연결부 설계 (Interface/Protocol)
 
-```python
-# src/core/database/protocols.py
-from typing import Protocol
+```
+연결부: 인터페이스 기반 설계
+─────────────────────────────────
 
-class ConnectionProvider(Protocol):
-    """연결 제공 인터페이스."""
-    async def get_connection(self) -> Connection: ...
+ConnectionProvider (인터페이스):
+├─ get_connection() → Connection
+└─ 목적: 연결 제공 추상화
 
-class SessionProvider(Protocol):
-    """세션 제공 인터페이스."""
-    async def get_session(self) -> AsyncSession: ...
+SessionProvider (인터페이스):
+├─ get_session() → Session
+└─ 목적: 세션 제공 추상화
 
-# Module 1 구현 → ConnectionProvider
-# Module 2 구현 → SessionProvider
-# Module 3은 SessionProvider 의존
-# Module 4는 ConnectionProvider 의존
+모듈 간 의존성:
+├─ Module 1 구현 → ConnectionProvider
+├─ Module 2 구현 → SessionProvider
+├─ Module 3은 SessionProvider 의존
+└─ Module 4는 ConnectionProvider 의존
+
+**참조**: 언어별 인터페이스 구현 방법은 매뉴얼 참조
+  - Python: Protocol, ABC
+  - TypeScript: interface
+  - Rust: trait
+  - Go: interface
 ```
 
 ### Stage 5 구현 계획 (조립 전략)
@@ -441,14 +454,14 @@ Task 001: DNA Types 전체 구현
 ```
 시나리오 1: Stage 3 ADR 오류 발견
 ├─ Stage 4 청사진 작성 중
-├─ ADR-401 (structlog 사용) 제약 발견
-│   예: structlog이 Windows에서 문제 발견
+├─ ADR-401 (로깅 도구 선택) 제약 발견
+│   예: 선택된 도구가 특정 플랫폼에서 문제 발견
 ├─ → Stage 3로 돌아가 ADR-401 수정
 ├─ → Stage 4 청사진 재작성
 └─ → 추적성 업데이트
 
 시나리오 2: Stage 5에서 청사진 불완전 발견
-├─ Stage 5 Logging 구현 중
+├─ Stage 5 Observability 구현 중
 ├─ 청사진에 비동기 로그 쓰기 누락 발견
 ├─ → Stage 4로 돌아가 청사진 보완
 ├─ → Stage 5 구현 재진행
@@ -461,9 +474,9 @@ Task 001: DNA Types 전체 구현
 ## 실제 사례: DNA Database 청사진 수정
 
 ### Step 1: 오류 발견 및 문서화
-**발견 시점**: Stage 4 (Database 청사진 작성 중)
-**파일**: `04D-02_dna_database_blueprint.md`
-**문제**: ADR-402에서 "PostgreSQL 13+"인데, 청사진에 "MySQL" 언급
+**발견 시점**: Stage 4 (Data System 청사진 작성 중)
+**파일**: `04B-01_dna_blueprint.md`
+**문제**: ADR-201에서 "[DB-A]"인데, 청사진에 "[DB-B]" 언급
 
 ### Step 2: 영향 범위 파악
 **영향받는 문서**:
@@ -663,74 +676,77 @@ docs/dna-blueprint/
 
 ## 🧬 DNA 11개 시스템
 
+> **참조**: `standards/03_DNA_SYSTEMS_GUIDE.md` - 언어 무관 개념 및 상세 설명
+
 ### 시스템 개요
 
 ```
 ┌──────────────────────────────────────────────────────────┐
 │                  DNA 11개 시스템                         │
+│              (언어 무관 - Language Agnostic)              │
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │  핵심 인프라 (4개):                                      │
-│  ├─ 1. Logging (structlog): 구조화된 로깅               │
-│  ├─ 2. Configuration (Pydantic): 타입 안전 설정         │
-│  ├─ 3. Types (Pydantic v2): 공통 타입 정의              │
-│  └─ 4. Error Handling: 예외 계층 + 에러 코드            │
+│  ├─ 1. Type System: 타입 안전성 보장                    │
+│  ├─ 2. Observability System: 로깅/메트릭/추적           │
+│  ├─ 3. Testing System: 품질 보증                        │
+│  └─ 4. Code Quality System: 일관된 스타일               │
 │                                                          │
-│  데이터/통신 (3개):                                      │
-│  ├─ 5. Database (SQLAlchemy): ORM + 마이그레이션        │
-│  ├─ 6. Cache (Redis): 캐싱 추상화                       │
-│  └─ 7. Messaging (Kafka/Redis): 이벤트 발행/구독        │
+│  아키텍처/설정 (3개):                                    │
+│  ├─ 5. Architecture Enforcement: 경계 유지              │
+│  ├─ 6. Configuration System: 설정 관리                  │
+│  └─ 7. Error Handling System: 에러 처리                 │
 │                                                          │
-│  품질/보안 (4개):                                        │
-│  ├─ 8. Testing (pytest): 테스트 인프라                  │
-│  ├─ 9. Monitoring (Prometheus): 메트릭 수집             │
-│  ├─ 10. Security: 인증/인가                             │
-│  └─ 11. API Gateway: 라우팅/미들웨어                    │
+│  성능/통신/데이터/보안 (4개):                            │
+│  ├─ 8. Performance System: 성능 측정                    │
+│  ├─ 9. API System: 인터페이스/통신                      │
+│  ├─ 10. Data System: 저장/조회                          │
+│  └─ 11. Security System: 인증/인가                      │
 │                                                          │
 └──────────────────────────────────────────────────────────┘
 ```
 
 ### 시스템별 상세
 
-| # | 시스템 | 표준 도구 | 핵심 기능 | 디렉토리 |
-|---|--------|----------|----------|----------|
-| 1 | Logging | structlog | JSON 로깅, trace_id | `core/logging/` |
-| 2 | Configuration | pydantic-settings | 환경 변수, 타입 안전 | `core/config/` |
-| 3 | Types | Pydantic v2 | 공통 타입, ID 타입 | `core/types/` |
-| 4 | Error Handling | custom | 예외 계층, 에러 코드 | `core/errors/` |
-| 5 | Database | SQLAlchemy 2.0 | 세션 관리, 마이그레이션 | `core/database/` |
-| 6 | Cache | Redis | 캐시 추상화, @cached | `core/cache/` |
-| 7 | Messaging | Kafka/Redis Streams | Pub/Sub, 이벤트 | `core/messaging/` |
-| 8 | Testing | pytest | fixture, 커버리지 | `tests/` |
-| 9 | Monitoring | Prometheus | 메트릭, 알림 | `core/monitoring/` |
-| 10 | Security | JWT + OAuth2 | 인증, 인가 | `core/security/` |
-| 11 | API Gateway | FastAPI | 라우팅, 미들웨어 | `api/` |
+| # | 시스템 | 목적 | ADR 참조 | 디렉토리 예시 |
+|---|--------|------|---------|-------------|
+| 1 | Type System | 타입 안전성, 런타임 에러 방지 | ADR-301 | `core/types/` |
+| 2 | Observability System | 시스템 상태 관찰, 디버깅 | ADR-401, ADR-901 | `core/logging/`, `core/monitoring/` |
+| 3 | Testing System | 품질 보증, 95%+ 커버리지 | ADR-801 | `tests/` |
+| 4 | Code Quality System | 일관된 스타일, 자동 검증 | ADR-302 | `.pre-commit-config.yaml` |
+| 5 | Architecture Enforcement | Layer 경계, 의존성 제어 | ADR-102 | `.importlinter` |
+| 6 | Configuration System | 환경 변수, 의존성 관리 | ADR-601 | `core/config/` |
+| 7 | Error Handling System | 에러 타입, 일관된 처리 | ADR-701 | `core/errors/` |
+| 8 | Performance System | 벤치마크, 프로파일링 | ADR-902 | `benchmarks/` |
+| 9 | API System | 인터페이스 정의, 통신 | ADR-501 | `api/` |
+| 10 | Data System | 데이터 접근, 캐싱, 메시징 | ADR-201, ADR-202 | `core/database/`, `core/cache/` |
+| 11 | Security System | 인증, 인가, 입력 검증 | ADR-1001 | `core/security/` |
 
 ---
 
 ## 🎯 패밀리별 DNA 시스템 선택
 
-### 모든 패밀리 공통 (필수)
+### 모든 패밀리 공통 (필수 5개)
 
 ```
-항상 필요:
-├─ 1. Logging (로그 없이 디버깅 불가)
-├─ 2. Configuration (설정 하드코딩 금지)
-├─ 3. Types (타입 안전성 필수)
-├─ 4. Error Handling (에러 처리 표준화)
-└─ 8. Testing (테스트 없이 배포 불가)
+항상 필요 (언어/프로젝트 무관):
+├─ 1. Type System (타입 안전성 필수)
+├─ 2. Observability System (디버깅 불가능 방지)
+├─ 3. Testing System (품질 보증 필수)
+├─ 4. Code Quality System (일관성 유지)
+└─ 7. Error Handling System (에러 처리 표준화)
 ```
 
 ### 패밀리별 선택 가이드
 
 | DNA 시스템 | A-A-B (CRUD) | B-C-A (스트리밍) | B-A-A (협업) | B-B-B (검색) |
 |-----------|-------------|----------------|-------------|-------------|
-| 5. Database | ✅ 필수 | ⚠️ 선택 | ✅ 필수 | ⚠️ 선택 |
-| 6. Cache | ✅ 권장 | ✅ 필수 | ✅ 필수 | ✅ 필수 |
-| 7. Messaging | ⚠️ 선택 | ✅ 필수 | ✅ 필수 | ⚠️ 선택 |
-| 9. Monitoring | ✅ 권장 | ✅ 필수 | ✅ 권장 | ✅ 권장 |
-| 10. Security | ✅ 필수 | ⚠️ 선택 | ✅ 필수 | ⚠️ 선택 |
-| 11. API Gateway | ✅ 필수 | ✅ 필수 | ✅ 필수 | ✅ 필수 |
+| 5. Architecture Enforcement | ✅ 권장 | ✅ 권장 | ✅ 권장 | ✅ 권장 |
+| 6. Configuration System | ✅ 필수 | ✅ 필수 | ✅ 필수 | ✅ 필수 |
+| 8. Performance System | ✅ 권장 | ✅ 필수 | ✅ 권장 | ✅ 권장 |
+| 9. API System | ✅ 필수 | ✅ 필수 | ✅ 필수 | ✅ 필수 |
+| 10. Data System | ✅ 필수 | ⚠️ 선택 | ✅ 필수 | ⚠️ 선택 |
+| 11. Security System | ✅ 필수 | ⚠️ 선택 | ✅ 필수 | ⚠️ 선택 |
 
 **범례**: ✅ 필수 / ⚠️ 프로젝트에 따라 선택
 
@@ -739,28 +755,28 @@ docs/dna-blueprint/
 **A-A-B (CRUD/트랜잭션)** - 예: 주식 거래 플랫폼
 ```
 필수: 전체 11개 (금융 서비스 특성)
-├─ Database: ACID 트랜잭션 필수
-├─ Cache: 읽기 최적화
-├─ Security: 필수 (금융 규제)
-└─ Monitoring: 필수 (감사 추적)
+├─ Data System: ACID 트랜잭션 필수
+├─ Security System: 필수 (금융 규제)
+├─ Observability System: 감사 추적 필수
+└─ Performance System: 응답 시간 모니터링
 ```
 
 **B-C-A (실시간 스트리밍)** - 예: IoT 센서 데이터
 ```
-필수: 9개 (Database, Security 선택)
-├─ Messaging: 핵심 (Kafka)
-├─ Cache: 버퍼링 필수
-├─ Monitoring: 지연 모니터링 필수
-└─ API Gateway: WebSocket 지원
+필수: 9개 (Data System, Security System 선택)
+├─ Data System: 스트림 처리 (메시징)
+├─ Performance System: 지연 모니터링 필수
+├─ Observability System: 분산 추적
+└─ API System: 실시간 통신 (WebSocket)
 ```
 
 **B-A-A (협업/동기화)** - 예: 실시간 문서 편집
 ```
-필수: 10개 (Messaging 포함)
-├─ Database: 상태 저장 필수
-├─ Cache: 로컬 캐시 필수
-├─ Messaging: 실시간 동기화 (WebSocket)
-└─ Security: 사용자 인증 필수
+필수: 10개 이상
+├─ Data System: 상태 저장 + 캐싱
+├─ API System: 실시간 동기화
+├─ Security System: 사용자 인증 필수
+└─ Performance System: 동시성 모니터링
 ```
 
 ---
@@ -793,101 +809,129 @@ Step 2: 필수/선택 시스템 결정
 
 Step 3: ADR 확인
 ─────────────────────────────────
-03A-401: 로깅 → structlog
-03A-402: 에러 처리 → 예외 계층
-03A-201: DB → PostgreSQL
-03A-204: 캐시 → Redis
+ADR-301: 타입 도구 선택
+ADR-401: 로깅 도구 선택
+ADR-701: 에러 처리 전략
+ADR-201: 데이터 저장소 선택
+ADR-202: 캐싱 전략 선택
+
+Step 4: 청사진 포맷 결정
+─────────────────────────────────
+**통합 청사진 (04B-01_dna_blueprint.md)** vs **분리 청사진 (04B-00~11_*.md)**
+
+통합 청사진 사용 조건:
+├─ DNA 시스템 < 5개
+├─ 프로젝트 규모 작음 (MVP)
+└─ 한 세션에서 전체 청사진 작성 가능
+
+분리 청사진 사용 조건:
+├─ DNA 시스템 5-7개
+├─ 프로젝트 규모 중간 이상
+├─ 세션별로 나눠 작성 필요
+└─ 시스템별 독립 유지보수 필요
+
+대규모 프로젝트 (8+ 시스템):
+└─ 분리 청사진 필수
+    ├─ 04B-00_overview.md (전체 개요)
+    ├─ 04B-01~11_*.md (시스템별)
+    └─ 각 세션 2-3개 시스템씩
+
+권장:
+├─ 첫 프로젝트: 통합 청사진 (간단함)
+└─ 운영 프로젝트: 분리 청사진 (유지보수성)
 ```
 
 ---
 
 ### Part 2: 디렉토리 구조 설계
 
+**참조**: 언어/프레임워크별 구조는 해당 언어 매뉴얼 참조
+
 ```
 Step 1: 기본 구조 결정
 ─────────────────────────────────
-src/
-├── core/                  # DNA 시스템
-├── domain/                # 도메인 로직 (Stage 7-9)
-└── api/                   # API 레이어 (Stage 7-9)
-
-tests/
-├── unit/                  # 단위 테스트
-├── integration/           # 통합 테스트
-└── conftest.py           # 공통 fixture
+프로젝트 루트/
+├── src/ (또는 lib/, pkg/)      # 소스 코드
+│   ├── core/                   # DNA 시스템
+│   ├── domain/                 # 도메인 로직 (Stage 7-9)
+│   └── api/                    # API 레이어 (Stage 7-9)
+│
+├── tests/                      # 테스트 코드
+│   ├── unit/                   # 단위 테스트
+│   └── integration/            # 통합 테스트
+│
+└── docs/                       # 문서
 
 Step 2: core/ 상세 구조
 ─────────────────────────────────
 src/core/
-├── __init__.py
-├── logging/
-│   ├── __init__.py
-│   ├── logger.py          # structlog 래퍼
-│   └── config.py          # 로그 설정
-├── config/
-│   ├── __init__.py
-│   └── settings.py        # Pydantic Settings
-├── types/
-│   ├── __init__.py
-│   ├── base.py            # BaseModel 확장
-│   └── ids.py             # ID 타입
-├── errors/
-│   ├── __init__.py
-│   ├── exceptions.py      # 예외 계층
-│   └── codes.py           # 에러 코드
-├── database/
-│   ├── __init__.py
-│   ├── session.py         # 세션 관리
-│   └── base.py            # Base 모델
-├── cache/
-│   ├── __init__.py
-│   ├── client.py          # Redis 클라이언트
-│   └── decorators.py      # @cached
-└── security/
-    ├── __init__.py
-    ├── auth.py            # 인증
-    └── jwt.py             # JWT 처리
+├── types/              # Type System (ADR-301)
+├── logging/            # Observability System (ADR-401)
+├── monitoring/         # Observability System (ADR-901)
+├── config/             # Configuration System (ADR-601)
+├── errors/             # Error Handling System (ADR-701)
+├── database/           # Data System (ADR-201)
+├── cache/              # Data System (ADR-202)
+├── security/           # Security System (ADR-1001)
+└── performance/        # Performance System (ADR-902)
 ```
 
 ---
 
 ### Part 3: 인터페이스 설계
 
-각 DNA 시스템의 **공개 API**를 정의합니다.
+각 DNA 시스템의 **공개 API 원칙**을 정의합니다.
 
-```python
-# 1. Logging
-from core.logging import get_logger
-logger = get_logger(__name__)
-logger.info("message", user_id=123, trace_id="abc")
+```
+1. Type System
+─────────────────────────────────
+목적: 타입 안전한 도메인 모델 제공
+공개 API:
+├─ 공통 타입 (ID, Value Object)
+├─ 도메인 모델 베이스
+└─ 타입 검증 함수
 
-# 2. Configuration
-from core.config import settings
-db_url = settings.database_url
-redis_url = settings.redis_url
+2. Observability System
+─────────────────────────────────
+목적: 로깅, 메트릭, 추적 통합
+공개 API:
+├─ get_logger(name) → 로거 반환
+├─ log(level, message, context) → 구조화된 로그
+└─ trace_context() → trace_id 전파
 
-# 3. Types
-from core.types import UserId, OrderId
-user_id: UserId = UserId("uuid-string")
+3. Configuration System
+─────────────────────────────────
+목적: 환경별 설정 관리
+공개 API:
+├─ get_config(key) → 설정 값
+├─ validate_config() → 설정 검증
+└─ reload_config() → 동적 리로드
 
-# 4. Error Handling
-from core.errors import NotFoundError, ValidationError
-raise NotFoundError(entity="User", id=user_id)
+4. Error Handling System
+─────────────────────────────────
+목적: 일관된 에러 처리
+공개 API:
+├─ 에러 타입 (NotFound, Validation, etc.)
+├─ error_to_response() → 에러 변환
+└─ log_error() → 에러 로깅
 
-# 5. Database
-from core.database import get_session
-async with get_session() as session:
-    result = await session.execute(query)
+5. Data System
+─────────────────────────────────
+목적: 데이터 접근 추상화
+공개 API:
+├─ get_connection() → DB 연결
+├─ transaction() → 트랜잭션 관리
+└─ cache(key, value) → 캐싱
 
-# 6. Cache
-from core.cache import cached, cache_client
-@cached(ttl=60)
-async def get_user(user_id: str): ...
+6. Security System
+─────────────────────────────────
+목적: 인증/인가
+공개 API:
+├─ authenticate() → 인증
+├─ authorize(role) → 인가
+└─ validate_input() → 입력 검증
 
-# 10. Security
-from core.security import get_current_user, require_role
-@require_role("admin")
-async def admin_endpoint(user = Depends(get_current_user)): ...
+**참조**: 구체적 코드 예시는 언어별 매뉴얼 참조
 ```
 
 ---
@@ -948,40 +992,42 @@ API Gateway (전체 의존)
 **패밀리**: [패밀리 코드] ([패밀리명])
 **작성일**: YYYY-MM-DD
 
+**참조**: standards/03_DNA_SYSTEMS_GUIDE.md (시스템별 상세 설명)
+
 ---
 
 ## 1. 선택된 DNA 시스템
 
 ### 1.1 필수 시스템 (공통)
 
-| # | 시스템 | 도구 | ADR |
-|---|--------|------|-----|
-| 1 | Logging | structlog | ADR-401 |
-| 2 | Configuration | pydantic-settings | ADR-402 |
-| 3 | Types | Pydantic v2 | ADR-403 |
-| 4 | Error Handling | custom | ADR-404 |
-| 8 | Testing | pytest | ADR-405 |
+| # | 시스템 | 목적 | ADR 참조 |
+|---|--------|------|---------|
+| 1 | Type System | 타입 안전성, 런타임 에러 방지 | ADR-301 |
+| 2 | Observability System | 로깅, 메트릭, 분산 추적 | ADR-401, ADR-901 |
+| 3 | Testing System | 품질 보증, 95%+ 커버리지 | ADR-801 |
+| 4 | Code Quality System | 일관된 스타일, 품질 유지 | ADR-302, ADR-303 |
 
 ### 1.2 필수 시스템 (패밀리)
 
-| # | 시스템 | 도구 | ADR | 선택 근거 |
-|---|--------|------|-----|----------|
-| 5 | Database | PostgreSQL + SQLAlchemy | ADR-201 | ACID 필요 |
-| 10 | Security | JWT + RS256 | ADR-406 | 인증 필수 |
-| 11 | API Gateway | FastAPI | ADR-202 | 비동기 지원 |
+| # | 시스템 | 목적 | ADR 참조 | 선택 근거 |
+|---|--------|------|---------|----------|
+| 5 | Architecture Enforcement | 레이어 경계, 의존성 제어 | ADR-501 | 복잡도 관리 |
+| 10 | Data System | DB, 캐시, 메시징 | ADR-201, ADR-204 | 데이터 관리 |
+| 11 | API System | 인터페이스 정의, 프로토콜 | ADR-202 | 통신 표준화 |
 
 ### 1.3 선택 시스템
 
-| # | 시스템 | 도구 | ADR | 선택 근거 |
-|---|--------|------|-----|----------|
-| 6 | Cache | Redis | ADR-204 | 읽기 최적화 |
-| 9 | Monitoring | Prometheus | ADR-407 | 운영 필수 |
+| # | 시스템 | 목적 | ADR 참조 | 선택 근거 |
+|---|--------|------|---------|----------|
+| 6 | Configuration System | 환경별 설정 관리 | ADR-601 | 환경 분리 |
+| 8 | Performance System | 벤치마킹, 프로파일링 | ADR-701 | 성능 기준 |
 
 ### 1.4 제외 시스템
 
 | # | 시스템 | 제외 근거 | 추가 시점 |
 |---|--------|----------|----------|
-| 7 | Messaging | MVP 범위 외 | Phase 2 |
+| 7 | Error Handling System | 기본 예외 처리로 충분 | Phase 2 |
+| 9 | Security System | MVP 범위 외 | Phase 3 |
 
 ---
 
@@ -989,77 +1035,126 @@ API Gateway (전체 의존)
 
 ```
 src/
-├── core/
-│   ├── __init__.py
-│   ├── logging/
-│   ├── config/
-│   ├── types/
-│   ├── errors/
-│   ├── database/
-│   ├── cache/
-│   └── security/
-├── domain/
-└── api/
+├── core/                    # DNA 시스템 모듈
+│   ├── types/              # Type System
+│   ├── logging/            # Observability System (Logging)
+│   ├── monitoring/         # Observability System (Metrics)
+│   ├── config/             # Configuration System
+│   ├── errors/             # Error Handling System
+│   ├── database/           # Data System (DB)
+│   ├── cache/              # Data System (Cache)
+│   └── security/           # Security System
+├── domain/                 # 도메인 로직
+└── api/                    # API 레이어
 
 tests/
-├── unit/
-├── integration/
-└── conftest.py
+├── unit/                   # 단위 테스트
+├── integration/            # 통합 테스트
+└── conftest.py            # 테스트 공통 설정
+
+**참조**: 구체적 파일명/확장자는 언어별 매뉴얼 참조
 ```
 
 ---
 
 ## 3. 각 시스템 상세
 
-### 3.1 Logging
+### 3.1 Type System
 
-**디렉토리**: `src/core/logging/`
+**ADR 참조**: ADR-301 (타입 도구 선택)
 
-**파일 구성**:
-- `__init__.py`: 공개 API export
-- `logger.py`: structlog 래퍼
-- `config.py`: 로그 레벨, 포맷 설정
+**디렉토리**: `core/types/`
 
-**공개 API**:
-```python
-from core.logging import get_logger, configure_logging
+**목적**:
+- 타입 안전한 도메인 모델 제공
+- 런타임 에러 방지
+- IDE 자동완성 지원
 
-logger = get_logger(__name__)
-logger.info("message", key=value)
+**공개 API (개념)**:
+```
+├─ 공통 타입 (ID, Value Object)
+├─ 도메인 모델 베이스
+└─ 타입 검증 함수
 ```
 
 **설정**:
-- 개발: Console, 컬러 출력
-- 운영: JSON, 파일 + stdout
+- 개발: Strict mode, 모든 타입 체크
+- 운영: 런타임 검증 추가
+
+**참조**: 구체적 코드 예시는 언어별 매뉴얼 참조
 
 ---
 
-### 3.2 Configuration
+### 3.2 Observability System
 
-**디렉토리**: `src/core/config/`
+**ADR 참조**: ADR-401 (로깅 도구), ADR-901 (모니터링 도구)
 
-**파일 구성**:
-- `__init__.py`: settings export
-- `settings.py`: Pydantic Settings 클래스
+**디렉토리**: `core/logging/`, `core/monitoring/`
 
-**공개 API**:
-```python
-from core.config import settings
+**목적**:
+- 구조화된 로깅 (JSON/structured)
+- 분산 추적 (trace_id)
+- 성능 메트릭 수집
 
-settings.database_url
-settings.redis_url
-settings.jwt_secret
+**공개 API (개념)**:
+```
+로깅:
+├─ get_logger(name) → logger instance
+├─ logger.info/warning/error(message, **context)
+└─ context binding (trace_id, user_id)
+
+메트릭:
+├─ counter(name, labels)
+├─ histogram(name, value)
+└─ gauge(name, value)
 ```
 
-**환경 변수**:
-- `DATABASE_URL`
-- `REDIS_URL`
-- `JWT_SECRET`
-- `LOG_LEVEL`
+**설정**:
+- 개발: Console, 컬러 출력, DEBUG
+- 운영: JSON, 파일/클라우드, INFO
+
+**금지 사항**:
+- ❌ print() / console.log() 직접 사용
+- ❌ 민감 정보 로깅 (비밀번호, 토큰)
+
+**참조**: 구체적 코드 예시는 언어별 매뉴얼 참조
 
 ---
 
-[... 각 시스템별 동일 형식 ...]
+### 3.3 Data System
+
+**ADR 참조**: ADR-201 (DB 선택), ADR-204 (캐시 선택)
+
+**디렉토리**: `core/database/`, `core/cache/`
+
+**목적**:
+- 데이터 영속성 (Database)
+- 성능 최적화 (Cache)
+- 트랜잭션 관리
+
+**공개 API (개념)**:
+```
+Database:
+├─ Session management
+├─ Transaction control
+└─ Migration tools
+
+Cache:
+├─ get(key) → value | null
+├─ set(key, value, ttl)
+└─ delete(key)
+```
+
+**설정**:
+- DB 연결 문자열 (환경변수)
+- 캐시 TTL, 메모리 제한
+- 트랜잭션 격리 수준
+
+**참조**: 구체적 코드 예시는 언어별 매뉴얼 참조
+
+---
+
+[... 다른 시스템도 동일 패턴 ...]
 
 ---
 
@@ -1067,16 +1162,16 @@ settings.jwt_secret
 
 | 순서 | 시스템 | 의존성 | 예상 시간 |
 |------|--------|-------|----------|
-| 1 | Types | 없음 | 2시간 |
-| 2 | Config | Types | 2시간 |
-| 3 | Logging | Config, Types | 3시간 |
-| 4 | Error | Types, Logging | 3시간 |
-| 5 | Testing | 위 4개 | 4시간 |
-| 6 | Database | 위 5개 | 4시간 |
-| 7 | Cache | 위 5개 | 3시간 |
-| 8 | Security | 위 전체 | 4시간 |
-| 9 | Monitoring | Logging, Config | 3시간 |
-| 10 | API Gateway | 전체 | 4시간 |
+| 1 | Type System | 없음 | 2시간 |
+| 2 | Configuration System | Type System | 2시간 |
+| 3 | Observability System | Config, Types | 3시간 |
+| 4 | Error Handling System | Types, Observability | 3시간 |
+| 5 | Testing System | 위 4개 | 4시간 |
+| 6 | Data System | 위 5개 | 4시간 |
+| 7 | Architecture Enforcement | 위 5개 | 3시간 |
+| 8 | Security System | 위 전체 | 4시간 |
+| 9 | Performance System | Observability, Config | 3시간 |
+| 10 | API System | 전체 | 4시간 |
 
 **총 예상 시간**: 32시간 (약 4일)
 
@@ -1085,17 +1180,17 @@ settings.jwt_secret
 ## 5. 의존성 그래프
 
 ```
-Types
+Type System
    ↓
-Config ← Logging
-   ↓        ↓
-Error ←────┘
+Configuration System ← Observability System
+   ↓                      ↓
+Error Handling System ←──┘
    ↓
-Database ← Cache
+Data System ← Architecture Enforcement
    ↓
-Security
+Security System
    ↓
-Testing → Monitoring → API Gateway
+Testing System → Performance System → API System
 ```
 
 ---
@@ -1113,166 +1208,155 @@ Testing → Monitoring → API Gateway
 
 ## 📝 청사진 작성 예시 (주식 거래 플랫폼)
 
-### 예시: Logging 시스템 청사진
+### 예시: Observability System 청사진 (Logging 부분)
 
 ```markdown
-### 3.1 Logging 시스템
+### 3.1 Observability System (Logging)
 
-**ADR 참조**: ADR-401 (로깅 표준화)
+**ADR 참조**: ADR-401 (로깅 도구 선택)
 
-**디렉토리**: `src/core/logging/`
+**디렉토리**: `core/logging/`
 
-**파일 구성**:
+**목적**:
+- 구조화된 로깅으로 디버깅 효율 향상
+- 분산 추적 ID로 요청 추적
+- 환경별 로그 레벨/포맷 제어
+
+**파일 구성 (개념)**:
 ```
-src/core/logging/
-├── __init__.py          # get_logger, configure_logging export
-├── logger.py            # structlog 래퍼
-├── config.py            # 로그 설정 (레벨, 포맷)
-└── processors.py        # 커스텀 프로세서 (trace_id 주입)
+core/logging/
+├── [entry point]        # get_logger, configure_logging 제공
+├── [logger impl]        # 로깅 도구 래퍼
+├── [config]             # 로그 설정 (레벨, 포맷)
+└── [processors]         # 컨텍스트 추가 (trace_id 주입)
 ```
 
-**공개 API**:
-```python
-# 기본 사용
-from core.logging import get_logger
-logger = get_logger(__name__)
+**공개 API (개념)**:
+```
+기본 사용:
+├─ get_logger(module_name) → logger
+├─ logger.info(message, context_data)
+├─ logger.warning(message, context_data)
+└─ logger.error(message, context_data)
 
-# 일반 로깅
-logger.info("주문 생성", order_id="ORD-123", user_id="USR-456")
+컨텍스트 바인딩:
+└─ logger.bind(key=value) → 이후 모든 로그에 자동 포함
 
-# 에러 로깅 (자동 스택트레이스)
-try:
-    process_order()
-except Exception as e:
-    logger.exception("주문 처리 실패", order_id="ORD-123")
-
-# 컨텍스트 바인딩
-logger = logger.bind(request_id="REQ-789")
-logger.info("처리 시작")  # request_id 자동 포함
-logger.info("처리 완료")  # request_id 자동 포함
+예외 로깅:
+└─ logger.exception(message) → 자동 스택트레이스 포함
 ```
 
 **설정**:
 | 환경 | 포맷 | 레벨 | 출력 |
 |------|------|------|------|
-| 개발 | Console (컬러) | DEBUG | stdout |
-| 스테이징 | JSON | INFO | stdout + 파일 |
-| 운영 | JSON | INFO | stdout + CloudWatch |
+| 개발 | Console (컬러/읽기 쉬움) | DEBUG | 터미널 |
+| 스테이징 | JSON (구조화) | INFO | 터미널 + 파일 |
+| 운영 | JSON (구조화) | INFO | 터미널 + 클라우드 |
 
 **필수 컨텍스트**:
-- `trace_id`: 분산 추적 ID (자동 주입)
-- `user_id`: 현재 사용자 (인증 후 바인딩)
-- `request_id`: 요청 ID (미들웨어에서 바인딩)
+- `trace_id`: 분산 추적 ID (미들웨어 자동 주입)
+- `user_id`: 인증된 사용자 ID (인증 후 바인딩)
+- `request_id`: 요청 고유 ID (미들웨어 자동 주입)
 
 **금지 사항**:
-- ❌ `print()` 사용 금지 (Ruff T201)
-- ❌ `logging.getLogger()` 직접 사용 금지
-- ❌ 민감 정보 로깅 금지 (비밀번호, 토큰)
+- ❌ print() / console.log() 직접 사용 (ADR-401)
+- ❌ 표준 라이브러리 로거 직접 사용
+- ❌ 민감 정보 로깅 (비밀번호, 토큰, 카드번호)
 
 **Stage 5 구현 항목**:
-- [ ] `logger.py` 구현
-- [ ] `config.py` 구현
-- [ ] `processors.py` 구현
-- [ ] `tests/core/test_logging.py` 작성
+- [ ] Logger 모듈 구현
+- [ ] Config 모듈 구현
+- [ ] Processors 구현 (trace_id, user_id 주입)
+- [ ] 단위 테스트 작성
+
+**참조**: 구체적 코드 예시는 언어별 매뉴얼 참조
 ```
 
 ---
 
-### 예시: Error Handling 시스템 청사진
+### 예시: Error Handling System 청사진
 
 ```markdown
-### 3.4 Error Handling 시스템
+### 3.4 Error Handling System
 
 **ADR 참조**: ADR-404 (에러 처리 표준)
 
-**디렉토리**: `src/core/errors/`
+**디렉토리**: `core/errors/`
 
-**파일 구성**:
+**목적**:
+- 일관된 에러 응답 형식
+- 에러 코드 체계로 문제 추적
+- API 레이어 자동 변환
+
+**파일 구성 (개념)**:
 ```
-src/core/errors/
-├── __init__.py          # 예외 클래스 export
-├── exceptions.py        # 예외 계층 정의
-├── codes.py             # 에러 코드 enum
-└── handlers.py          # FastAPI 예외 핸들러
+core/errors/
+├── [entry point]        # 예외 클래스 제공
+├── [exceptions]         # 예외 계층 정의
+├── [codes]              # 에러 코드 상수/Enum
+└── [handlers]           # API 예외 핸들러
 ```
 
-**예외 계층**:
-```python
-# 기본 예외
-class AppError(Exception):
-    code: str
-    message: str
-    status_code: int = 500
+**예외 계층 (개념)**:
+```
+AppError (기본 예외)
+├─ code: 에러 코드
+├─ message: 사용자 메시지
+└─ status_code: HTTP 상태 코드
 
-# 도메인 예외
-class DomainError(AppError):
-    status_code: int = 400
+DomainError (도메인 로직 에러)
+├─ NotFoundError (404)
+├─ ValidationError (400)
+└─ ConflictError (409)
 
-class NotFoundError(DomainError):
-    status_code: int = 404
-
-class ValidationError(DomainError):
-    status_code: int = 400
-
-class ConflictError(DomainError):
-    status_code: int = 409
-
-# 외부 시스템 예외
-class ExternalError(AppError):
-    status_code: int = 502
-
-class KISAPIError(ExternalError):
-    pass
+ExternalError (외부 시스템 에러)
+├─ APIError (502)
+└─ TimeoutError (504)
 ```
 
 **에러 코드 체계**:
-```python
-class ErrorCode(str, Enum):
-    # 도메인 에러 (1xxx)
-    ORDER_NOT_FOUND = "1001"
-    ORDER_ALREADY_SUBMITTED = "1002"
-    INSUFFICIENT_BALANCE = "1003"
-    
-    # 외부 API 에러 (2xxx)
-    KIS_API_RATE_LIMITED = "2001"
-    KIS_API_TIMEOUT = "2002"
-    
-    # 시스템 에러 (9xxx)
-    DATABASE_ERROR = "9001"
-    CACHE_ERROR = "9002"
+```
+1xxx: 도메인 에러
+├─ 1001: 리소스 없음 (NotFound)
+├─ 1002: 중복 생성 (Conflict)
+└─ 1003: 검증 실패 (Validation)
+
+2xxx: 외부 API 에러
+├─ 2001: API Rate Limit
+└─ 2002: API Timeout
+
+9xxx: 시스템 에러
+├─ 9001: 데이터베이스 에러
+└─ 9002: 캐시 에러
 ```
 
-**사용 예시**:
-```python
-from core.errors import NotFoundError, ErrorCode
+**사용 패턴 (개념)**:
+```
+예외 발생:
+└─ throw NotFoundError(code="1001", message="...", context_data)
 
-# 예외 발생
-raise NotFoundError(
-    code=ErrorCode.ORDER_NOT_FOUND,
-    message="주문을 찾을 수 없습니다",
-    order_id="ORD-123"
-)
-
-# API 응답 (자동 변환)
+API 응답 형식:
 {
-    "error": {
-        "code": "1001",
-        "message": "주문을 찾을 수 없습니다",
-        "details": {"order_id": "ORD-123"}
-    }
+  "error": {
+    "code": "1001",
+    "message": "리소스를 찾을 수 없습니다",
+    "details": { ... }
+  }
 }
 ```
 
 **금지 사항**:
-- ❌ 일반 `Exception` raise 금지
-- ❌ `except: pass` 금지
-- ❌ 에러 코드 없이 예외 발생 금지
+- ❌ 일반 예외 throw (반드시 AppError 계층 사용)
+- ❌ 예외 무시 (catch 후 아무것도 안 함)
+- ❌ 에러 코드 없는 예외 발생
 
 **Stage 5 구현 항목**:
-- [ ] `exceptions.py` 구현
-- [ ] `codes.py` 구현
-- [ ] `handlers.py` 구현
-- [ ] `tests/core/test_errors.py` 작성
+- [ ] 예외 계층 구현
+- [ ] 에러 코드 정의
+- [ ] API 핸들러 구현
+- [ ] 단위 테스트 작성
+
+**참조**: 구체적 코드 예시는 언어별 매뉴얼 참조
 ```
 
 ---
@@ -1396,9 +1480,9 @@ Step 6: 검증 → Stage 5 전달 ✅
 
 | 문서 | 용도 |
 |------|------|
-| `DNA_METHODOLOGY_DETAILED.md` Part 5 | Stage 4-6 상세 원리 |
-| `DNA_Systems_11_Complete_Guide.md` | DNA 시스템 상세 설명 |
-| `./standards/00_STAGE_STRUCTURE.md` | Stage 간 연결 구조 |
+| `01_DNA_METHODOLOGY_DETAILED.md` Part 5 | Stage 4-6 상세 원리 |
+| `standards/03_DNA_SYSTEMS_GUIDE.md` | DNA 시스템 상세 설명 |
+| `./standards/01_STAGE_STRUCTURE.md` | Stage 간 연결 구조 |
 
 ---
 
@@ -1446,5 +1530,5 @@ Bridge(Stage 4-6)의 4대 구성요소:
 ---
 
 **버전 이력**:
-- v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+- v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 - v1.0 (2025-11-13): 초기 버전

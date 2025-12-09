@@ -342,7 +342,7 @@ DON'T: import logging / print()
 - `04G-00_dna_planning_guide.md`
 - `05G-00_dna_implementation_guide.md`
 - `06G-00_project_standards_guide.md`
-- `DNA_Systems_11_Complete_Guide.md`
+- `standards/03_DNA_SYSTEMS_GUIDE.md`
 
 ### 산출물
 

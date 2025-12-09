@@ -4,7 +4,7 @@
 >
 > **버전**: v4.1 (2025-12-03)
 >
-> - v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, DNA_METHODOLOGY_DETAILED.md 기준
+> - v5.0 (2025-12-03): Gemini 연구 기반 전면 재작성, 01_DNA_METHODOLOGY_DETAILED.md 기준
 > - v1.0 (2025-11-13): 초기 버전
 
 ---
@@ -14,16 +14,17 @@
 ```
 DNA 방법론 문서 체계:
 
-Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
            ↓
-Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리) - Part 5
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리)
            ↓
 Tier 3: 이 문서 (Stage 5 실행 가이드) ← 지금 여기!
 ```
 
 **참조 문서**:
-- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 5
-- **DNA 상세**: `DNA_Systems_11_Complete_Guide.md`
+
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` **Part 5**
+- **DNA 상세**: `./standards/03_DNA_SYSTEMS_GUIDE.md`
 
 ---
 
@@ -73,47 +74,53 @@ Claude 200K 토큰 윈도우:
 ├─ Stage 3 ADR 참조: ~5-10K 토큰
 │   └─ 03A-40X_dna_XXX.md
 ├─ 구현 코드 작성: ~20-25K 토큰
-│   ├─ src/core/XXX/*.py (구현)
-│   └─ tests/core/XXX/*.py (테스트)
+│   ├─ core/XXX/* (구현 파일들)
+│   └─ tests/core/XXX/* (테스트 파일들)
 └─ 응답 생성 여유: ~80-90K 토큰
+
+**참조**: 파일 확장자는 언어별로 다름 (.py, .ts, .rs, .go 등)
 ```
 
 #### 세션당 작업량 기준
 
-| DNA 시스템 | 파일 수 | 테스트 파일 | 총 토큰 | 세션 수 |
-|-----------|--------|-----------|---------|---------|
-| Types | 3-4개 | 3-4개 | ~15K | 1 session |
-| Config | 2-3개 | 2-3개 | ~12K | 1 session |
-| Error | 3-4개 | 3-4개 | ~15K | 1 session |
-| Logging | 5-6개 | 5-6개 | ~20K | 1 session |
-| Cache | 4-5개 | 4-5개 | ~18K | 1 session |
-| Testing | 4-5개 | 4-5개 | ~18K | 1 session |
-| Security | 6-7개 | 6-7개 | ~22K | 1 session |
-| Monitoring | 5-6개 | 5-6개 | ~20K | 1 session |
-| Messaging | 6-7개 | 6-7개 | ~22K | 1 session |
-| API Gateway | 6-7개 | 6-7개 | ~22K | 1 session |
-| Database | 8-10개 | 8-10개 | ~28K | **2 sessions** |
+| DNA 시스템               | 파일 수 (근사치) | 테스트 파일 | 총 토큰 | 세션 수        |
+| ------------------------ | ---------------- | ----------- | ------- | -------------- |
+| Type System              | 3-4개            | 3-4개       | ~15K    | 1 session      |
+| Configuration System     | 2-3개            | 2-3개       | ~12K    | 1 session      |
+| Error Handling System    | 3-4개            | 3-4개       | ~15K    | 1 session      |
+| Observability System     | 5-6개            | 5-6개       | ~20K    | 1 session      |
+| Data System (Cache)      | 4-5개            | 4-5개       | ~18K    | 1 session      |
+| Testing System           | 4-5개            | 4-5개       | ~18K    | 1 session      |
+| Security System          | 6-7개            | 6-7개       | ~22K    | 1 session      |
+| Performance System       | 5-6개            | 5-6개       | ~20K    | 1 session      |
+| API System               | 6-7개            | 6-7개       | ~22K    | 1 session      |
+| Data System (DB)         | 8-10개           | 8-10개      | ~28K    | **2 sessions** |
+| Architecture Enforcement | 4-5개            | 4-5개       | ~18K    | 1 session      |
 
-**핵심**: 대부분 시스템은 1 세션, Database만 2 세션
+**핵심**: 대부분 시스템은 1 세션, Data System (DB)만 2 세션
 
-#### Database 시스템 분해 전략 (유일한 예외)
+**참조**: 파일 수는 언어/프로젝트에 따라 다를 수 있음. 핵심은 "AI 최적 크기 (80-90K 토큰)"
+
+#### Data System (DB) 분해 전략 (유일한 예외)
 
 ```
-Database는 유일하게 2 세션 필요:
+Data System (DB)는 유일하게 2 세션 필요:
 
-Session 1: Database 기초 (Connection + Session)
-├─ connection.py: Connection Pool
-├─ session.py: Session Manager
-├─ protocols.py: ConnectionProvider, SessionProvider
+Session 1: DB 기초 (Connection + Session)
+├─ connection.*: Connection Pool 구현
+├─ session.*: Session Manager 구현
+├─ protocols.*: ConnectionProvider, SessionProvider 정의
 └─ 테스트 (각 모듈 격리)
   → ~25K 토큰
 
-Session 2: Database 고급 (Query + Migration)
-├─ query.py: Query Builder
-├─ migration.py: Schema Migration
-├─ integration.py: 모듈 통합
+Session 2: DB 고급 (Query + Migration)
+├─ query.*: Query Builder 구현
+├─ migration.*: Schema Migration 구현
+├─ integration.*: 모듈 통합
 └─ 테스트 (통합 테스트 포함)
   → ~25K 토큰
+
+**참조**: 파일 확장자는 언어별로 다름 (.py, .ts, .rs, .go 등)
 ```
 
 ---
@@ -130,8 +137,8 @@ Session 2: Database 고급 (Query + Migration)
 ✅ 완전한 DNA 구현 체크리스트:
 □ 1. 공개 API 구현
    - 청사진의 모든 함수/클래스 구현
-   - 타입 힌트 완전 (mypy 0 오류)
-   - Docstring (Google style)
+   - 타입 안전성 완전 (타입 체커 0 오류, ADR-301 참조)
+   - 문서 주석 (프로젝트 표준 참조)
 
 □ 2. 내부 헬퍼 구현
    - Private 함수/클래스
@@ -139,195 +146,153 @@ Session 2: Database 고급 (Query + Migration)
    - 상수/설정
 
 □ 3. 에러 처리
-   - try-except 적절히 배치
+   - 예외 처리 적절히 배치
    - 커스텀 예외 정의
-   - 에러 로깅 (print() 절대 금지!)
+   - 에러 로깅 (직접 출력 금지, ADR-401 참조)
 
 □ 4. 로깅 통합
-   - from core.logging import get_logger
-   - logger = get_logger(__name__)
+   - Observability System 통합
    - 모든 중요 시점에 로그
+   - 표준 로거 사용 (ADR-401)
 
 □ 5. 테스트 작성 (TDD)
    - 단위 테스트: 각 함수/클래스
    - 통합 테스트: 모듈 간 상호작용
    - 커버리지: 95%+
-   - pytest + pytest-cov
+   - 테스트 프레임워크 (ADR-801 참조)
 
 □ 6. 품질 검증 (Zero-Tolerance)
-   - ruff check: 0 오류
-   - mypy: 0 오류
-   - import-linter: 0 위반
-   - pytest: 100% pass
+   - Linter: 0 오류 (ADR-302 참조)
+   - Type Checker: 0 오류 (ADR-301 참조)
+   - Import 규칙: 0 위반 (ADR-501 참조)
+   - 테스트: 100% pass
 
 □ 7. 문서화
-   - __init__.py: 공개 API 노출
-   - README.md: 사용 예시
+   - Entry point: 공개 API 노출
+   - README: 사용 예시
    - 주석: 복잡한 로직 설명
 ```
 
 #### 3단계 검증 프로토콜
 
-```python
-def validate_dna_implementation(system_name: str) -> ValidationResult:
-    """DNA 시스템 구현 완전성 검증."""
+```
+검증 함수: validate_dna_implementation(system_name)
+─────────────────────────────────────────────────
 
-    # 검증 1: 청사진 대비 완성도
-    blueprint = read_blueprint(f"04D-0X_dna_{system_name}_blueprint.md")
-    impl_files = glob(f"src/core/{system_name}/*.py")
+검증 1: 청사진 대비 완성도
+├─ 청사진 읽기: 04B-01_dna_blueprint.md
+├─ 구현 파일 탐색: core/{system_name}/*
+└─ 각 공개 API 구현 확인:
+    ├─ 미구현 발견 시:
+    │   ├─ passed: false
+    │   ├─ message: "{system_name}: 공개 API {api} 미구현"
+    │   └─ action: "해당 API 구현"
+    └─ 모두 구현됨 → 검증 2로
 
-    for api in blueprint.public_apis:
-        if not api_implemented(api, impl_files):
-            return ValidationResult(
-                passed=False,
-                message=f"{system_name}: 공개 API {api} 미구현",
-                action="해당 API 구현"
-            )
+검증 2: 품질 게이트 (Zero-Tolerance)
+├─ Linter 실행 (ADR-302):
+│   └─ 오류 > 0 → 실패, "Linter 오류 수정"
+├─ Type Checker 실행 (ADR-301):
+│   └─ 오류 > 0 → 실패, "타입 오류 수정"
+├─ Import 규칙 검증 (ADR-501):
+│   └─ 위반 > 0 → 실패, "Import 규칙 수정"
+└─ 모두 통과 → 검증 3으로
 
-    # 검증 2: 품질 게이트 (Zero-Tolerance)
-    quality_results = run_quality_checks(system_name)
-    if quality_results.ruff_errors > 0:
-        return ValidationResult(
-            passed=False,
-            message=f"{system_name}: ruff 오류 {quality_results.ruff_errors}개",
-            action="ruff 오류 수정"
-        )
+검증 3: 테스트 커버리지
+├─ 테스트 실행 (ADR-801):
+│   └─ tests/core/{system_name}/
+├─ 커버리지 측정:
+│   └─ < 95% → 실패, "테스트 추가"
+└─ >= 95% → passed: true
 
-    if quality_results.mypy_errors > 0:
-        return ValidationResult(
-            passed=False,
-            message=f"{system_name}: mypy 오류 {quality_results.mypy_errors}개",
-            action="타입 힌트 수정"
-        )
-
-    # 검증 3: 테스트 커버리지
-    coverage = run_pytest_coverage(f"tests/core/{system_name}/")
-    if coverage < 0.95:
-        return ValidationResult(
-            passed=False,
-            message=f"{system_name}: 커버리지 {coverage*100:.1f}% (목표: 95%+)",
-            action="테스트 추가"
-        )
-
-    return ValidationResult(passed=True)
+**참조**: 구체적 도구/명령어는 언어별 매뉴얼 참조
 ```
 
 #### 불완전 → 재구현 사례
 
 ```markdown
-## 사례: DNA Logging 시스템 구현
+## 사례: DNA Observability System (Logging) 구현
 
 ### ❌ 불완전한 버전 (1차 구현)
 
-```python
-# src/core/logging/logger.py
-import logging
+**파일**: core/logging/logger.*
 
-def get_logger(name):  # ❌ 타입 힌트 없음
-    return logging.getLogger(name)
+함수: get_logger(name)
+  ❌ 타입 정보 없음 (반환 타입 미지정)
+  └─ 표준 라이브러리 로거 반환
 
-class Logger:
-    def info(self, msg):  # ❌ 타입 힌트 없음
-        print(f"INFO: {msg}")  # ❌ print() 사용!
-```
+클래스: Logger
+  └─ 메서드: info(msg)
+      ❌ 타입 정보 없음
+      ❌ 직접 출력 사용! (print/console.log)
 
 **품질 검증 실패**:
-```bash
-$ mypy src/core/logging/
-  logger.py:3: error: Missing return type
-  logger.py:6: error: Missing type for 'msg'
-  → mypy: 2 errors
 
-$ ruff check src/core/logging/
-  logger.py:8: T201 `print` found
-  → ruff: 1 error
+Type Checker (ADR-301):
+  logger.*:3: error: Missing return type
+  logger.*:6: error: Missing type for 'msg'
+  → Type Checker: 2 errors
 
-$ pytest tests/core/logging/ --cov
+Linter (ADR-302):
+  logger.*:8: 직접 출력 금지 (print/console.log)
+  → Linter: 1 error
+
+테스트 (ADR-801):
   → Coverage: 45% (목표: 95%)
-```
 
 ❌ 문제점:
-- 타입 힌트 누락 → mypy 오류
-- print() 사용 → ruff 위반
+- 타입 정보 누락 → Type Checker 오류
+- 직접 출력 사용 → Linter 위반
 - 테스트 부족 → 커버리지 45%
 - 청사진의 context() 미구현
 
 ### ✅ 완전한 버전 (2차 재구현)
 
-```python
-# src/core/logging/logger.py
-from typing import Any
-import structlog
-from core.types import LogLevel
+**파일**: core/logging/logger.*
 
-def get_logger(name: str) -> "Logger":
-    """로거 인스턴스 반환.
+함수: get_logger(name: string) → Logger
+  ✅ 타입 정보 완전
+  ✅ 문서 주석 포함
+  └─ 구조화된 로거 반환 (ADR-401 도구 사용)
 
-    Args:
-        name: 로거 이름 (__name__ 권장)
+클래스: Logger
+  ├─ 생성자(logger: LoggerImpl) → Logger
+  │   ✅ 타입 정보 완전
+  │
+  ├─ info(msg: string, context: map) → void
+  │   ✅ 타입 정보 완전
+  │   ✅ 구조화된 로깅 사용 (ADR-401)
+  │   └─ 직접 출력 없음!
+  │
+  └─ context(context: map) → LogContext
+      ✅ 청사진 API 완전 구현
 
-    Returns:
-        Logger: 구조화된 로거 인스턴스
-    """
-    return Logger(structlog.get_logger(name))
+**테스트 파일**: tests/core/logging/test_logger.*
 
-class Logger:
-    """구조화된 로거 래퍼."""
 
-    def __init__(self, logger: Any) -> None:
-        self._logger = logger
+테스트 1: get_logger가 Logger 인스턴스 반환
+  └─ get_logger("test") → Logger 타입 확인
 
-    def info(self, msg: str, **kwargs: Any) -> None:
-        """INFO 레벨 로그 출력.
+테스트 2: info()가 메시지 로깅
+  └─ logger.info("테스트", key="value")
+      → 로그에 메시지/컨텍스트 포함 확인
 
-        Args:
-            msg: 로그 메시지
-            **kwargs: 추가 컨텍스트
-        """
-        self._logger.info(msg, **kwargs)  # ✅ structlog 사용
-
-    def context(self, **kwargs: Any) -> "LogContext":
-        """컨텍스트 관리자 반환."""
-        return LogContext(self._logger, kwargs)
-```
-
-```python
-# tests/core/logging/test_logger.py
-import pytest
-from core.logging import get_logger
-
-def test_get_logger_returns_logger():
-    """get_logger는 Logger 인스턴스를 반환한다."""
-    logger = get_logger("test")
-    assert isinstance(logger, Logger)
-
-def test_logger_info_logs_message(caplog):
-    """info()는 메시지를 로그에 기록한다."""
-    logger = get_logger("test")
-    logger.info("테스트 메시지", key="value")
-
-    assert "테스트 메시지" in caplog.text
-    assert "key" in caplog.text
-
-def test_logger_context_adds_context():
-    """context()는 컨텍스트를 추가한다."""
-    logger = get_logger("test")
-
-    with logger.context(request_id="123"):
-        logger.info("요청 처리")
-        # request_id가 자동으로 추가되어야 함
-```
+테스트 3: context()가 컨텍스트 추가
+  └─ logger.context(request_id="123")로
+      → 이후 로그에 request_id 자동 포함 확인
 
 **품질 검증 성공**:
-```bash
-$ mypy src/core/logging/
+
+Type Checker (ADR-301):
   → Success: no issues found
 
-$ ruff check src/core/logging/
+Linter (ADR-302):
   → All checks passed!
 
-$ pytest tests/core/logging/ --cov
+테스트 (ADR-801):
   → Coverage: 97% ✅
+
+**참조**: 구체적 코드 예시는 언어별 매뉴얼 참조
 ```
 
 ---
@@ -340,221 +305,134 @@ $ pytest tests/core/logging/ --cov
 
 Stage 5는 **실제 코드 구현** 단계이므로 원칙 3이 **직접 적용**됩니다!
 
-```
+```markdown
 DNA 시스템 크기별 전략:
 
 작은 시스템 (< 5 파일):
 ├─ 한 세션에 전체 구현
 └─ 분해 불필요
-    예: Types, Config, Error
+    예: Type System, Configuration System, Error Handling System
 
 중간 시스템 (5-7 파일):
 ├─ 한 세션에 구현 가능
 ├─ 모듈 간 의존성 관리
-└─ Protocol 정의
-    예: Logging, Cache, Testing
+└─ Interface/Protocol 정의
+    예: Observability System, Data System (Cache), Testing System
 
 큰 시스템 (8+ 파일):
 ├─ 기능별 분해 필수!
-├─ Protocol 정의 (연결부)
+├─ Interface/Protocol 정의 (연결부)
 ├─ 각 기능 독립 구현
 └─ 마지막에 조립
-    예: Database (유일한 케이스!)
+    예: Data System (DB) - 유일한 케이스!
 ```
 
-#### Database 시스템 분해 실전 (필수 학습!)
+#### Data System (DB) 분해 실전 (개념)
+
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
 
 ```markdown
-## Task 000: Protocol 정의 (연결부)
+Task 000: Interface/Protocol 정의 (연결부)
+─────────────────────────────────────────
 
-```python
-# src/core/database/protocols.py
-from typing import Protocol, AsyncContextManager
-from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
+목적: 모듈 간 연결 인터페이스 정의
 
-class ConnectionProvider(Protocol):
-    """연결 제공 인터페이스."""
+정의할 Interface:
+├─ ConnectionProvider: DB 연결 제공
+│   └─ get_connection() → Connection
+├─ SessionProvider: DB 세션 제공
+│   └─ get_session() → Session
+└─ 테스트: Interface 정의만, 구현 없음
 
-    async def get_connection(self) -> AsyncContextManager[AsyncConnection]:
-        """비동기 연결 반환."""
-        ...
+---
 
-class SessionProvider(Protocol):
-    """세션 제공 인터페이스."""
+Task 001: Connection Pool 구현
+─────────────────────────────────────────
 
-    async def get_session(self) -> AsyncContextManager[AsyncSession]:
-        """비동기 세션 반환."""
-        ...
+목적: DB 연결 풀 관리
+
+구현 체크리스트:
+□ ConnectionPool 클래스
+  ├─ ConnectionProvider 구현
+  ├─ 연결 생성/관리/해제
+  └─ 설정 주입 (DB URL, pool size 등)
+
+□ 테스트 (Mock 없음, 실제 DB 사용)
+  ├─ 연결 생성 테스트
+  ├─ 연결 풀 관리 테스트
+  └─ 동시성 테스트
+
+□ 품질 검증
+  ├─ Type Checker: 0 오류
+  ├─ Linter: 0 오류
+  └─ Coverage: 95%+
+
+---
+
+Task 002: Session Manager 구현
+─────────────────────────────────────────
+
+목적: 트랜잭션 관리, 세션 라이프사이클
+
+구현 체크리스트:
+□ SessionManager 클래스
+  ├─ SessionProvider 구현
+  ├─ ConnectionProvider Mock 사용 (의존성)
+  ├─ 트랜잭션 관리 (begin/commit/rollback)
+  └─ 설정 주입
+
+□ 테스트 (ConnectionProvider Mock)
+  ├─ 세션 생성 테스트
+  ├─ 트랜잭션 테스트 (commit/rollback)
+  └─ 에러 처리 테스트
+
+□ 품질 검증: Type/Lint/Coverage
+
+---
+
+Task 999: Database 통합 (조립)
+─────────────────────────────────────────
+
+목적: 모든 모듈 통합, 공개 API 제공
+
+통합 체크리스트:
+□ 공개 API 모듈 (entry point)
+  ├─ ConnectionPool, SessionManager import
+  ├─ 실제 구현체 생성
+  └─ get_session() 함수 제공
+
+□ 통합 테스트 (E2E)
+  ├─ Mock 없음, 실제 DB 사용
+  ├─ 전체 플로우 테스트
+  └─ 성능 테스트 (선택)
+
+□ 최종 검증
+  ├─ 모든 공개 API 동작 확인
+  ├─ Type/Lint/Coverage 통과
+  └─ 문서화 완료 (README, 사용 예시)
 ```
 
-## Task 001: Connection Pool 구현
-
-```python
-# src/core/database/connection.py
-from typing import AsyncContextManager
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
-from core.logging import get_logger
-
-logger = get_logger(__name__)
-
-class ConnectionPool:
-    """데이터베이스 연결 풀 관리.
-
-    Protocol: ConnectionProvider 구현
-    """
-
-    def __init__(self, url: str) -> None:
-        self._engine = create_async_engine(url)
-        logger.info("연결 풀 생성", url=url)
-
-    async def get_connection(self) -> AsyncContextManager[AsyncConnection]:
-        """연결 반환."""
-        return self._engine.connect()
-```
-
-```python
-# tests/core/database/test_connection.py
-import pytest
-from core.database.connection import ConnectionPool
-
-@pytest.mark.asyncio
-async def test_connection_pool_provides_connection():
-    """ConnectionPool은 연결을 제공한다."""
-    pool = ConnectionPool("sqlite+aiosqlite:///:memory:")
-
-    async with pool.get_connection() as conn:
-        result = await conn.execute("SELECT 1")
-        assert result is not None
-```
-
-## Task 002: Session Manager 구현
-
-```python
-# src/core/database/session.py
-from typing import AsyncContextManager
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from core.database.protocols import ConnectionProvider  # ← Protocol 의존!
-from core.logging import get_logger
-
-logger = get_logger(__name__)
-
-class SessionManager:
-    """세션 관리자.
-
-    Protocol: SessionProvider 구현
-    Dependency: ConnectionProvider (Protocol)
-    """
-
-    def __init__(self, connection_provider: ConnectionProvider) -> None:
-        # ✅ 실제 ConnectionPool이 아니라 Protocol에 의존!
-        self._connection_provider = connection_provider
-        self._session_maker = async_sessionmaker()
-        logger.info("세션 관리자 생성")
-
-    async def get_session(self) -> AsyncContextManager[AsyncSession]:
-        """세션 반환."""
-        async with self._connection_provider.get_connection() as conn:
-            yield self._session_maker(bind=conn)
-```
-
-```python
-# tests/core/database/test_session.py
-import pytest
-from unittest.mock import AsyncMock, Mock
-from core.database.session import SessionManager
-from core.database.protocols import ConnectionProvider
-
-@pytest.fixture
-def mock_connection_provider():
-    """Mock ConnectionProvider 반환."""
-    provider = Mock(spec=ConnectionProvider)
-    provider.get_connection = AsyncMock()
-    return provider
-
-@pytest.mark.asyncio
-async def test_session_manager_provides_session(mock_connection_provider):
-    """SessionManager는 세션을 제공한다."""
-    manager = SessionManager(mock_connection_provider)
-
-    async with manager.get_session() as session:
-        assert session is not None
-        # ConnectionProvider.get_connection() 호출 확인
-        mock_connection_provider.get_connection.assert_called_once()
-```
-
-**핵심**: Mock을 사용하여 의존성 격리!
-
-## Task 999: Database 통합 (조립)
-
-```python
-# src/core/database/__init__.py
-from core.database.connection import ConnectionPool
-from core.database.session import SessionManager
-from core.database.protocols import ConnectionProvider, SessionProvider
-
-# 실제 구현체 생성
-_connection_pool: ConnectionProvider = ConnectionPool("postgresql://...")
-_session_manager: SessionProvider = SessionManager(_connection_pool)
-
-# 공개 API
-def get_session():
-    """세션 반환."""
-    return _session_manager.get_session()
-```
-
-```python
-# tests/core/database/test_integration.py
-import pytest
-from core.database import get_session
-
-@pytest.mark.asyncio
-async def test_database_integration_e2e():
-    """Database 시스템 E2E 테스트."""
-    async with get_session() as session:
-        result = await session.execute("SELECT 1")
-        assert result is not None
-```
-```
+---
 
 #### 작은/중간 시스템 구현 전략
 
+**개념**: 작은 시스템 (< 5 파일)은 한 세션에 전체 구현
+
+**예시: Type System (분해 불필요)**
+
 ```markdown
-## 사례: DNA Types 시스템 (작은 시스템, 분해 불필요)
-
-### 한 세션에 전체 구현
-
-```python
-# src/core/types/ids.py
-from uuid import UUID
-from typing import NewType
-
-UserId = NewType("UserId", UUID)
-OrderId = NewType("OrderId", UUID)
+한 세션 구현 체크리스트:
+□ 도메인 타입 정의 (ID types: UserId, OrderId 등)
+□ Enum 타입 (LogLevel, Status 등)
+□ Value Objects (Email, Money 등)
+□ Base 클래스 (BaseEntity, BaseValueObject)
+□ 테스트 (모든 타입 생성/검증)
+□ 품질 검증 (Type/Lint/Coverage)
 ```
 
-```python
-# src/core/types/enums.py
-from enum import Enum
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
 
-class LogLevel(str, Enum):
-    DEBUG = "debug"
-    INFO = "info"
-    ERROR = "error"
-```
-
-```python
-# tests/core/types/test_ids.py
-from uuid import uuid4
-from core.types import UserId
-
-def test_user_id_creation():
-    """UserId는 UUID로 생성된다."""
-    user_id = UserId(uuid4())
-    assert isinstance(user_id, UUID)
-```
-
-**구현 완료**: 1 세션에 전체 완성 (분해 불필요)
-```
+**결과**: 1 세션에 전체 완성 (분해 불필요)
 
 ---
 
@@ -564,7 +442,7 @@ def test_user_id_creation():
 
 #### Stage 5에서 역방향 수정이 발생하는 경우
 
-```
+```markdown
 시나리오 1: Stage 4 청사진 오류 발견
 ├─ Stage 5 Logging 구현 중
 ├─ 청사진에 비동기 로그 쓰기 누락 발견
@@ -590,23 +468,23 @@ def test_user_id_creation():
 
 #### 6단계 수정 프로토콜
 
-```markdown
+````markdown
 ## 실제 사례: Logging 시스템 비동기 쓰기 추가
 
 ### Step 1: 오류 발견 및 문서화
-**발견 시점**: Stage 5 (Logging 시스템 구현 중)
-**파일**: `src/core/logging/handlers.py`
+**발견 시점**: Stage 5 (Observability System 구현 중)
+**파일**: `core/logging/handlers.*`
 **문제**: 파일 핸들러가 동기 쓰기라 성능 저하
           청사진에 비동기 쓰기 언급 없음
 
 ### Step 2: 영향 범위 파악
 **영향받는 문서**:
-- Stage 4: `04D-01_dna_logging_blueprint.md` (청사진 수정 필요)
-- Stage 3: `03A-401_dna_logging.md` (ADR 확인 - 수정 불필요)
+- Stage 4: `04B-01_dna_blueprint.md` (청사진 수정 필요)
+- Stage 3: `03A-401_*.md` (ADR 확인 - 수정 불필요)
 
 **영향받는 구현**:
-- `src/core/logging/handlers.py` (재구현 필요)
-- `tests/core/logging/test_handlers.py` (재작성 필요)
+- `core/logging/handlers.*` (재구현 필요)
+- `tests/core/logging/test_handlers.*` (재작성 필요)
 
 ### Step 3: 해당 Stage로 이동 및 수정
 ```bash
@@ -620,107 +498,96 @@ $ edit 04D-01_dna_logging_blueprint.md
 > **History**:
 > - v1.0 (2024-11-10): 초기 청사진
 > - v1.1 (2024-11-12): 비동기 쓰기 추가 (성능 개선)
-```
 
 ### Step 4: 중간 Stage 전파
+
 Stage 5 진행 중이므로 즉시 반영
 
 ### Step 5: 현재 Stage 재진행
-```bash
-# Stage 5 Logging 재구현
-$ rm src/core/logging/handlers.py
-$ rm tests/core/logging/test_handlers.py
 
-$ implement src/core/logging/handlers.py
-  # 비동기 파일 쓰기 구현
-  import aiofiles
+```
+Stage 5 재구현 절차:
 
-  class AsyncFileHandler:
-      async def write(self, msg: str) -> None:
-          async with aiofiles.open(self.path, "a") as f:
-              await f.write(msg)
+1. 기존 구현 제거
+   ├─ core/logging/handlers.* 삭제
+   └─ tests/core/logging/test_handlers.* 삭제
 
-$ implement tests/core/logging/test_handlers.py
-  # 비동기 테스트
-  @pytest.mark.asyncio
-  async def test_async_file_handler_writes():
-      handler = AsyncFileHandler("/tmp/test.log")
-      await handler.write("test message")
+2. 수정된 청사진 기반 재구현
+   ├─ AsyncFileHandler 클래스
+   │   └─ 비동기 파일 쓰기 구현
+   ├─ 비동기 I/O 라이브러리 사용 (ADR-401 참조)
+   └─ 설정 주입 (파일 경로 등)
 
-      async with aiofiles.open("/tmp/test.log", "r") as f:
-          content = await f.read()
+3. 테스트 재작성
+   ├─ 비동기 테스트 작성
+   ├─ 파일 쓰기/읽기 검증
+   └─ 에러 처리 테스트
 
-      assert "test message" in content
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
 ```
 
 ### Step 6: 재진행 결과 검증
-```bash
-$ mypy src/core/logging/
-  → Success: no issues found ✅
 
-$ ruff check src/core/logging/
-  → All checks passed! ✅
-
-$ pytest tests/core/logging/ --cov
-  → Coverage: 97% ✅
-
-**검증 항목**:
-- [ ] 청사진 v1.1 반영 확인
-- [ ] 비동기 쓰기 구현 완료
-- [ ] aiofiles 의존성 추가
-- [ ] 품질 게이트 통과 (ruff 0, mypy 0)
-- [ ] 테스트 커버리지 95%+
-- [ ] 추적성 명시 (Ref: 04D-01 v1.1)
 ```
+품질 검증:
+├─ Type Checker (ADR-301): 0 오류 ✅
+├─ Linter (ADR-302): 0 오류 ✅
+└─ 테스트 (ADR-801): Coverage 97% ✅
+
+검증 체크리스트:
+□ 청사진 v1.1 반영 확인
+□ 비동기 쓰기 구현 완료
+□ 비동기 I/O 의존성 추가
+□ 품질 게이트 통과 (Type/Lint: 0 오류)
+□ 테스트 커버리지 95%+
+□ 추적성 명시 (Ref: 04B-01 v1.1)
 ```
+````
 
 #### 추적성 (Traceability) 유지
 
-**모든 수정은 명시적으로 참조**:
+**모든 수정은 명시적으로 참조**
 
-```python
-# src/core/logging/handlers.py
-"""비동기 파일 핸들러.
+````
+추적성 예시: 파일 헤더 주석
 
-Ref: 04D-01_dna_logging_blueprint.md v1.1 (Line 67-89)
-Updated: 2024-11-12 (비동기 쓰기로 변경)
+```
+파일: core/logging/handlers.*
+목적: 비동기 파일 핸들러
 
-Reason: 동기 쓰기 성능 저하 → 비동기 쓰기 필요
-"""
-import aiofiles
-from typing import Any
-
-class AsyncFileHandler:
-    """비동기 파일 핸들러."""
-
-    async def write(self, msg: str) -> None:
-        """메시지를 비동기로 파일에 쓴다."""
-        async with aiofiles.open(self.path, "a") as f:
-            await f.write(msg)
+참조: 04B-01_dna_blueprint.md v1.1 (Section 3.2)
+수정일: 2024-11-12 (비동기 쓰기로 변경)
+사유: 동기 쓰기 성능 저하 → 비동기 쓰기 필요
 ```
 
-```markdown
-## Stage 4 청사진 (04D-01_dna_logging_blueprint.md)
-> **History**:
-> - v1.0 (2024-11-10): 초기 청사진
-> - v1.1 (2024-11-12): 비동기 쓰기 추가 (Stage 5에서 성능 이슈 발견)
+청사진 버전 이력 예시:
 
-Line 67: ## 파일 핸들러
-Line 68: **전략**: 비동기 쓰기
-Line 69: **라이브러리**: aiofiles==23.2.1
-Line 70: **Ref**: Stage 5 구현 중 성능 이슈 발견
 ```
+파일: 04B-01_dna_blueprint.md
+
+History:
+- v1.0 (2024-11-10): 초기 청사진
+- v1.1 (2024-11-12): 비동기 쓰기 추가 (Stage 5 성능 이슈 발견)
+
+Section 3.2: 파일 핸들러
+  전략: 비동기 쓰기
+  라이브러리: [ADR-401 참조]
+  참조: Stage 5 구현 중 성능 이슈 발견
+```
+
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
+````
 
 ---
 
 ## 🎯 DNA 원칙 적용 요약 (Stage 5)
 
-| 원칙 | Stage 5 적용 방법 | 체크포인트 |
-|------|------------------|-----------|
-| **1. AI 최적 크기** | 시스템별 순차 구현 (1개/세션) | Database만 2 sessions |
-| **2. 완전해질 때까지** | 7개 항목 완전성, Zero-Tolerance | ruff 0, mypy 0, coverage 95%+ |
-| **3. 기능별 분해** | Database 시스템만 분해 (Protocol + Mock + 조립) | Protocol 정의 필수 |
-| **4. 역방향 수정** | 6단계 프로토콜, 추적성 유지 | Ref + Updated 명시 |
+| 원칙                   | Stage 5 적용 방법                               | 체크포인트                              |
+| ---------------------- | ----------------------------------------------- | --------------------------------------- |
+| **1. AI 최적 크기**    | 시스템별 순차 구현 (1개/세션)                   | Database만 2 sessions                   |
+| **2. 완전해질 때까지** | 7개 항목 완전성, Zero-Tolerance                 | Linter 0, Type Checker 0, Coverage 95%+ |
+| **3. 기능별 분해**     | Database 시스템만 분해 (Protocol + Mock + 조립) | Protocol 정의 필수                      |
+| **4. 역방향 수정**     | 6단계 프로토콜, 추적성 유지                     | Ref + Updated 명시                      |
 
 ---
 
@@ -728,7 +595,7 @@ Line 70: **Ref**: Stage 5 구현 중 성능 이슈 발견
 
 ### 청사진 vs 구현
 
-```
+```markdown
 Stage 4 청사진:
 ├─ "무엇을" 만들 것인지 설계
 ├─ 디렉토리 구조, 파일 목록
@@ -737,9 +604,9 @@ Stage 4 청사진:
 
 Stage 5 구현:
 ├─ "실제로" 코드 작성
-├─ src/core/ 모듈 구현
+├─ core/ 모듈 구현
 ├─ 테스트 작성
-└─ 코드 (Python/TypeScript)
+└─ 언어별 구현 (ADR-101 참조)
 
 비유:
 ├─ 청사진 = 건축 도면
@@ -751,21 +618,18 @@ Stage 5 구현:
 ```
 ❌ DNA 없이 도메인부터 구현:
 
-domain/orders/service.py:
+domain/orders/service.*:
 ────────────────────────────────
-import logging  # 표준 라이브러리 직접 사용
-logger = logging.getLogger(__name__)
+표준 라이브러리 직접 사용
+├─ 직접 출력 사용 (print/console.log)
+├─ 표준 로거 직접 사용
+├─ 에러 처리 없음
+├─ 타입 정보 없음
+└─ DB 직접 쿼리
 
-class OrderService:
-    def create_order(self, data):
-        print(f"Creating order: {data}")  # print 사용
-        # 에러 처리 없음
-        # 타입 힌트 없음
-        db.execute("INSERT INTO orders ...")  # 직접 SQL
-
-결과:
+결과 (문제점):
 ├─ 로깅 형식 불일치 (JSON vs Console)
-├─ print()와 logger 혼재
+├─ 직접 출력과 로거 혼재
 ├─ 에러 처리 누락
 ├─ 타입 안전성 없음
 └─ 테스트 불가능한 코드
@@ -774,30 +638,31 @@ class OrderService:
 ```
 ✅ DNA 먼저 구현 후 도메인:
 
-domain/orders/service.py:
+domain/orders/service.*:
 ────────────────────────────────
-from core.logging import get_logger
-from core.errors import ValidationError, NotFoundError
-from core.types import OrderId, UserId
-from core.database import get_session
+DNA Systems 통합 사용
+├─ from core.logging import get_logger
+├─ from core.errors import ValidationError, NotFoundError
+├─ from core.types import OrderId, UserId
+└─ from core.database import get_session
 
-logger = get_logger(__name__)
+OrderService 클래스:
+├─ create_order(data: CreateOrderRequest) → OrderId
+│   ├─ 타입 안전성 (모든 파라미터/리턴 타입 명시)
+│   ├─ 구조화된 로깅 (컨텍스트 포함)
+│   ├─ 데이터 검증 (ValidationError 활용)
+│   ├─ 세션 관리 (get_session 사용)
+│   ├─ 트랜잭션 처리 (commit/rollback)
+│   └─ 타입 안전한 반환 (OrderId)
 
-class OrderService:
-    async def create_order(self, data: CreateOrderRequest) -> OrderId:
-        logger.info("주문 생성", user_id=data.user_id)
-        
-        if not data.items:
-            raise ValidationError("주문 항목이 비어있습니다")
-        
-        async with get_session() as session:
-            order = Order(**data.dict())
-            session.add(order)
-            await session.commit()
-            
-        return order.id
+구현 흐름:
+1. 입력 데이터 검증 → ValidationError
+2. DB 세션 획득 → get_session()
+3. 엔티티 생성 및 저장
+4. 트랜잭션 커밋
+5. 타입 안전한 ID 반환
 
-결과:
+결과 (장점):
 ├─ 일관된 로깅 (JSON, trace_id 포함)
 ├─ 표준화된 에러 처리
 ├─ 타입 안전성
@@ -811,10 +676,10 @@ class OrderService:
 
 ### Stage 4에서 전달받는 것
 
-| 파일 | 핵심 내용 | 이 Stage에서 사용 |
-|------|----------|-----------------|
-| `04B-01_dna_blueprint.md` | DNA 시스템 청사진 | 구현 명세 |
-| `03A-401~499_*.md` | DNA 시스템 ADR | 기술 선택 근거 |
+| 파일                      | 핵심 내용         | 이 Stage에서 사용 |
+| ------------------------- | ----------------- | ----------------- |
+| `04B-01_dna_blueprint.md` | DNA 시스템 청사진 | 구현 명세         |
+| `03A-401~499_*.md`        | DNA 시스템 ADR    | 기술 선택 근거    |
 
 ---
 
@@ -822,154 +687,207 @@ class OrderService:
 
 ### 필수 산출물
 
-```
-src/core/                          # 구현된 DNA 모듈
-├── __init__.py
-├── logging/
-├── config/
-├── types/
-├── errors/
-├── database/
-├── cache/
-└── security/
+```markdown
+core/                              # 구현된 DNA 모듈
+├── [entry_point]                  # 진입점 (언어별 형식)
+├── logging/                       # Observability System
+├── config/                        # Configuration System
+├── types/                         # Type System
+├── errors/                        # Error Handling System
+├── database/                      # Data System (DB)
+├── cache/                         # Data System (Cache)
+└── security/                      # Security System
 
 tests/                             # DNA 테스트
 ├── unit/core/
-│   ├── test_logging.py
-│   ├── test_config.py
+│   ├── test_logging.*             # 단위 테스트
+│   ├── test_config.*
 │   └── ...
 └── integration/core/
-    └── test_database.py
+    └── test_database.*            # 통합 테스트
 
 docs/
 └── 05D-01_dna_implementation.md   # 구현 완료 문서
+
+**참조**: 디렉토리 구조는 언어별로 다를 수 있음 (ADR-101 참조)
 ```
 
 ---
-
 
 ## 🔧 DNA 구현 3대 원칙
 
 ### 원칙 1: 표준 라이브러리 우선
 
-```
-❌ 직접 구현 (V5 실패 사례):
+```markdown
+❌ 직접 구현 (실패 사례):
 ────────────────────────────────
-# 89개 타입 클래스, 1,679줄...
-class MyString:
-    def __init__(self, value: str):
-        self.value = value
-    def validate(self):
-        if not isinstance(self.value, str):
-            raise TypeError("...")
+과거 V5 프로젝트:
+├─ 89개 커스텀 타입 클래스 직접 작성
+├─ 1,679줄의 검증 로직 구현
+├─ 버그 발생 시 직접 수정
+└─ 유지보수 부담 증가
 
-✅ 표준 라이브러리:
+문제점:
+├─ 휠을 재발명 (Reinventing the wheel)
+├─ 검증되지 않은 코드
+├─ 표준 라이브러리보다 성능 저하
+└─ 유지보수 비용 증가
+
+✅ 표준 라이브러리 활용:
 ────────────────────────────────
-from pydantic import BaseModel, Field
+타입 시스템 라이브러리 활용 (ADR-301 참조):
+├─ 검증된 타입 검증 기능
+├─ 자동 변환/직렬화
+├─ 명확한 에러 메시지
+└─ 3-5줄로 구현 완료
 
-class UserName(BaseModel):
-    value: str = Field(min_length=1, max_length=100)
-
-# 3줄로 해결!
+장점:
+├─ 커뮤니티 검증된 코드
+├─ 성능 최적화 완료
+├─ 문서화 및 예제 풍부
+└─ 유지보수 부담 최소화
 ```
 
-**DNA별 표준 라이브러리**:
+**참조**: 구체적 라이브러리는 언어별 매뉴얼 참조
 
-| DNA 시스템 | 표준 라이브러리 | 직접 구현 금지 |
-|-----------|---------------|--------------|
-| Logging | `structlog` | print(), logging 직접 사용 |
-| Config | `pydantic-settings` | os.environ 직접 접근 |
-| Types | `pydantic` | 커스텀 타입 클래스 |
-| Errors | `pydantic` | 일반 Exception 상속 |
-| Database | `sqlalchemy` | 직접 SQL 문자열 |
-| Cache | `redis` | 직접 소켓 통신 |
-| Testing | `pytest` | unittest 사용 |
+**DNA별 표준 라이브러리 선택 원칙**:
+
+| DNA 시스템           | 라이브러리 선택 기준 (ADR 참조)  | 직접 구현 금지 사항          |
+| -------------------- | -------------------------------- | ---------------------------- |
+| Observability System | 구조화 로깅 라이브러리 (ADR-401) | print/console 직접 사용      |
+| Configuration System | 타입 안전 설정 관리 (ADR-402)    | 환경변수 직접 접근           |
+| Type System          | 타입 검증 라이브러리 (ADR-301)   | 커스텀 타입 클래스 직접 작성 |
+| Error Handling       | 타입 안전 에러 클래스 (ADR-303)  | 일반 Exception만 사용        |
+| Data System (DB)     | ORM/쿼리 빌더 (ADR-501)          | 직접 SQL 문자열 작성         |
+| Data System (Cache)  | 캐시 클라이언트 (ADR-502)        | 직접 소켓 통신               |
+| Testing System       | 테스트 프레임워크 (ADR-801)      | 커스텀 테스트 러너           |
+
+**원칙**: 언어별 커뮤니티 검증된 표준 라이브러리 사용 (ADR에서 결정)
 
 ### 원칙 2: 인터페이스 추상화
 
-```python
-# core/cache/interface.py
+**핵심 개념**: 구현체가 아닌 인터페이스에 의존
+
+```
+파일 구조:
 ────────────────────────────────
-from typing import Protocol, Any
+core/cache/
+├── interface.*              # 캐시 인터페이스 정의
+│   └─ CacheInterface
+│       ├─ get(key) → value
+│       ├─ set(key, value, ttl)
+│       └─ delete(key)
+│
+├── redis.*                  # Redis 구현체
+│   └─ RedisCache implements CacheInterface
+│
+└── memcached.*              # 대체 구현체 (교체 가능)
+    └─ MemcachedCache implements CacheInterface
 
-class CacheInterface(Protocol):
-    """캐시 인터페이스 - 구현체 교체 가능"""
-    
-    async def get(self, key: str) -> Any | None: ...
-    async def set(self, key: str, value: Any, ttl: int = 3600) -> None: ...
-    async def delete(self, key: str) -> None: ...
-
-
-# core/cache/redis.py
+인터페이스 정의 (개념):
 ────────────────────────────────
-class RedisCache:
-    """Redis 구현체"""
-    
-    async def get(self, key: str) -> Any | None:
-        return await self.client.get(key)
-    
-    async def set(self, key: str, value: Any, ttl: int = 3600) -> None:
-        await self.client.setex(key, ttl, value)
+CacheInterface:
+  목적: 캐시 작업 표준 인터페이스
+  메서드:
+    - get(key: string) → value | null
+    - set(key: string, value: any, ttl: number) → void
+    - delete(key: string) → void
 
+구현체 1 (Redis):
+  RedisCache implements CacheInterface
+  ├─ Redis 클라이언트 활용
+  └─ 모든 인터페이스 메서드 구현
 
-# 나중에 Memcached로 교체 가능!
-# core/cache/memcached.py
-class MemcachedCache:
-    async def get(self, key: str) -> Any | None:
-        return await self.client.get(key)
+구현체 2 (Memcached):
+  MemcachedCache implements CacheInterface
+  ├─ Memcached 클라이언트 활용
+  └─ 동일한 인터페이스 구현
+
+교체 시나리오:
+  Redis → Memcached 전환
+  ├─ 도메인 코드 변경 없음 (인터페이스 동일)
+  ├─ 설정만 변경 (ADR-502 업데이트)
+  └─ 테스트 통과 확인
 ```
 
 **가치**:
-- 테스트 시 Mock 주입 용이
-- 기술 교체 시 도메인 코드 변경 없음
-- 의존성 역전 원칙 (DIP) 준수
+
+- **테스트 용이성**: Mock/Stub 주입 간편
+- **기술 독립성**: 구현체 교체 시 도메인 코드 무수정
+- **설계 원칙**: 의존성 역전 원칙 (DIP) 준수
+- **유연성**: 런타임 구현체 선택 가능
+
+**참조**: 구체적 인터페이스 정의는 언어별 매뉴얼 참조
 
 ### 원칙 3: 설정 주입 (환경별 분리)
 
-```python
-# core/config/settings.py
+**핵심 개념**: 환경변수 기반 설정 관리, 타입 안전성 보장
+
+```
+파일 구조:
 ────────────────────────────────
-from pydantic_settings import BaseSettings, SettingsConfigDict
+core/config/
+├── settings.*               # 설정 클래스 정의
+└── [환경별 설정 파일]       # .env.* 또는 언어별 형식
 
-class Settings(BaseSettings):
-    """환경별 설정 - .env 파일에서 로드"""
-    
-    # 데이터베이스
-    database_url: str = "postgresql://localhost/dev"
-    
-    # Redis
-    redis_url: str = "redis://localhost:6379"
-    
-    # 로깅
-    log_level: str = "INFO"
-    log_format: str = "json"  # json | console
-    
-    # 환경
-    environment: str = "development"
-    
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-    )
+설정 클래스 정의 (개념):
+────────────────────────────────
+Settings 클래스:
+  목적: 환경별 설정 중앙 관리
 
-# 사용
-settings = Settings()
-logger.info("DB 연결", url=settings.database_url)
+  필드 정의:
+    - database_url: string (기본값: 개발 DB URL)
+    - cache_url: string (기본값: 로컬 캐시)
+    - log_level: string (기본값: "INFO")
+    - log_format: string (기본값: "json")
+    - environment: string (기본값: "development")
+
+  로딩 전략:
+    ├─ 환경변수 파일 읽기 (.env.*)
+    ├─ 타입 검증 (문자열 → 타입 변환)
+    ├─ 필수 값 검증 (누락 시 에러)
+    └─ 기본값 적용 (선택 필드)
+
+사용 패턴:
+────────────────────────────────
+1. 설정 인스턴스 생성
+   settings = Settings()
+
+2. 타입 안전한 접근
+   db_url = settings.database_url  # 타입: string
+   log_level = settings.log_level  # 타입: string
+
+3. DNA 시스템에서 활용
+   logger.configure(level=settings.log_level)
+   db.connect(url=settings.database_url)
 ```
 
-**환경별 .env 파일**:
+**환경별 설정 파일 예시**:
 
 ```bash
-# .env.development
+# 개발 환경 (.env.development)
 DATABASE_URL=postgresql://localhost/dev
+CACHE_URL=redis://localhost:6379
 LOG_LEVEL=DEBUG
 LOG_FORMAT=console
+ENVIRONMENT=development
 
-# .env.production
+# 프로덕션 환경 (.env.production)
 DATABASE_URL=postgresql://prod-db:5432/prod
+CACHE_URL=redis://prod-cache:6379
 LOG_LEVEL=INFO
 LOG_FORMAT=json
+ENVIRONMENT=production
 ```
+
+**장점**:
+
+- **타입 안전성**: 설정 값 타입 검증
+- **중앙 관리**: 모든 설정 한 곳에서 관리
+- **환경 분리**: 개발/스테이징/프로덕션 독립
+- **검증 자동화**: 필수 값 누락 시 즉시 에러
+
+**참조**: 구체적 설정 라이브러리는 언어별 매뉴얼 참조 (ADR-402)
 
 ---
 
@@ -977,46 +895,93 @@ LOG_FORMAT=json
 
 ### Part 1: 프로젝트 구조 생성 (30분)
 
-#### Step 1: 디렉토리 생성
+#### Step 1: 디렉토리 구조 생성
 
-```bash
-# Stage 4 청사진 기반 디렉토리 생성
-mkdir -p src/core/{logging,config,types,errors,database,cache,security}
-mkdir -p tests/unit/core
-mkdir -p tests/integration/core
+**목적**: Stage 4 청사진 기반 DNA 모듈 디렉토리 구조 생성
 
-# __init__.py 생성
-touch src/__init__.py
-touch src/core/__init__.py
-touch src/core/{logging,config,types,errors,database,cache,security}/__init__.py
 ```
+생성할 디렉토리 구조:
+────────────────────────────────
+[project_root]/
+├── core/                        # DNA 시스템 모듈
+│   ├── logging/                 # Observability System
+│   ├── config/                  # Configuration System
+│   ├── types/                   # Type System
+│   ├── errors/                  # Error Handling System
+│   ├── database/                # Data System (DB)
+│   ├── cache/                   # Data System (Cache)
+│   └── security/                # Security System
+│
+└── tests/                       # 테스트
+    ├── unit/core/               # 단위 테스트
+    └── integration/core/        # 통합 테스트
+
+필수 작업:
+□ 각 DNA 시스템별 디렉토리 생성
+□ 테스트 디렉토리 분리 (unit/integration)
+□ 언어별 진입점 파일 생성 (필요시)
+```
+
+**참조**: 언어별 구체적 명령어는 매뉴얼 참조
 
 #### Step 2: 의존성 설치
 
-```bash
-# pyproject.toml에 DNA 의존성 추가
-uv add pydantic pydantic-settings structlog sqlalchemy redis pytest pytest-cov pytest-asyncio
+**목적**: DNA 시스템 구현에 필요한 라이브러리 설치
 
-# 개발 의존성
-uv add --dev ruff mypy pre-commit
 ```
+필수 의존성 (ADR 참조):
+────────────────────────────────
+□ Type System 라이브러리 (ADR-301)
+  └─ 타입 검증, 직렬화/역직렬화
+
+□ Configuration 라이브러리 (ADR-402)
+  └─ 환경변수 관리, 타입 안전 설정
+
+□ Observability 라이브러리 (ADR-401)
+  └─ 구조화 로깅, 메트릭, 추적
+
+□ Data 라이브러리 (ADR-501, ADR-502)
+  └─ ORM/쿼리빌더, 캐시 클라이언트
+
+□ Testing 라이브러리 (ADR-801)
+  └─ 테스트 프레임워크, 커버리지 도구
+
+개발 도구:
+□ 코드 품질 (ADR-302)
+  ├─ Linter (코드 스타일)
+  ├─ Formatter (자동 정렬)
+  └─ Type Checker (타입 검증)
+
+□ 자동화 도구
+  └─ Pre-commit hooks (품질 게이트)
+```
+
+**참조**: 언어별 패키지명은 매뉴얼 참조
 
 #### Step 3: 기본 설정 파일
 
-```toml
-# pyproject.toml
-[tool.ruff]
-line-length = 88
-select = ["E", "F", "I", "T201"]  # T201 = print 금지
+**목적**: 코드 품질 자동 검증 설정
 
-[tool.mypy]
-strict = true
-warn_return_any = true
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-addopts = "--cov=src --cov-fail-under=95"
 ```
+설정할 항목:
+────────────────────────────────
+□ Linter 설정 (ADR-302)
+  ├─ 코드 스타일 규칙
+  ├─ 금지 패턴 (print/console 사용 등)
+  └─ 최대 줄 길이
+
+□ Type Checker 설정 (ADR-301)
+  ├─ Strict 모드 활성화
+  ├─ 타입 추론 경고
+  └─ Any 타입 경고
+
+□ Test 설정 (ADR-801)
+  ├─ 최소 커버리지 요구 (95%)
+  ├─ 비동기 테스트 지원
+  └─ 테스트 경로 설정
+```
+
+**참조**: 언어별 설정 파일 형식은 매뉴얼 참조
 
 ### Part 2: 핵심 DNA 구현 순서 (의존성 기반)
 
@@ -1041,557 +1006,368 @@ Phase 3: 품질/보안
 8. Security   [1시간] ← Database, Config, Types
 ```
 
-### Part 3: 각 DNA 시스템 구현
+### Part 3: 각 DNA 시스템 구현 (개념)
 
-#### 3.1 Types 시스템 (첫 번째)
+**참조**: 구체적 코드 예시는 언어별 매뉴얼 참조
 
-**파일 구조**:
+- Python 매뉴얼: `docs/manuals/05M-01_python_implementation.md`
+- TypeScript 매뉴얼: `docs/manuals/05M-02_typescript_implementation.md`
+- Rust 매뉴얼: `docs/manuals/05M-03_rust_implementation.md`
+
+---
+
+각 DNA 시스템별 핵심 구현 체크리스트:
+
+---
+
+#### 3.1 Type System
+
+**목적**: 타입 안전성 보장, 런타임 에러 방지
+
+**핵심 체크리스트**:
+
 ```
-src/core/types/
-├── __init__.py      # 공개 API export
-├── base.py          # BaseModel 확장
-├── ids.py           # ID 타입 (UserId, OrderId)
-└── common.py        # 공통 타입 (Email, Money)
-```
+□ 도메인 타입 정의
+  ├─ Entity Base (ID, timestamps, 동등성)
+  ├─ Value Object Base (불변성, 자체 검증)
+  └─ Domain-specific 타입 (UserId, Money, Email 등)
 
-**구현 코드**:
+□ 타입 검증
+  ├─ 생성 시점 검증 (불완전한 객체 생성 금지)
+  ├─ 불변성 보장
+  └─ 타입 체커 0 오류 (ADR-301)
 
-```python
-# src/core/types/__init__.py
-"""DNA Types - 타입 안전성의 기반"""
-
-from .base import BaseEntity, BaseValueObject
-from .ids import UserId, OrderId, ProductId
-from .common import Email, Money, PhoneNumber
-
-__all__ = [
-    "BaseEntity",
-    "BaseValueObject",
-    "UserId",
-    "OrderId",
-    "ProductId",
-    "Email",
-    "Money",
-    "PhoneNumber",
-]
-```
-
-```python
-# src/core/types/ids.py
-"""ID 타입 정의 - UUID 기반 타입 안전 ID"""
-
-from typing import NewType
-from uuid import UUID, uuid4
-
-from pydantic import BaseModel, Field
-
-# NewType으로 타입 구분 (런타임 비용 없음)
-UserId = NewType("UserId", UUID)
-OrderId = NewType("OrderId", UUID)
-ProductId = NewType("ProductId", UUID)
-
-
-def generate_user_id() -> UserId:
-    """새 UserId 생성"""
-    return UserId(uuid4())
-
-
-def generate_order_id() -> OrderId:
-    """새 OrderId 생성"""
-    return OrderId(uuid4())
+□ 공개 API
+  ├─ BaseEntity, BaseValueObject export
+  ├─ 도메인 타입들 export
+  └─ 타입 검증 함수 (선택)
 ```
 
-```python
-# src/core/types/common.py
-"""공통 값 객체 - 자체 검증 포함"""
+**파일 구조** (언어 무관):
 
-from decimal import Decimal
-from pydantic import BaseModel, EmailStr, Field, field_validator
-
-
-class Email(BaseModel):
-    """이메일 값 객체"""
-    value: EmailStr
-    
-    def __str__(self) -> str:
-        return self.value
-
-
-class Money(BaseModel):
-    """금액 값 객체 - 정밀 계산"""
-    amount: Decimal = Field(ge=0)
-    currency: str = Field(default="KRW", pattern="^[A-Z]{3}$")
-    
-    @field_validator("amount", mode="before")
-    @classmethod
-    def round_amount(cls, v: Decimal | float | int) -> Decimal:
-        """소수점 2자리로 반올림"""
-        return Decimal(str(v)).quantize(Decimal("0.01"))
-    
-    def __add__(self, other: "Money") -> "Money":
-        if self.currency != other.currency:
-            raise ValueError("통화가 다릅니다")
-        return Money(amount=self.amount + other.amount, currency=self.currency)
+```
+core/types/
+├── [entry_point]    # 공개 API export
+├── base.*           # Entity/ValueObject 기반 클래스
+├── ids.*            # ID 타입들 (UserId, OrderId)
+└── common.*         # 공통 타입 (Email, Money)
 ```
 
-**테스트**:
+**구현 요소**:
 
-```python
-# tests/unit/core/test_types.py
-"""Types DNA 테스트"""
+```
+1. 공개 API (Entry Point)
+   └─ BaseEntity, BaseValueObject, 도메인 타입들 export
 
-import pytest
-from decimal import Decimal
+2. 기반 클래스 (base.*)
+   ├─ BaseEntity: ID, timestamps, 동등성 비교
+   └─ BaseValueObject: 불변성, 자체 검증
 
-from src.core.types import UserId, Email, Money, generate_user_id
+3. ID 타입들 (ids.*)
+   ├─ UserId, OrderId, ProductId 등
+   ├─ 타입 안전성 (타입 구분)
+   └─ ID 생성 함수
 
-
-class TestUserId:
-    def test_generate_unique(self):
-        """UserId는 매번 고유해야 함"""
-        id1 = generate_user_id()
-        id2 = generate_user_id()
-        assert id1 != id2
-
-
-class TestEmail:
-    def test_valid_email(self):
-        """유효한 이메일 검증"""
-        email = Email(value="test@example.com")
-        assert str(email) == "test@example.com"
-    
-    def test_invalid_email_raises(self):
-        """유효하지 않은 이메일은 예외"""
-        with pytest.raises(ValueError):
-            Email(value="invalid-email")
-
-
-class TestMoney:
-    def test_addition(self):
-        """같은 통화 덧셈"""
-        m1 = Money(amount=Decimal("100.00"))
-        m2 = Money(amount=Decimal("50.00"))
-        result = m1 + m2
-        assert result.amount == Decimal("150.00")
-    
-    def test_different_currency_raises(self):
-        """다른 통화 덧셈은 예외"""
-        krw = Money(amount=Decimal("1000"), currency="KRW")
-        usd = Money(amount=Decimal("10"), currency="USD")
-        with pytest.raises(ValueError):
-            krw + usd
+4. 공통 값 객체 (common.*)
+   ├─ Email: 이메일 검증
+   ├─ Money: 정밀 계산, 통화 관리
+   └─ PhoneNumber: 전화번호 형식 검증
 ```
 
+**구현 체크리스트**:
 
-
-#### 3.2 Config 시스템 (두 번째)
-
-**파일 구조**:
 ```
-src/core/config/
-├── __init__.py      # 공개 API export
-├── settings.py      # 환경 설정
-└── validators.py    # 커스텀 검증
-```
+□ Base 클래스 구현
+  ├─ Entity: 식별자 기반 동등성
+  ├─ ValueObject: 값 기반 동등성
+  └─ 불변성 보장 (방어적 복사)
 
-**구현 코드**:
+□ ID 타입 구현
+  ├─ 타입 안전 ID (UserId ≠ OrderId)
+  ├─ ID 생성 함수 (UUID/ULID 등)
+  └─ 타입 체커 검증 통과
 
-```python
-# src/core/config/__init__.py
-"""DNA Config - 환경별 설정 관리"""
+□ 값 객체 구현
+  ├─ Email: 형식 검증
+  ├─ Money: 정밀 계산 (부동소수점 금지)
+  └─ 도메인 규칙 검증
 
-from .settings import Settings, get_settings
-
-__all__ = ["Settings", "get_settings"]
-
-
-# 싱글톤 인스턴스
-_settings: Settings | None = None
-
-
-def get_settings() -> Settings:
-    """설정 싱글톤 반환"""
-    global _settings
-    if _settings is None:
-        _settings = Settings()
-    return _settings
+□ 테스트 작성
+  ├─ ID 고유성 검증
+  ├─ 값 객체 검증 로직 테스트
+  ├─ Money 연산 테스트 (덧셈, 통화 체크)
+  └─ 불완전한 객체 생성 방지 확인
 ```
 
-```python
-# src/core/config/settings.py
-"""환경 설정 - pydantic-settings 기반"""
-
-from functools import lru_cache
-from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
 
 
-class Settings(BaseSettings):
-    """애플리케이션 설정"""
-    
-    # 환경
-    environment: str = Field(default="development")
-    debug: bool = Field(default=False)
-    
-    # 데이터베이스
-    database_url: str = Field(default="postgresql://localhost/dev")
-    database_pool_size: int = Field(default=5, ge=1, le=20)
-    
-    # Redis
-    redis_url: str = Field(default="redis://localhost:6379")
-    redis_ttl: int = Field(default=3600, ge=60)
-    
-    # 로깅
-    log_level: str = Field(default="INFO")
-    log_format: str = Field(default="json")
-    
-    # 외부 API (예: KIS)
-    kis_app_key: str = Field(default="")
-    kis_app_secret: str = Field(default="")
-    kis_rate_limit: int = Field(default=15)  # 초당 요청 수
-    
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-    )
-    
-    @field_validator("log_level")
-    @classmethod
-    def validate_log_level(cls, v: str) -> str:
-        """로그 레벨 검증"""
-        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
-        if v.upper() not in valid_levels:
-            raise ValueError(f"log_level은 {valid_levels} 중 하나여야 합니다")
-        return v.upper()
-    
-    @field_validator("log_format")
-    @classmethod
-    def validate_log_format(cls, v: str) -> str:
-        """로그 포맷 검증"""
-        if v not in {"json", "console"}:
-            raise ValueError("log_format은 'json' 또는 'console'이어야 합니다")
-        return v
-    
-    @property
-    def is_production(self) -> bool:
-        """운영 환경 여부"""
-        return self.environment == "production"
+
+#### 3.2 Configuration System
+
+**목적**: 환경별 설정 관리, 타입 안전성 보장
+
+**파일 구조** (언어 무관):
+
+```
+core/config/
+├── [entry_point]    # 공개 API export
+├── settings.*       # 환경 설정 클래스
+└── validators.*     # 커스텀 검증 (선택)
 ```
 
-#### 3.3 Logging 시스템 (세 번째)
+**구현 요소**:
 
-**파일 구조**:
 ```
-src/core/logging/
-├── __init__.py      # 공개 API export
-├── logger.py        # structlog 설정
-├── config.py        # 로깅 설정
-└── processors.py    # 커스텀 프로세서
-```
+1. Settings 클래스
+   ├─ 환경 변수 자동 로딩 (.env.*)
+   ├─ 타입 안전 필드 정의
+   ├─ 기본값 제공
+   └─ 필수 값 검증
 
-**구현 코드**:
+2. 설정 카테고리
+   ├─ 환경: environment, debug
+   ├─ Database: URL, pool_size
+   ├─ Cache: URL, TTL
+   ├─ Logging: level, format
+   └─ External API: keys, rate_limit
 
-```python
-# src/core/logging/__init__.py
-"""DNA Logging - 구조화된 로깅"""
-
-from .logger import get_logger, configure_logging
-
-__all__ = ["get_logger", "configure_logging"]
-```
-
-```python
-# src/core/logging/logger.py
-"""structlog 기반 로거"""
-
-import structlog
-from typing import Any
-
-from src.core.config import get_settings
-
-
-def configure_logging() -> None:
-    """로깅 초기 설정 - 앱 시작 시 1회 호출"""
-    settings = get_settings()
-    
-    # 공통 프로세서
-    shared_processors = [
-        structlog.contextvars.merge_contextvars,
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
-    ]
-    
-    if settings.log_format == "json":
-        # 운영: JSON 포맷
-        structlog.configure(
-            processors=shared_processors + [
-                structlog.processors.JSONRenderer()
-            ],
-            wrapper_class=structlog.make_filtering_bound_logger(
-                getattr(structlog, settings.log_level)
-            ),
-            context_class=dict,
-            logger_factory=structlog.PrintLoggerFactory(),
-            cache_logger_on_first_use=True,
-        )
-    else:
-        # 개발: 컬러 콘솔
-        structlog.configure(
-            processors=shared_processors + [
-                structlog.dev.ConsoleRenderer(colors=True)
-            ],
-            wrapper_class=structlog.make_filtering_bound_logger(
-                getattr(structlog, settings.log_level)
-            ),
-            context_class=dict,
-            logger_factory=structlog.PrintLoggerFactory(),
-            cache_logger_on_first_use=True,
-        )
-
-
-def get_logger(name: str | None = None) -> structlog.BoundLogger:
-    """로거 인스턴스 반환"""
-    return structlog.get_logger(name)
-
-
-# 컨텍스트 바인딩 헬퍼
-def bind_context(**kwargs: Any) -> None:
-    """요청 컨텍스트 바인딩 (trace_id, user_id 등)"""
-    structlog.contextvars.bind_contextvars(**kwargs)
-
-
-def clear_context() -> None:
-    """컨텍스트 초기화"""
-    structlog.contextvars.clear_contextvars()
+3. 접근 패턴
+   ├─ 싱글톤 인스턴스
+   ├─ get_settings() 함수
+   └─ 타입 안전한 접근
 ```
 
-**사용 예시**:
+**구현 체크리스트**:
 
-```python
-# 앱 시작 시
-from src.core.logging import configure_logging, get_logger, bind_context
+```
+□ Settings 클래스 정의
+  ├─ 필드별 타입 지정
+  ├─ 기본값 설정
+  ├─ 범위 검증 (min/max)
+  └─ 환경변수 파일 경로
 
-configure_logging()
-logger = get_logger(__name__)
+□ 검증 로직
+  ├─ log_level 값 제한 (DEBUG, INFO, etc.)
+  ├─ log_format 값 제한 (json, console)
+  ├─ URL 형식 검증
+  └─ 범위 검증 (pool_size: 1-20)
 
-# 요청 처리 시
-bind_context(trace_id="abc-123", user_id="user-456")
-logger.info("주문 생성", order_id="order-789", amount=50000)
+□ 싱글톤 패턴
+  ├─ get_settings() 구현
+  ├─ 전역 인스턴스 관리
+  └─ 스레드 안전성 (필요시)
 
-# 출력 (JSON):
-# {"event": "주문 생성", "trace_id": "abc-123", "user_id": "user-456", 
-#  "order_id": "order-789", "amount": 50000, "level": "info", 
-#  "timestamp": "2025-12-03T10:30:00Z"}
+□ 환경별 설정 파일
+  ├─ .env.development
+  ├─ .env.staging
+  ├─ .env.production
+  └─ 자동 로딩 구현
 ```
 
-#### 3.4 Errors 시스템 (네 번째)
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
 
-**파일 구조**:
+#### 3.3 Observability System (Logging)
+
+**목적**: 구조화 로깅, 컨텍스트 전파, 환경별 포맷
+
+**파일 구조** (언어 무관):
+
 ```
-src/core/errors/
-├── __init__.py      # 공개 API export
-├── exceptions.py    # 예외 계층
-├── codes.py         # 에러 코드
-└── handlers.py      # 전역 핸들러
-```
-
-**구현 코드**:
-
-```python
-# src/core/errors/__init__.py
-"""DNA Errors - 표준화된 예외 처리"""
-
-from .exceptions import (
-    AppError,
-    DomainError,
-    ValidationError,
-    NotFoundError,
-    ConflictError,
-    ExternalError,
-    KISAPIError,
-)
-from .codes import ErrorCode
-from .handlers import global_exception_handler
-
-__all__ = [
-    "AppError",
-    "DomainError",
-    "ValidationError",
-    "NotFoundError",
-    "ConflictError",
-    "ExternalError",
-    "KISAPIError",
-    "ErrorCode",
-    "global_exception_handler",
-]
+core/logging/
+├── [entry_point]    # 공개 API export
+├── logger.*         # 로거 설정 및 생성
+├── config.*         # 로깅 설정
+└── processors.*     # 커스텀 프로세서 (선택)
 ```
 
-```python
-# src/core/errors/codes.py
-"""에러 코드 정의"""
+**구현 요소**:
 
-from enum import Enum
+```
+1. 로깅 설정 (configure_logging)
+   ├─ 환경별 포맷 (JSON/Console)
+   ├─ 로그 레벨 필터링
+   ├─ 공통 프로세서 체인
+   │   ├─ 컨텍스트 병합
+   │   ├─ 타임스탬프 추가
+   │   ├─ 로그 레벨 추가
+   │   └─ 스택 정보 (에러 시)
+   └─ 출력 포맷
+       ├─ JSON (운영)
+       └─ Console (개발)
 
+2. 로거 인스턴스 (get_logger)
+   ├─ 모듈별 로거 생성
+   ├─ 캐싱 (성능)
+   └─ 타입 안전 반환
 
-class ErrorCode(str, Enum):
-    """에러 코드 체계
-    
-    1xxx: 도메인 에러 (비즈니스 로직)
-    2xxx: 외부 API 에러
-    9xxx: 시스템 에러
-    """
-    
-    # 1xxx: 도메인
-    VALIDATION_ERROR = "1001"
-    NOT_FOUND = "1002"
-    CONFLICT = "1003"
-    INSUFFICIENT_BALANCE = "1004"
-    ORDER_ALREADY_CANCELLED = "1005"
-    
-    # 2xxx: 외부 API
-    KIS_API_ERROR = "2001"
-    KIS_RATE_LIMIT = "2002"
-    KIS_AUTH_FAILED = "2003"
-    
-    # 9xxx: 시스템
-    INTERNAL_ERROR = "9001"
-    DATABASE_ERROR = "9002"
-    CACHE_ERROR = "9003"
+3. 컨텍스트 관리
+   ├─ bind_context(): trace_id, user_id 등
+   ├─ clear_context(): 초기화
+   └─ 요청 범위 전파
 ```
 
-```python
-# src/core/errors/exceptions.py
-"""예외 계층 정의"""
+**구현 체크리스트**:
 
-from typing import Any
-from .codes import ErrorCode
+```
+□ configure_logging() 함수
+  ├─ Settings에서 log_level, log_format 로드
+  ├─ 프로세서 체인 구성
+  ├─ JSON vs Console 렌더러 선택
+  └─ 앱 시작 시 1회 호출
 
+□ get_logger() 함수
+  ├─ 모듈명 기반 로거 반환
+  ├─ 구조화 로깅 지원
+  └─ 컨텍스트 자동 포함
 
-class AppError(Exception):
-    """애플리케이션 최상위 예외"""
-    
-    def __init__(
-        self,
-        message: str,
-        code: ErrorCode = ErrorCode.INTERNAL_ERROR,
-        details: dict[str, Any] | None = None,
-    ):
-        self.message = message
-        self.code = code
-        self.details = details or {}
-        super().__init__(self.message)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """API 응답용 딕셔너리"""
-        return {
-            "error": {
-                "code": self.code.value,
-                "message": self.message,
-                "details": self.details,
-            }
-        }
+□ 컨텍스트 헬퍼
+  ├─ bind_context(trace_id, user_id, ...)
+  ├─ 스레드/비동기 안전 저장
+  └─ 모든 로그에 자동 포함
 
-
-class DomainError(AppError):
-    """도메인 에러 (비즈니스 로직 위반)"""
-    pass
-
-
-class ValidationError(DomainError):
-    """검증 에러"""
-    
-    def __init__(self, message: str, field: str | None = None):
-        details = {"field": field} if field else {}
-        super().__init__(message, ErrorCode.VALIDATION_ERROR, details)
-
-
-class NotFoundError(DomainError):
-    """리소스 없음"""
-    
-    def __init__(self, resource: str, identifier: str):
-        super().__init__(
-            f"{resource}을(를) 찾을 수 없습니다: {identifier}",
-            ErrorCode.NOT_FOUND,
-            {"resource": resource, "identifier": identifier},
-        )
-
-
-class ConflictError(DomainError):
-    """충돌 에러"""
-    
-    def __init__(self, message: str):
-        super().__init__(message, ErrorCode.CONFLICT)
-
-
-class ExternalError(AppError):
-    """외부 API 에러"""
-    pass
-
-
-class KISAPIError(ExternalError):
-    """KIS API 에러"""
-    
-    def __init__(self, message: str, status_code: int | None = None):
-        super().__init__(
-            message,
-            ErrorCode.KIS_API_ERROR,
-            {"status_code": status_code},
-        )
+□ 출력 포맷
+  ├─ JSON: {"event": "...", "trace_id": "...", "timestamp": "..."}
+  ├─ Console: 컬러 출력 (개발 편의)
+  └─ 타임스탬프 ISO 8601 형식
 ```
 
-```python
-# src/core/errors/handlers.py
-"""전역 예외 핸들러"""
+**사용 패턴**:
 
-from fastapi import Request
-from fastapi.responses import JSONResponse
-
-from src.core.logging import get_logger
-from .exceptions import AppError
-
-logger = get_logger(__name__)
-
-
-async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    """전역 예외 핸들러 - FastAPI용"""
-    
-    if isinstance(exc, AppError):
-        # 예상된 에러 (도메인, 외부 API)
-        logger.warning(
-            "예상된 에러",
-            error_code=exc.code.value,
-            message=exc.message,
-            details=exc.details,
-        )
-        status_code = _get_status_code(exc)
-        return JSONResponse(status_code=status_code, content=exc.to_dict())
-    
-    # 예상치 못한 에러
-    logger.exception("예상치 못한 에러", exc_info=exc)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": {
-                "code": "9001",
-                "message": "내부 서버 오류가 발생했습니다",
-            }
-        },
-    )
-
-
-def _get_status_code(exc: AppError) -> int:
-    """에러 코드에 따른 HTTP 상태 코드"""
-    mapping = {
-        "1001": 400,  # ValidationError
-        "1002": 404,  # NotFoundError
-        "1003": 409,  # ConflictError
-        "2001": 502,  # KISAPIError
-        "2002": 429,  # RateLimitError
-    }
-    return mapping.get(exc.code.value, 500)
 ```
+1. 앱 시작 시 초기화
+   configure_logging()
+
+2. 모듈별 로거 생성
+   logger = get_logger(module_name)
+
+3. 요청 컨텍스트 바인딩
+   bind_context(trace_id="abc-123", user_id="user-456")
+
+4. 구조화 로깅
+   logger.info("주문 생성", order_id="order-789", amount=50000)
+
+5. 출력 (JSON 예시)
+   {"event": "주문 생성", "trace_id": "abc-123", "user_id": "user-456",
+    "order_id": "order-789", "amount": 50000, "level": "info",
+    "timestamp": "2025-12-03T10:30:00Z"}
+```
+
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
+
+#### 3.4 Error Handling System
+
+**목적**: 표준화된 예외 처리, 에러 코드 체계, 전역 핸들링
+
+**파일 구조** (언어 무관):
+
+```
+core/errors/
+├── [entry_point]    # 공개 API export
+├── exceptions.*     # 예외 계층 정의
+├── codes.*          # 에러 코드 체계
+└── handlers.*       # 전역 핸들러
+```
+
+**구현 요소**:
+
+```
+1. 에러 코드 체계 (ErrorCode)
+   ├─ 1xxx: 도메인 에러 (비즈니스 로직)
+   │   ├─ 1001: ValidationError
+   │   ├─ 1002: NotFoundError
+   │   ├─ 1003: ConflictError
+   │   └─ 1004+: 도메인 특화
+   ├─ 2xxx: 외부 API 에러
+   │   ├─ 2001: External API Error
+   │   ├─ 2002: Rate Limit
+   │   └─ 2003: Auth Failed
+   └─ 9xxx: 시스템 에러
+       ├─ 9001: Internal Error
+       ├─ 9002: Database Error
+       └─ 9003: Cache Error
+
+2. 예외 계층
+   ├─ AppError (최상위)
+   │   ├─ message, code, details
+   │   └─ to_dict() (API 응답)
+   ├─ DomainError extends AppError
+   │   ├─ ValidationError
+   │   ├─ NotFoundError
+   │   └─ ConflictError
+   └─ ExternalError extends AppError
+       └─ 외부 API별 에러
+
+3. 전역 핸들러
+   ├─ 예상된 에러 (AppError)
+   │   ├─ 로깅 (warning level)
+   │   ├─ HTTP 상태 코드 매핑
+   │   └─ 구조화된 응답
+   └─ 예상치 못한 에러
+       ├─ 로깅 (error level + stack)
+       ├─ 500 Internal Error
+       └─ 상세 숨김 (보안)
+```
+
+**구현 체크리스트**:
+
+```
+□ 에러 코드 정의
+  ├─ 1xxx, 2xxx, 9xxx 범위 할당
+  ├─ 프로젝트별 도메인 코드 추가
+  └─ Enum/Constant로 관리
+
+□ AppError 기반 클래스
+  ├─ 생성자: message, code, details
+  ├─ to_dict(): API 응답 포맷
+  └─ 로깅 친화적 구조
+
+□ 도메인 예외 클래스
+  ├─ ValidationError(message, field)
+  ├─ NotFoundError(resource, identifier)
+  ├─ ConflictError(message)
+  └─ 도메인 특화 에러
+
+□ 전역 핸들러 등록
+  ├─ AppError → 적절한 HTTP 상태
+  ├─ 로깅 (경고 vs 에러)
+  ├─ 구조화 응답: {error: {code, message, details}}
+  └─ 예상치 못한 에러 처리
+
+□ HTTP 상태 매핑
+  ├─ 1001 → 400 Bad Request
+  ├─ 1002 → 404 Not Found
+  ├─ 1003 → 409 Conflict
+  ├─ 2xxx → 502 Bad Gateway
+  └─ 9xxx → 500 Internal Error
+```
+
+**사용 패턴**:
+
+```
+1. 도메인 에러 발생
+   if not order.items:
+       raise ValidationError("주문 항목이 비어있습니다", field="items")
+
+2. 리소스 없음
+   order = find_order(order_id)
+   if not order:
+       raise NotFoundError("주문", order_id)
+
+3. 전역 핸들러 등록
+   app.add_exception_handler(Exception, global_exception_handler)
+
+4. API 응답 (자동)
+   {
+     "error": {
+       "code": "1001",
+       "message": "주문 항목이 비어있습니다",
+       "details": {"field": "items"}
+     }
+   }
+```
+
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
 
 
 
@@ -1599,72 +1375,98 @@ def _get_status_code(exc: AppError) -> int:
 
 #### 4.1 DNA 통합 테스트
 
-```python
-# tests/integration/core/test_dna_integration.py
-"""DNA 시스템 통합 테스트"""
+**목적**: DNA 시스템 간 연동 검증
 
-import pytest
-from src.core.config import get_settings
-from src.core.logging import configure_logging, get_logger
-from src.core.types import UserId, generate_user_id, Money
-from src.core.errors import ValidationError, NotFoundError
+**테스트 시나리오**:
 
+```
+1. Logging ↔ Config 연동
+   ├─ 설정(Settings)에서 log_level, log_format 로드
+   ├─ 로거 초기화 시 설정 반영 확인
+   └─ 다양한 로그 레벨 동작 검증
 
-class TestDNAIntegration:
-    """DNA 시스템 간 통합 검증"""
-    
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """테스트 전 로깅 설정"""
-        configure_logging()
-    
-    def test_logging_uses_config(self):
-        """Logging이 Config 설정을 사용"""
-        settings = get_settings()
-        logger = get_logger("test")
-        
-        # 설정된 로그 레벨 확인
-        assert settings.log_level in {"DEBUG", "INFO", "WARNING", "ERROR"}
-        logger.info("통합 테스트", environment=settings.environment)
-    
-    def test_errors_log_properly(self):
-        """Errors가 Logging과 연동"""
-        logger = get_logger("test")
-        
-        try:
-            raise NotFoundError("Order", "order-123")
-        except NotFoundError as e:
-            logger.warning("리소스 없음", error=e.to_dict())
-            assert e.code.value == "1002"
-    
-    def test_types_with_validation_error(self):
-        """Types 검증 실패 시 적절한 에러"""
-        with pytest.raises(ValueError):
-            Money(amount=-100)  # 음수 금액 불가
+2. Errors ↔ Logging 연동
+   ├─ 에러 발생 시 자동 로깅
+   ├─ 에러 코드, 메시지, details 포함
+   └─ 로그 레벨 적절성 (warning vs error)
+
+3. Types ↔ Errors 연동
+   ├─ 타입 검증 실패 시 적절한 에러
+   ├─ Money 음수 검증 → ValidationError
+   └─ Email 형식 검증 → ValidationError
+
+4. Config ↔ All Systems
+   ├─ Database URL 주입
+   ├─ Cache URL 주입
+   ├─ External API 키 주입
+   └─ 환경별 설정 격리
 ```
 
-#### 4.2 품질 검증 명령어
+**테스트 체크리스트**:
 
-```bash
-# 1. 타입 체크 (0 errors 필수)
-mypy src/core --strict
-# Expected: Success: no issues found
-
-# 2. 린팅 (0 violations 필수)
-ruff check src/core tests/
-# Expected: All checks passed!
-
-# 3. 포맷팅
-ruff format src/core tests/
-
-# 4. 테스트 + 커버리지 (95%+ 필수)
-pytest tests/unit/core tests/integration/core --cov=src/core --cov-fail-under=95
-# Expected: PASSED, Coverage 95%+
-
-# 5. 전체 검증 (CI 파이프라인)
-make lint test  # 또는
-./scripts/validate.sh
 ```
+□ Setup
+  ├─ 테스트 환경 초기화
+  ├─ DNA 시스템 설정 로드
+  └─ 로깅 초기화
+
+□ 통합 테스트
+  ├─ Logging이 Config 사용 확인
+  ├─ Errors가 Logging 연동 확인
+  ├─ Types 검증 실패 → 에러 확인
+  └─ 전체 플로우 E2E 테스트
+
+□ 품질 기준
+  ├─ 모든 테스트 통과
+  ├─ 통합 커버리지 85%+
+  └─ 실제 DB/Cache 사용 (Mock 최소화)
+```
+
+**참조**: 구체적 테스트 코드는 언어별 매뉴얼 참조
+
+#### 4.2 품질 검증
+
+**목적**: DNA 시스템 품질 게이트 통과
+
+**검증 항목** (ADR 참조):
+
+```
+1. Type Checker (ADR-301)
+   ├─ Strict 모드 실행
+   ├─ 0 errors 필수
+   └─ 예상 결과: "Success: no issues found"
+
+2. Linter (ADR-302)
+   ├─ 코드 스타일 검증
+   ├─ 0 violations 필수
+   └─ 예상 결과: "All checks passed!"
+
+3. Formatter (ADR-302)
+   ├─ 자동 코드 정렬
+   └─ 일관된 스타일 적용
+
+4. Test + Coverage (ADR-801)
+   ├─ 단위 + 통합 테스트 실행
+   ├─ 최소 커버리지: 95%
+   └─ 예상 결과: "PASSED, Coverage 95%+"
+
+5. 전체 검증
+   ├─ CI 파이프라인 통과
+   ├─ Pre-commit hooks 통과
+   └─ 품질 게이트 100% 통과
+```
+
+**실행 순서**:
+
+```
+Step 1: Type Checker → 0 errors
+Step 2: Linter → 0 violations
+Step 3: Formatter → 자동 적용
+Step 4: Tests → 95%+ coverage
+Step 5: Integration → 전체 검증
+```
+
+**참조**: 언어별 명령어는 매뉴얼 참조
 
 #### 4.3 DNA 완성도 평가 (Kent Beck 기준)
 
@@ -1706,340 +1508,183 @@ Kent Beck 수준 = Level 3 (10/11개 이상)
 ### 1.2 품질 메트릭
 
 ```
-MyPy:     0 errors ✅
-Ruff:     0 violations ✅
-pytest:   45 passed, 0 failed ✅
-Coverage: 96% (목표: 95%) ✅
-```
 
+Type Checker: 0 errors ✅
+Linter:       0 violations ✅
+Tests:        45 passed, 0 failed ✅
+Coverage:     96% (목표: 95%) ✅
+
+```
 ## 2. 디렉토리 구조
 
 ```
-src/core/
-├── __init__.py         # DNA 공개 API
-├── logging/
-│   ├── __init__.py
-│   ├── logger.py       # 285 lines
-│   ├── config.py       # 45 lines
-│   └── processors.py   # 62 lines
-├── config/
-│   ├── __init__.py
-│   ├── settings.py     # 120 lines
-│   └── validators.py   # 35 lines
-├── types/
-│   ├── __init__.py
-│   ├── base.py         # 50 lines
-│   ├── ids.py          # 40 lines
-│   └── common.py       # 85 lines
-├── errors/
-│   ├── __init__.py
-│   ├── exceptions.py   # 95 lines
-│   ├── codes.py        # 45 lines
-│   └── handlers.py     # 60 lines
-└── database/
-    ├── __init__.py
-    ├── session.py      # 75 lines
-    ├── base.py         # 55 lines
-    └── mixins.py       # 40 lines
-```
 
+core/
+├── [entry_point]       # DNA 공개 API
+├── logging/
+│   ├── [entry_point]
+│   ├── logger.*        # 285 lines
+│   ├── config.*        # 45 lines
+│   └── processors.*    # 62 lines
+├── config/
+│   ├── [entry_point]
+│   ├── settings.*      # 120 lines
+│   └── validators.*    # 35 lines
+├── types/
+│   ├── [entry_point]
+│   ├── base.*          # 50 lines
+│   ├── ids.*           # 40 lines
+│   └── common.*        # 85 lines
+├── errors/
+│   ├── [entry_point]
+│   ├── exceptions.*    # 95 lines
+│   ├── codes.*         # 45 lines
+│   └── handlers.*      # 60 lines
+└── database/
+    ├── [entry_point]
+    ├── session.*       # 75 lines
+    ├── base.*          # 55 lines
+    └── mixins.*        # 40 lines
+
+```
 ## 3. 공개 API
 
-### 3.1 사용 예시
+### 3.1 사용 예시 (개념)
 
-```python
+```
+
 # DNA 임포트
-from core.logging import get_logger, configure_logging
-from core.config import get_settings
-from core.types import UserId, OrderId, Money
-from core.errors import NotFoundError, ValidationError
-from core.database import get_session
+
+import 필요한 시스템 from core
+
+필수 임포트:
+
+  - Logging: get_logger, configure_logging
+  - Config: get_settings
+  - Types: UserId, OrderId, Money
+  - Errors: NotFoundError, ValidationError
+  - Database: get_session
 
 # 초기화
+
 configure_logging()
 settings = get_settings()
-logger = get_logger(__name__)
+logger = get_logger(module_name)
 
 # 사용
+
 logger.info("서비스 시작", environment=settings.environment)
 
-async with get_session() as session:
-    # 데이터베이스 작업
-    pass
+database_session 사용:
+
+  - 세션 획득
+  - 트랜잭션 수행
+  - 자동 커밋/롤백
+
 ```
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
 
 ## 4. Stage 6 전달 사항
 
 ### 4.1 Project Standards에 포함할 규칙
 
-- [ ] `print()` 금지 → `get_logger()` 사용
-- [ ] `os.environ` 금지 → `get_settings()` 사용
-- [ ] 일반 `Exception` 금지 → `AppError` 계층 사용
-- [ ] 직접 SQL 금지 → SQLAlchemy ORM 사용
+- [ ] 직접 출력 금지 (print/console) → get_logger() 사용
+- [ ] 환경변수 직접 접근 금지 → get_settings() 사용
+- [ ] 일반 Exception 금지 → AppError 계층 사용
+- [ ] 직접 쿼리 문자열 금지 → ORM/쿼리빌더 사용 (ADR-501)
 
 ### 4.2 자동화 설정
 
-- [ ] pre-commit hooks 설정
+- [ ] Pre-commit hooks 설정 (품질 게이트)
 - [ ] CI 파이프라인에 DNA 테스트 포함
-- [ ] import-linter 규칙 추가
+- [ ] Import 규칙 강제 (layer 경계)
+
 ```
 
 ---
 
-## ✏️ 구현 예시: 주식 거래 플랫폼
+## ✏️ DNA 연동 패턴 (개념)
 
-### 예시 1: Logging + Config 연동
+**목적**: DNA 시스템 간 연동 방식 이해
 
-**목표**: 환경별 로깅 설정 자동 적용
+### 패턴 1: Logging ↔ Config
 
-```python
-# src/core/logging/logger.py (실제 구현)
-"""주식 거래 플랫폼 로깅 설정"""
+**연동 개념**:
 
-import structlog
-from src.core.config import get_settings
-
-
-def configure_logging() -> None:
-    """환경별 로깅 설정
-    
-    - 개발: 컬러 콘솔, DEBUG
-    - 스테이징: JSON, INFO
-    - 운영: JSON, WARNING + CloudWatch
-    """
-    settings = get_settings()
-    
-    processors = [
-        structlog.contextvars.merge_contextvars,
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        # 거래 시스템 필수 컨텍스트
-        add_trading_context,  # trace_id, user_id, account_id
-    ]
-    
-    if settings.is_production:
-        processors.append(structlog.processors.JSONRenderer())
-    else:
-        processors.append(structlog.dev.ConsoleRenderer(colors=True))
-    
-    structlog.configure(
-        processors=processors,
-        wrapper_class=structlog.make_filtering_bound_logger(
-            getattr(structlog, settings.log_level)
-        ),
-        context_class=dict,
-        logger_factory=structlog.PrintLoggerFactory(),
-        cache_logger_on_first_use=True,
-    )
-
-
-def add_trading_context(
-    logger: structlog.BoundLogger,
-    method_name: str,
-    event_dict: dict,
-) -> dict:
-    """거래 시스템 필수 컨텍스트 추가"""
-    # trace_id가 없으면 생성
-    if "trace_id" not in event_dict:
-        import uuid
-        event_dict["trace_id"] = str(uuid.uuid4())[:8]
-    
-    return event_dict
+```
+configure_logging() 함수:
+  1. get_settings()로 설정 로드
+  2. 환경별 로거 설정
+     - 개발: 컬러 콘솔, DEBUG
+     - 운영: JSON, WARNING
+  3. 도메인 특화 컨텍스트 추가
+     - trace_id, user_id, account_id 등
 ```
 
-**테스트**:
+**핵심 포인트**:
 
-```python
-# tests/unit/core/test_logging.py
+- Config에서 log_level, log_format 동적 로드
+- 환경 변경 시 코드 수정 불필요
+- 도메인 컨텍스트 자동 포함
 
-def test_production_uses_json(monkeypatch):
-    """운영 환경에서 JSON 포맷 사용"""
-    monkeypatch.setenv("ENVIRONMENT", "production")
-    monkeypatch.setenv("LOG_FORMAT", "json")
-    
-    configure_logging()
-    logger = get_logger("test")
-    
-    # JSON 출력 확인 (캡처 후 파싱)
-    # ...
+### 패턴 2: Errors ↔ Logging
 
+**연동 개념**:
 
-def test_trading_context_added():
-    """거래 컨텍스트 자동 추가"""
-    configure_logging()
-    logger = get_logger("trading")
-    
-    # trace_id 자동 생성 확인
-    # ...
+```
+global_exception_handler():
+  1. 에러 타입별 로그 레벨 결정
+     - AppError → warning
+     - 중요 경로 에러 → critical
+     - 예상치 못한 에러 → error + stack
+  2. 요청 컨텍스트 포함
+     - trace_id, user_id, path
+  3. 구조화 로깅
+     - error_code, message, details
 ```
 
-### 예시 2: Errors + Logging 연동
+**핵심 포인트**:
 
-**목표**: 에러 발생 시 자동 로깅
+- 에러 발생 = 자동 로깅
+- 에러 코드로 로그 레벨 결정
+- 컨텍스트 전파 (trace_id)
 
-```python
-# src/core/errors/handlers.py (실제 구현)
-"""주식 거래 플랫폼 에러 핸들러"""
+### 패턴 3: 전체 DNA 연동
 
-from fastapi import Request
-from fastapi.responses import JSONResponse
+**도메인 서비스에서 DNA 활용**:
 
-from src.core.logging import get_logger
-from .exceptions import AppError, KISAPIError
+```
+OrderService.create_order():
+  1. Types DNA
+     - 타입 안전 파라미터 (UserId, Money)
+     - ID 생성 (generate_order_id)
 
-logger = get_logger("error_handler")
+  2. Logging DNA
+     - 컨텍스트 바인딩 (bind_context)
+     - 단계별 로깅 (info/error)
 
+  3. Errors DNA
+     - 검증 실패 → ValidationError
+     - 외부 API 실패 → ExternalError
 
-async def global_exception_handler(
-    request: Request,
-    exc: Exception,
-) -> JSONResponse:
-    """전역 예외 핸들러
-    
-    거래 시스템 특화:
-    - 주문 실패는 CRITICAL 로깅
-    - KIS API 에러는 WARNING + 상세 정보
-    - 기타 에러는 ERROR
-    """
-    
-    # 요청 컨텍스트 추출
-    trace_id = request.headers.get("X-Trace-ID", "unknown")
-    user_id = getattr(request.state, "user_id", "anonymous")
-    
-    if isinstance(exc, KISAPIError):
-        # KIS API 에러 - 외부 서비스 문제
-        logger.warning(
-            "KIS API 에러",
-            trace_id=trace_id,
-            user_id=user_id,
-            error_code=exc.code.value,
-            message=exc.message,
-            kis_status=exc.details.get("status_code"),
-            path=request.url.path,
-        )
-        return JSONResponse(status_code=502, content=exc.to_dict())
-    
-    if isinstance(exc, AppError):
-        # 예상된 비즈니스 에러
-        log_level = "critical" if "order" in request.url.path else "warning"
-        getattr(logger, log_level)(
-            "비즈니스 에러",
-            trace_id=trace_id,
-            user_id=user_id,
-            error_code=exc.code.value,
-            message=exc.message,
-            path=request.url.path,
-        )
-        return JSONResponse(
-            status_code=_get_status_code(exc),
-            content=exc.to_dict(),
-        )
-    
-    # 예상치 못한 에러 - 즉시 알림 필요
-    logger.exception(
-        "예상치 못한 에러",
-        trace_id=trace_id,
-        user_id=user_id,
-        path=request.url.path,
-        exc_info=exc,
-    )
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": {
-                "code": "9001",
-                "message": "내부 서버 오류",
-                "trace_id": trace_id,
-            }
-        },
-    )
+  4. Database DNA
+     - 세션 관리 (get_session)
+     - 트랜잭션 (commit/rollback)
+
+  5. Cache DNA
+     - 시세 캐싱 (@cached decorator)
+
+  6. Config DNA
+     - 외부 API 설정 (rate_limit 등)
 ```
 
-### 예시 3: 전체 DNA 연동 (주문 서비스)
+**핵심 포인트**:
 
-**목표**: 모든 DNA 시스템이 도메인에서 어떻게 사용되는지
+- 도메인 로직에만 집중
+- DNA가 횡단 관심사 처리
+- 일관성 자동 보장
 
-```python
-# domain/orders/service.py (DNA 활용 예시)
-"""주문 서비스 - DNA 시스템 활용"""
-
-from src.core.logging import get_logger, bind_context
-from src.core.config import get_settings
-from src.core.types import OrderId, UserId, Money, generate_order_id
-from src.core.errors import ValidationError, NotFoundError, KISAPIError
-from src.core.database import get_session
-from src.core.cache import cached
-
-logger = get_logger(__name__)
-settings = get_settings()
-
-
-class OrderService:
-    """주문 서비스"""
-    
-    async def create_order(
-        self,
-        user_id: UserId,
-        symbol: str,
-        quantity: int,
-        price: Money,
-    ) -> OrderId:
-        """주문 생성
-        
-        DNA 활용:
-        - Logging: 모든 단계 로깅
-        - Types: 타입 안전한 파라미터
-        - Errors: 표준화된 예외 처리
-        - Database: 트랜잭션 관리
-        - Cache: 시세 캐싱
-        """
-        order_id = generate_order_id()
-        bind_context(order_id=str(order_id), user_id=str(user_id))
-        
-        logger.info("주문 생성 시작", symbol=symbol, quantity=quantity)
-        
-        # 1. 검증 (Errors DNA)
-        if quantity <= 0:
-            raise ValidationError("수량은 0보다 커야 합니다", field="quantity")
-        
-        if price.amount <= 0:
-            raise ValidationError("가격은 0보다 커야 합니다", field="price")
-        
-        # 2. 현재가 조회 (Cache DNA)
-        current_price = await self._get_current_price(symbol)
-        
-        # 3. 주문 저장 (Database DNA)
-        async with get_session() as session:
-            order = Order(
-                id=order_id,
-                user_id=user_id,
-                symbol=symbol,
-                quantity=quantity,
-                price=price.amount,
-                status="pending",
-            )
-            session.add(order)
-            await session.commit()
-            
-            logger.info("주문 저장 완료", status="pending")
-        
-        # 4. KIS API 호출 (Config DNA - rate limit 설정)
-        try:
-            await self._submit_to_kis(order)
-        except KISAPIError as e:
-            logger.error("KIS 주문 실패", error=str(e))
-            raise
-        
-        logger.info("주문 생성 완료")
-        return order_id
-    
-    @cached(ttl=5)  # 5초 캐싱
-    async def _get_current_price(self, symbol: str) -> Money:
-        """현재가 조회 (캐싱)"""
-        # KIS API 호출
-        # ...
-        pass
-```
+**참조**: 구체적 코드는 언어별 매뉴얼 참조
 
 ---
 
@@ -2047,31 +1692,31 @@ class OrderService:
 
 ### 구조 검증
 
-- [ ] src/core/ 디렉토리 생성됨
+- [ ] core/ 디렉토리 생성됨
 - [ ] 각 DNA 시스템 하위 디렉토리 존재
 - [ ] tests/unit/core/ 테스트 디렉토리 존재
 - [ ] tests/integration/core/ 통합 테스트 존재
 
 ### 필수 DNA 구현 (5개)
 
-- [ ] **Types**: ids.py, common.py 구현
-- [ ] **Config**: settings.py 구현, 환경별 분리
-- [ ] **Logging**: structlog 설정, get_logger() 동작
-- [ ] **Errors**: 예외 계층, 에러 코드 정의
-- [ ] **Testing**: pytest 설정, 커버리지 95%+
+- [ ] **Type System**: ID 타입, 공통 값 객체 구현
+- [ ] **Configuration System**: Settings 클래스, 환경별 분리
+- [ ] **Observability System**: 로깅 라이브러리 (ADR-401), get_logger() 동작
+- [ ] **Error Handling System**: 예외 계층, 에러 코드 정의
+- [ ] **Testing System**: 테스트 프레임워크 (ADR-801), 커버리지 95%+
 
 ### 패밀리별 추가 DNA
 
-- [ ] **Database** (A-A-B 필수): SQLAlchemy 세션 관리
-- [ ] **Cache** (A-A-B 권장): Redis 클라이언트
-- [ ] **Security** (A-A-B 필수): 인증/인가 미들웨어
+- [ ] **Data System (DB)** (A-A-B 필수): ORM/쿼리빌더 (ADR-501) 세션 관리
+- [ ] **Data System (Cache)** (A-A-B 권장): 캐시 클라이언트 (ADR-502)
+- [ ] **Security System** (A-A-B 필수): 인증/인가 미들웨어
 
 ### 품질 검증
 
-- [ ] MyPy 0 errors: `mypy src/core --strict`
-- [ ] Ruff 0 violations: `ruff check src/core`
-- [ ] 테스트 통과: `pytest tests/unit/core tests/integration/core`
-- [ ] 커버리지 95%+: `--cov-fail-under=95`
+- [ ] Type Checker 0 errors (ADR-301)
+- [ ] Linter 0 violations (ADR-302)
+- [ ] 테스트 통과 (단위 + 통합)
+- [ ] 커버리지 95%+ (ADR-801)
 
 ### 통합 검증
 
@@ -2090,11 +1735,11 @@ class OrderService:
 
 ### Stage 6에 전달하는 것
 
-| 전달 항목 | 내용 | 용도 |
-|----------|------|------|
-| 구현된 DNA 모듈 | src/core/ | 프로젝트 표준의 기반 |
-| 금지 규칙 | print(), os.environ 등 | PROJECT_STANDARDS.md 작성 |
-| 자동화 설정 | pyproject.toml, pre-commit | 강제 규칙 설정 |
+| 전달 항목       | 내용                        | 용도                      |
+| --------------- | --------------------------- | ------------------------- |
+| 구현된 DNA 모듈 | core/                       | 프로젝트 표준의 기반      |
+| 금지 규칙       | 직접 출력, 환경변수 접근 등 | PROJECT_STANDARDS.md 작성 |
+| 자동화 설정     | 설정 파일, pre-commit hooks | 강제 규칙 설정            |
 
 ### Stage 6 미리보기
 
@@ -2116,17 +1761,18 @@ Stage 6: Project Standards
 ## ⏪ 이전 Stage 검증 및 수정 프로토콜
 
 ### 검증 시점
+
 - Stage 5 시작 전 필수 체크
 - 각 DNA 시스템 구현 완료 후 청사진과 교차 검증
 
 ### 검증 대상
 
-| Stage | 산출물 | 검증 항목 |
-|-------|--------|----------|
-| Stage 1 | 01C-01_*.md | 구현 수준이 NFR 만족? |
+| Stage   | 산출물      | 검증 항목              |
+| ------- | ----------- | ---------------------- |
+| Stage 1 | 01C-01_*.md | 구현 수준이 NFR 만족?  |
 | Stage 2 | 02C-01_*.md | 기술 제약 내에서 구현? |
-| Stage 3 | 03A-*_*.md | ADR 결정대로 구현? |
-| Stage 4 | 04B-01_*.md | DNA 청사진대로 구현? |
+| Stage 3 | 03A-*_*.md  | ADR 결정대로 구현?     |
+| Stage 4 | 04B-01_*.md | DNA 청사진대로 구현?   |
 
 ### 오류 발견 시 프로토콜
 
@@ -2163,11 +1809,11 @@ Step 6: 검증 → Stage 6 전달 ✅
 
 ### 흔한 오류 패턴
 
-| 오류 유형 | 예시 | 해결 |
-|----------|------|------|
-| 청사진 불완전 | 인터페이스 정의 누락 | Stage 4 청사진 보완 |
-| ADR 미반영 | 로깅 포맷 ADR과 구현 불일치 | 구현 수정 또는 ADR 갱신 |
-| 의존성 오류 | 순환 의존성 발생 | Stage 4 설계 재검토 |
+| 오류 유형     | 예시                        | 해결                    |
+| ------------- | --------------------------- | ----------------------- |
+| 청사진 불완전 | 인터페이스 정의 누락        | Stage 4 청사진 보완     |
+| ADR 미반영    | 로깅 포맷 ADR과 구현 불일치 | 구현 수정 또는 ADR 갱신 |
+| 의존성 오류   | 순환 의존성 발생            | Stage 4 설계 재검토     |
 
 ### 추적성
 
@@ -2186,7 +1832,7 @@ Step 6: 검증 → Stage 6 전달 ✅
 1. 표준 라이브러리 우선
 ────────────────────────────────
 ❌ 직접 구현 (89개 클래스, 1,679줄)
-✅ pydantic, structlog, sqlalchemy (3줄)
+✅ 검증된 라이브러리 사용 (ADR 참조, 3줄)
 
 2. 인터페이스 추상화
 ────────────────────────────────
@@ -2195,7 +1841,7 @@ Protocol 정의 → 구현체 교체 가능
 
 3. 설정 주입
 ────────────────────────────────
-pydantic-settings로 환경별 분리
+설정 라이브러리로 환경별 분리 (ADR-402)
 .env.development / .env.production
 ```
 
@@ -2215,15 +1861,16 @@ Testing → Security → Monitoring
 ### 품질 기준 (Zero Tolerance)
 
 ```
-MyPy:     0 errors    (타입 안전성)
-Ruff:     0 violations (코드 품질)
-pytest:   0 failures  (기능 정확성)
-Coverage: 95%+        (테스트 충분성)
+Type Checker: 0 errors    (타입 안전성, ADR-301)
+Linter:       0 violations (코드 품질, ADR-302)
+Tests:        0 failures   (기능 정확성, ADR-801)
+Coverage:     95%+         (테스트 충분성)
 ```
 
 ---
 
 **Remember**: 
+
 - DNA 없이 도메인 구현 = 기반 없는 건물
 - 표준 라이브러리 우선 = 바퀴 재발명 금지
 - 의존성 순서 준수 = Types → Config → Logging → Errors

@@ -1,12 +1,74 @@
 # DNA Methodology 상세 문서
 
-> **목적**: DNA_PROJECT_OVERVIEW_v2.md의 각 Part를 상세하게 풀어쓴 실행 가이드
+> **목적**: 00_CORE_METHODOLOGY.md의 각 Part를 상세하게 풀어쓴 실행 가이드
 > **용도**: 실제 작업 시 참조, Stage별 가이드 작성의 기준
 > **작성일**: 2025-12-02
 
+## 목차
+
+### Part 1: AI 협업의 문제와 해결
+
+#### 		1.1 Context Rot (문맥 부패) - 핵심 문제
+
+#### 		1.2 AI의 6가지 문제점
+
+### Part 2: DNA 방법론 핵심 
+
+#### 		2.1 DNA 4대 핵심 원칙
+
+#### 		2.2 핵심 1: "부분으로 전체를 완성"
+
+#### 		2.3 핵심 2: "환경으로 제어"
+
+#### 		2.4 추적성 메커니즘: Stage 간 연결
+
+### Part 3: Stage 1-2 분류와 조사
+
+#### 		3.1 Stage 1: 패밀리 분류
+
+#### 		3.2 Stage 2: 환경 제약 조사
+
+### Part 4: Stage 3 결정 문서화 - ADR 
+
+#### 		4.1 ADR의 역할과 위치
+
+#### 		4.2 5대 ADR 카테고리
+
+### Part 5: Stage 4-6 Bridge - 환경 구축
+
+#### 		5.1 Bridge의 의미
+
+#### 		5.2 Stage 4: DNA 시스템 청사진
+
+#### 		5.3 Stage 5: DNA 시스템 구현
+
+#### 		5.4 Stage 6: Project Standards
+
+### Part 6: Stage 7-9 Blueprint → 구현
+
+#### 		6.1 Stage 7: Project Blueprint
+
+#### 		6.2 Stage 8: Task Breakdown
+
+#### 		6.3 Stage 9: Checklist + 구현
+
+### Part 7: AI 협업 기법
+
+#### 		7.1 인지 글쓰기 이론 기반
+
+#### 		7.2 Skeleton-of-Thought (SoT) - 구조 우선
+
+#### 		7.3 Chain of Density (CoD) - 정보 밀도 증가
+
+#### 		7.4 Tree of Thoughts (ToT) - 대안 탐색
+
+#### 		7.5 RDoLT - 난이도별 분해
+
+#### 		7.6 Stage별 기법 적용 요약
+
 ---
 
-## Part 1: AI 협업의 문제와 해결 (상세)
+## Part 1: AI 협업의 문제와 해결
 
 ### 1.1 Context Rot (문맥 부패) - 핵심 문제
 
@@ -55,7 +117,7 @@
 ├─────────────────────────────────────────┤
 │ - 아키텍처 원칙                          │
 │ - DNA 시스템 규칙                        │
-│ - 품질 기준 (Ruff 0, MyPy 0)            │
+│ - 품질 기준 (Lint 0, Type 0)            │
 │ - 프로젝트 표준                          │
 │                                         │
 │ → 매 세션 시작 시 주입                   │
@@ -79,7 +141,7 @@
 
 ---
 
-### 1.2 AI의 6가지 문제점 (상세)
+### 1.2 AI의 6가지 문제점
 
 #### 문제 1: Context 한계
 
@@ -191,7 +253,7 @@
 
 ---
 
-### 1.3 AI가 최고 성과를 낼 때 (상세)
+### 1.3 AI가 최고 성과를 낼 때
 
 ```
 조건 1: 규모가 크지 않아 전체를 한 번에 계획해서 진행 가능
@@ -211,7 +273,7 @@
 - 입력: "이 파일을 읽어서"
 - 처리: "X 패턴으로 리팩토링하고"
 - 출력: "새 파일로 저장해라"
-- 검증: "MyPy 0 오류여야 함"
+- 검증: "Type Check 0 오류여야 함"
 
 조건 4: 매번 새로운 대화지만 기존 작업을 어떤 방식으로든 이해
 ────────────────────────────────────────────────────────
@@ -250,7 +312,7 @@ AI 협업에 적용:
    - 단위작업 완료
 
 3. 검토 = 검증
-   - 정적 분석 (Ruff, MyPy)
+   - 정적 분석 (Lint, Type Check)
    - 테스트 실행
    - 품질 Gate 통과
 
@@ -261,9 +323,9 @@ AI 협업에 적용:
 
 ---
 
-## Part 2: DNA 방법론 핵심 (상세)
+## Part 2: DNA 방법론 핵심
 
-### 2.0 DNA 4대 핵심 원칙 (2025-12-03 확정)
+### 2.1 DNA 4대 핵심 원칙
 
 DNA 방법론의 성공을 결정하는 4가지 핵심 원칙:
 
@@ -340,7 +402,7 @@ Stage 8-9: AI-Driven (AI 중심)
 검증 3: 완전성 (Completeness Check)
 ├─ 목표: 한 문장으로 명확?
 ├─ 입력/출력: 모두 명시?
-├─ 완료 조건: 측정 가능? (MyPy 0, Ruff 0)
+├─ 완료 조건: 측정 가능? (Type 0, Lint 0)
 ├─ 테스트: 구체적 케이스 3개 이상?
 └─ 실패 시 → Task 상세 보완
 
@@ -409,7 +471,7 @@ Stage 7이 가장 Critical:
 
 ---
 
-### 2.1 핵심 1: "부분으로 전체를 완성"
+### 2.2 핵심 1: "부분으로 전체를 완성"
 
 #### 레고블럭 전략의 이론적 기반
 
@@ -424,7 +486,7 @@ DNA 방법론 적용:
 └─ 블럭 간 인터페이스만 명확하면 됨
 ```
 
-#### 단위작업 분할의 4가지 질문 (상세)
+#### 단위작업 분할의 4가지 질문
 
 **Q1: 컨텍스트 한계를 고려했는가?**
 
@@ -481,7 +543,7 @@ DNA 방법론 적용:
 ├─ 동일한 템플릿 사용 (ADR, 체크리스트)
 ├─ 동일한 코딩 패턴 (Repository, Service)
 ├─ 동일한 네이밍 컨벤션
-├─ 동일한 품질 기준 (Ruff 0, MyPy 0)
+├─ 동일한 품질 기준 (Lint 0, Type 0)
 └─ 동일한 검증 절차
 
 구현:
@@ -507,7 +569,7 @@ DNA 방법론 적용:
 
 ---
 
-### 2.2 핵심 2: "환경으로 제어"
+### 2.3 핵심 2: "환경으로 제어"
 
 #### 왜 문서화된 규칙이 실패하는가
 
@@ -547,9 +609,9 @@ DNA 방법론 적용:
 │    → AI가 읽고도 print() 사용                       │
 │                                                     │
 │ ✅ 환경:                                            │
-│    1. src/core/logging/ 제공 (structlog)           │
+│    1. src/core/logging/ 제공 (표준 로거)            │
 │    2. pre-commit hook: print() 감지 → 커밋 차단    │
-│    3. Ruff 규칙: T201 (print 금지)                 │
+│    3. Lint 규칙: print 금지                         │
 │    → 물리적으로 print()가 들어간 코드 커밋 불가     │
 └─────────────────────────────────────────────────────┘
 ```
@@ -568,14 +630,14 @@ DNA 11개 시스템 = 프로젝트 전체에 적용되는 "환경"
 예시 - Logging 시스템:
 ┌─────────────────────────────────────────┐
 │ src/core/logging/                       │
-│ ├─ logger.py (structlog 래퍼)          │
-│ ├─ config.py (로그 레벨, 포맷)         │
-│ └─ handlers.py (파일, 콘솔, JSON)      │
+│ ├─ logger.* (표준 로깅 래퍼)            │
+│ ├─ config.* (로그 레벨, 포맷)          │
+│ └─ handlers.* (파일, 콘솔, JSON)       │
 ├─────────────────────────────────────────┤
 │ 사용 강제:                              │
 │ - import logger from core.logging      │
 │ - logger.info(), logger.error()        │
-│ - print() → Ruff 오류                  │
+│ - print() → Lint 오류                  │
 ├─────────────────────────────────────────┤
 │ 자동 제공:                              │
 │ - trace_id (분산 추적)                 │
@@ -586,7 +648,7 @@ DNA 11개 시스템 = 프로젝트 전체에 적용되는 "환경"
 
 ---
 
-### 2.3 추적성 메커니즘: Stage 간 연결
+### 2.4 추적성 메커니즘: Stage 간 연결
 
 #### 왜 추적성이 필요한가
 
@@ -677,7 +739,7 @@ Stage 5-6 업데이트 → Stage 7 업데이트 → Stage 9 업데이트
 
 ---
 
-## Part 3: Stage 1-2 분류와 조사 (상세)
+## Part 3: Stage 1-2 분류와 조사
 
 ### 3.1 Stage 1: 패밀리 분류
 
@@ -1066,16 +1128,17 @@ Stage 1의 NFR 프로파일에서 충돌 식별:
 ├─ MySQL: ACID, 대중적, Aurora 옵션
 └─ Oracle: 엔터프라이즈, 비용 높음
 
-후보 프레임워크:
-├─ FastAPI: 비동기, 타입 안전, 현대적
-├─ Django: 풀스택, ORM 내장, 성숙
-└─ Spring Boot: 엔터프라이즈, Java
+후보 프레임워크 (언어별):
+├─ Python: FastAPI, Django
+├─ TypeScript: NestJS, Express
+├─ Java: Spring Boot
+└─ Go: Gin, Echo
 
 2. 제약조건 필터링
 ────────────────────────────────
-팀 역량: Python 중심 → FastAPI
+팀 역량: [팀 주력 언어] → [선택 프레임워크]
 비용 제한: 오픈소스 우선 → PostgreSQL
-성능 요건: 비동기 필수 → FastAPI + asyncpg
+성능 요건: 비동기 필수 → [비동기 지원 프레임워크]
 
 3. 결정 및 근거 문서화
 ────────────────────────────────
@@ -1121,8 +1184,8 @@ Stage 1의 NFR 프로파일에서 충돌 식별:
 # 기술 스택 결정
 
 ## 결정 사항
-- 언어: Python 3.11+
-- 프레임워크: FastAPI
+- 언어: [선택 언어]
+- 프레임워크: [선택 프레임워크]
 - DB: PostgreSQL 15
 - 캐시: Redis
 - 메시징: Kafka
@@ -1136,7 +1199,7 @@ Stage 1의 NFR 프로파일에서 충돌 식별:
 
 ---
 
-## Part 4: Stage 3 결정 문서화 - ADR (상세)
+## Part 4: Stage 3 결정 문서화 - ADR
 
 ### 4.1 ADR의 역할과 위치
 
@@ -1190,7 +1253,7 @@ ADR = Architecture Decision Record
 
 판단 기준:
 ├─ 간단한 결정: ADR만 작성
-│   예: "로깅은 structlog 사용"
+│   예: "로깅은 구조화 로깅 라이브러리 사용"
 │
 ├─ 복잡한 결정: Design Doc → ADR
 │   예: "DB 선택 (PostgreSQL vs MySQL vs MongoDB)"
@@ -1304,7 +1367,7 @@ ADR = Architecture Decision Record
 
 예시:
 ├─ DB: "PostgreSQL vs MySQL vs MongoDB"
-├─ 프레임워크: "FastAPI vs Django vs Flask"
+├─ 프레임워크: "[팀 언어]의 프레임워크 비교"
 ├─ 메시지 큐: "Kafka vs RabbitMQ vs Redis Pub/Sub"
 └─ 캐시: "Redis vs Memcached"
 
@@ -1402,10 +1465,10 @@ ADR = Architecture Decision Record
 └─ 변경 시 영향 범위 큼
 
 예시:
-├─ 로깅 표준: "structlog + JSON 포맷"
+├─ 로깅 표준: "구조화 로깅 + JSON 포맷"
 ├─ 에러 처리: "예외 계층 + 에러 코드"
-├─ 설정 관리: "Pydantic Settings + 환경 변수"
-└─ 테스트 전략: "pytest + 95% 커버리지"
+├─ 설정 관리: "타입 안전 설정 + 환경 변수"
+└─ 테스트 전략: "테스트 프레임워크 + 95% 커버리지"
 
 템플릿:
 ┌─────────────────────────────────────────────────────────┐
@@ -1420,25 +1483,25 @@ ADR = Architecture Decision Record
 │ 분산 추적(trace_id) 필수.                               │
 ├─────────────────────────────────────────────────────────┤
 │ 결정:                                                   │
-│ - 라이브러리: structlog                                 │
+│ - 라이브러리: [언어별 구조화 로깅 도구]                 │
 │ - 포맷: JSON (프로덕션), Console (개발)                │
 │ - 레벨: DEBUG, INFO, WARNING, ERROR, CRITICAL          │
 │ - 컨텍스트: trace_id, user_id, request_id              │
 ├─────────────────────────────────────────────────────────┤
 │ 결과:                                                   │
 │ - src/core/logging/ 모듈 구현                          │
-│ - print() 사용 금지 (Ruff T201)                        │
+│ - print() 사용 금지 (Lint 규칙)                        │
 │ - 모든 로그는 logger.info() 등 사용                    │
 ├─────────────────────────────────────────────────────────┤
 │ 강제:                                                   │
 │ - pre-commit: print() 감지 차단                        │
-│ - Ruff: T201 규칙 활성화                               │
+│ - Lint: print 금지 규칙 활성화                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Part 5: Stage 4-6 Bridge - 환경 구축 (상세)
+## Part 5: Stage 4-6 Bridge - 환경 구축
 
 ### 5.1 Bridge의 의미
 
@@ -1501,7 +1564,7 @@ Gemini 연구 결과:
                     ↓
 ┌─────────────────────────────────────────────────────────┐
 │ 4. 자동화된 거버넌스 (Stage 6)                          │
-│    = pre-commit, Ruff, MyPy, pytest                    │
+│    = pre-commit, Lint, Type Check, Test                │
 │    = "위반하면 막힘" 강제                               │
 │    → 비유: 단속 카메라                                  │
 └─────────────────────────────────────────────────────────┘
@@ -1557,22 +1620,23 @@ DNA 시스템 11개의 설계 문서 작성
 ├──────────────────────────────────────────────────────────┤
 │                                                          │
 │  핵심 인프라 (4개):                                      │
-│  ├─ 1. Logging (structlog): 구조화된 로깅               │
-│  ├─ 2. Configuration (Pydantic): 타입 안전 설정         │
-│  ├─ 3. Types (Pydantic v2): 공통 타입 정의              │
+│  ├─ 1. Logging: 구조화된 로깅                           │
+│  ├─ 2. Configuration: 타입 안전 설정                    │
+│  ├─ 3. Types: 공통 타입 정의                            │
 │  └─ 4. Error Handling: 예외 계층 + 에러 코드            │
 │                                                          │
 │  데이터/통신 (3개):                                      │
-│  ├─ 5. Database (SQLAlchemy): ORM + 마이그레이션        │
-│  ├─ 6. Cache (Redis): 캐싱 추상화                       │
-│  └─ 7. Messaging (Kafka): 이벤트 발행/구독              │
+│  ├─ 5. Database: ORM + 마이그레이션                     │
+│  ├─ 6. Cache: 캐싱 추상화                               │
+│  └─ 7. Messaging: 이벤트 발행/구독                      │
 │                                                          │
 │  품질/보안 (4개):                                        │
-│  ├─ 8. Testing (pytest): 테스트 인프라                  │
-│  ├─ 9. Monitoring (Prometheus): 메트릭 수집             │
+│  ├─ 8. Testing: 테스트 인프라                           │
+│  ├─ 9. Monitoring: 메트릭 수집                          │
 │  ├─ 10. Security: 인증/인가                             │
 │  └─ 11. API Gateway: 라우팅/미들웨어                    │
 │                                                          │
+│  (언어별 구현: docs/manuals/ 참조)                       │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -1630,7 +1694,7 @@ B-A-A (협업/동기화):
 ## 2. 각 시스템 설계
 
 ### 2.1 Logging 시스템
-- 라이브러리: structlog
+- 라이브러리: [언어별 구조화 로깅 도구]
 - 포맷: JSON (prod), Console (dev)
 - 컨텍스트: trace_id, user_id, request_id
 - 디렉토리: src/core/logging/
@@ -1661,32 +1725,29 @@ Error ← 모든 시스템
 #### 디렉토리 구조
 
 ```
+(예시: Python 디렉토리 구조 - 언어별 상세: docs/manuals/ 참조)
+
 src/
 ├── core/                           # DNA 시스템
-│   ├── __init__.py
 │   │
 │   ├── logging/                    # 1. Logging
-│   │   ├── __init__.py
-│   │   ├── logger.py               # structlog 래퍼
-│   │   ├── config.py               # 로그 레벨, 포맷
-│   │   └── handlers.py             # 파일, 콘솔, JSON
+│   │   ├── logger.*                # 로깅 래퍼
+│   │   ├── config.*                # 로그 레벨, 포맷
+│   │   └── handlers.*              # 파일, 콘솔, JSON
 │   │
 │   ├── config/                     # 2. Configuration
-│   │   ├── __init__.py
-│   │   ├── settings.py             # Pydantic Settings
-│   │   └── validators.py           # 커스텀 검증
+│   │   ├── settings.*              # 타입 안전 설정
+│   │   └── validators.*            # 커스텀 검증
 │   │
 │   ├── types/                      # 3. Types
-│   │   ├── __init__.py
-│   │   ├── base.py                 # BaseModel 확장
-│   │   ├── ids.py                  # ID 타입 (UUID)
-│   │   └── common.py               # 공통 타입
+│   │   ├── base.*                  # 기본 타입 확장
+│   │   ├── ids.*                   # ID 타입 (UUID)
+│   │   └── common.*                # 공통 타입
 │   │
 │   ├── errors/                     # 4. Error Handling
-│   │   ├── __init__.py
-│   │   ├── exceptions.py           # 예외 계층
-│   │   ├── codes.py                # 에러 코드
-│   │   └── handlers.py             # 전역 핸들러
+│   │   ├── exceptions.*            # 예외 계층
+│   │   ├── codes.*                 # 에러 코드
+│   │   └── handlers.*              # 전역 핸들러
 │   │
 │   ├── database/                   # 5. Database
 │   │   ├── __init__.py
@@ -1719,8 +1780,9 @@ class MyLogger:
         print(f"[LOG] {msg}")  # 1679줄...
 
 ✅ 표준 라이브러리:
-import structlog
-logger = structlog.get_logger()
+// 언어별 구조화 로깅 도구 사용
+// Python: structlog, TypeScript: winston, Java: logback
+logger = get_logger()  // 의사코드
 
 2. 인터페이스 추상화
 ────────────────────────────────
@@ -1757,7 +1819,7 @@ logger.info("Connecting to", redis_url=settings.redis_url)
 #### 목표
 DNA 시스템 사용 강제 규칙 + 자동화 설정
 
-#### PROJECT_STANDARDS.md 구조
+#### PROJECT_STANDARDS.md 구조 예시
 
 ```
 # Project Standards
@@ -1765,15 +1827,15 @@ DNA 시스템 사용 강제 규칙 + 자동화 설정
 ## 1. 코드 스타일
 
 ### 1.1 포맷팅
-- Ruff formatter 사용
-- 줄 길이: 88자
-- 들여쓰기: 4 spaces
+- 표준 Formatter 사용
+- 줄 길이: 80-120자 (언어별 관례)
+- 들여쓰기: 언어별 표준
 
 ### 1.2 네이밍
 - 클래스: PascalCase
-- 함수/변수: snake_case
+- 함수/변수: snake_case 또는 camelCase (언어별)
 - 상수: UPPER_SNAKE_CASE
-- 비공개: _prefix
+- 비공개: _prefix 또는 private
 
 ## 2. DNA 시스템 사용 규칙
 
@@ -1828,9 +1890,9 @@ DON'T:
 ## 4. 품질 기준
 
 ### 4.1 Zero Tolerance
-- Ruff: 0 violations
-- MyPy: 0 errors
-- pytest: 0 failures
+- Lint: 0 violations
+- Type Check: 0 errors
+- Test: 0 failures
 - Coverage: 95%+
 
 ### 4.2 커밋 전 필수
@@ -1842,43 +1904,50 @@ DON'T:
 #### 자동화 설정
 
 ```yaml
-# pyproject.toml
-[tool.ruff]
-line-length = 88
-select = ["E", "F", "I", "T201"]  # T201 = print 금지
+# 언어별 설정 파일 (Python: pyproject.toml, TS: eslint.config.js 등)
 
-[tool.mypy]
+[Lint 설정]
+line-length = 80-120
+rules = [코드 스타일, import 정렬, print 금지]
+
+[Type Check 설정]
 strict = true
 warn_return_any = true
 
-[tool.pytest.ini_options]
-addopts = "--cov=src --cov-fail-under=95"
+[Test 설정]
+coverage = "--cov=src --cov-fail-under=95"
 
 ---
 
-# .pre-commit-config.yaml
+# .pre-commit-config.yaml (언어별 도구로 대체)
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
+  - repo: [Lint 도구 레포지토리]
+    rev: [버전]
     hooks:
-      - id: ruff
+      - id: lint
         args: [--fix]
-      - id: ruff-format
+      - id: format
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
+  - repo: [Type Check 도구 레포지토리]
+    rev: [버전]
     hooks:
-      - id: mypy
-        additional_dependencies: [pydantic]
+      - id: type-check
+        additional_dependencies: [필요한 플러그인]
 
   - repo: local
     hooks:
-      - id: pytest
-        name: pytest
-        entry: pytest tests/unit -q
+      - id: test
+        name: unit-test
+        entry: [테스트 프레임워크] tests/unit -q
         language: system
         pass_filenames: false
         always_run: true
+
+# 언어별 예시:
+# Python: ruff, mypy, pytest
+# TypeScript: eslint, tsc, jest
+# Java: checkstyle, javac, junit
+# Go: golint, go vet, go test
 ```
 
 #### 자동화 성숙도
@@ -1911,7 +1980,7 @@ Month 1+: 고급 거버넌스
 
 ---
 
-## Part 6: Stage 7-9 Blueprint → 구현 (상세)
+## Part 6: Stage 7-9 Blueprint → 구현
 
 ### 6.1 Stage 7: Project Blueprint
 
@@ -2273,26 +2342,26 @@ class User(Base):
 
 ## Step 4: 정적 검증 🔍
 ────────────────────────────────
-[ ] Ruff 실행: `ruff check src/domain/entities/user.py`
-[ ] MyPy 실행: `mypy src/domain/entities/user.py`
+[ ] Lint 실행: `[lint-tool] check src/domain/entities/user.*`
+[ ] Type Check 실행: `[type-check-tool] src/domain/entities/user.*`
 [ ] 0 violations 확인
 
 ## Step 5: 단위 테스트 실행 ✅
 ────────────────────────────────
-[ ] pytest 실행: `pytest tests/unit/domain/test_user.py -v`
+[ ] 테스트 실행: `[test-framework] tests/unit/domain/test_user.* -v`
 [ ] 모든 테스트 통과 확인
-[ ] 커버리지 확인: `pytest --cov=src/domain/entities/user`
+[ ] 커버리지 확인: `[test-framework] --cov=src/domain/entities/user`
 
 ## Step 6: 리팩토링 🔄
 ────────────────────────────────
 [ ] 중복 코드 제거
 [ ] 네이밍 개선
 [ ] 타입 힌트 완성
-[ ] 문서화 (docstring)
+[ ] 문서화 (주석/docstring)
 
 ## Step 7: 종합 테스트 🧪
 ────────────────────────────────
-[ ] 전체 테스트 실행: `pytest tests/ -v`
+[ ] 전체 테스트 실행: `[test-framework] tests/ -v`
 [ ] 기존 테스트 깨지지 않음 확인
 [ ] 커버리지 95%+ 확인
 
@@ -2337,7 +2406,7 @@ class User(Base):
    모든 명령어는 그대로 실행 가능해야 함
 
 ❌ "테스트를 실행하세요"
-✅ "pytest tests/unit/domain/test_user.py -v"
+✅ "[test-framework] tests/unit/domain/test_user.* -v"
 
 2. 구체적인 코드 예시
    ────────────────────────────────
@@ -2359,7 +2428,7 @@ class User(Base):
 
 ---
 
-## Part 7: AI 협업 기법 (상세)
+## Part 7: AI 협업 기법
 
 ### 7.1 인지 글쓰기 이론 기반
 
@@ -2826,50 +2895,33 @@ Level 3 - Final (고급):
 ```
 ---
 
-## 마무리: 문서 활용 가이드
+## 마무리
 
 ### 이 문서의 위치
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ Tier 1: Overview (빠른 파악)                            │
-│ DNA_PROJECT_OVERVIEW_v2.md (526줄)                     │
+│ 00_CORE_METHODOLOGY.md                                │
 │ → 전체 맥락, 현재 위치                                 │
 └───────────────────────┬─────────────────────────────────┘
                         │
                         ↓
 ┌─────────────────────────────────────────────────────────┐
 │ Tier 2: Detailed (상세 참조) ← 현재 문서               │
-│ DNA_METHODOLOGY_DETAILED.md                            │
+│ 01_DNA_METHODOLOGY_DETAILED.md                            │
 │ → 실제 작업 시 참조                                    │
 └───────────────────────┬─────────────────────────────────┘
                         │
                         ↓
 ┌─────────────────────────────────────────────────────────┐
-│ Tier 3: Stage별 가이드 (추후 분리)                     │
+│ Tier 3: Stage별 가이드                                │
 │ STAGE_1_GUIDE.md, STAGE_2_GUIDE.md, ...               │
 │ → 각 Stage 실행 시 로드                                │
 └─────────────────────────────────────────────────────────┘
-```
-### 다음 단계
-
-```
-Step 3: CoD 압축
-────────────────────────────────
-
-- 이 문서의 중복 제거
-- 핵심 엔티티 명확화
-- 실행 가능한 지침으로 압축
-
-Step 4: Stage별 분리
-────────────────────────────────
-
-- 이 문서 기반으로 9개 가이드 추출
-- 각 가이드: 400-600줄
-- Progressive Disclosure 적용
 ```
 ---
 
 **문서 작성 완료**: 2025-12-02
 **총 라인 수**: ~1900줄
-**참조**: DNA_PROJECT_OVERVIEW_v2.md, GEMINI_RESEARCH_SYNTHESIS.md
+**참조**: 00_CORE_METHODOLOGY.md, GEMINI_RESEARCH_SYNTHESIS.md

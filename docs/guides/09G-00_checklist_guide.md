@@ -1,9 +1,63 @@
-# Checklist 작성 가이드
+# Stage9: 작업 체크리스트 작성 가이드(9-Step Checklist)
 
 > **목적**: Stage 9 - TDD 기반 9-Step Checklist로 모든 기능 구현, 0 violations, 95%+ coverage 보장
 >
 > **버전**: v4.1 (2025-12-03)
 > - v2.0: Stage 9 범위 명시, 입력/출력 문서 추가
+
+---
+
+## 🌐 언어 중립성 안내
+
+이 가이드는 **언어 무관 개념 + Python 생태계 예시**로 구성됩니다:
+
+```
+개념 (언어 무관):
+├─ 9-Step TDD Checklist 구조
+├─ 코드 스켈레톤 작성 원칙
+├─ 테스트 케이스 설계 방법
+└─ 품질 검증 기준 (0 violations, 95%+ coverage)
+
+예시 (Python 생태계):
+├─ pytest, Ruff, MyPy 명령어
+├─ Pydantic, structlog 코드
+└─ Python 문법 스켈레톤
+
+다른 언어:
+└─ 해당 언어 매뉴얼 참조
+```
+
+**언어별 도구 대응표**:
+
+| 언어       | Linter        | Type Checker | Test Framework | Coverage     |
+|-----------|---------------|--------------|----------------|--------------|
+| Python    | ruff          | mypy         | pytest         | pytest-cov   |
+| TypeScript| eslint        | tsc          | jest           | jest         |
+| Rust      | clippy        | rustc        | cargo test     | tarpaulin    |
+| Go        | golangci-lint | go vet       | go test        | go test      |
+| Java      | checkstyle    | javac        | junit          | jacoco       |
+
+**적용 방법**: 예시의 도구 이름만 해당 언어 도구로 교체하면 됩니다.
+
+```
+
+---
+
+## 📚 이 가이드의 위치
+
+```
+DNA 방법론 문서 체계:
+
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
+           ↓
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리)
+           ↓
+Tier 3: 이 문서 (Stage 8 실행 가이드) ← 지금 여기!
+```
+
+**참조 문서**:
+
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` **Part 6.3**
 
 ---
 
@@ -41,21 +95,21 @@
 - [ ] 성공 기준 명확히
 
 ## Step 2: 테스트 작성 ✅
-- [ ] `tests/test_order_entity.py` 생성
+- [ ] `tests/test_order_entity.*` 생성
 - [ ] 실패하는 테스트 작성
-- [ ] pytest 실행 → RED 확인
+- [ ] Test 실행 → RED 확인
 
 ## Step 3: 구현 ✅
-- [ ] `src/domains/order/models.py` 생성
+- [ ] `src/domains/order/models.*` 생성
 - [ ] Order 클래스 작성
-- [ ] pytest 실행 → GREEN 확인
+- [ ] Test 실행 → GREEN 확인
 
 ## Step 4: 정적 검증 ✅
-- [ ] ruff check . (0 violations)
-- [ ] mypy . (0 errors)
+- [ ] Lint (0 violations)
+- [ ] Type Check (0 errors)
 
 ## Step 5: 단위 테스트 실행 ✅
-- [ ] pytest tests/test_order_entity.py
+- [ ] Test tests/test_order_entity.*
 - [ ] coverage report (95%+)
 
 ## Step 6: 리팩토링 ✅
@@ -154,32 +208,32 @@ Claude 컨텍스트 윈도우: 200K 토큰
 
 ### 체크리스트 크기 판단 공식
 
-```python
-def is_optimal_checklist_size(checklist: Checklist) -> bool:
+```
+FUNCTION is_optimal_checklist_size(checklist):
     """Checklist 크기가 AI 최적인지 판단"""
     
-    # 1. 줄 수 검증
+    // 1. 줄 수 검증
     total_lines = checklist.count_lines()
-    if not (80 <= total_lines <= 180):
-        return False
+    IF NOT (80 <= total_lines <= 180):
+        RETURN FALSE
     
-    # 2. 9-Step 완전성
-    if len(checklist.steps) != 9:
-        return False
+    // 2. 9-Step 완전성
+    IF checklist.steps.length != 9:
+        RETURN FALSE
     
-    # 3. 코드 스켈레톤 포함
+    // 3. 코드 스켈레톤 포함
     code_skeleton_lines = checklist.count_code_lines()
-    if code_skeleton_lines < 20:  # 최소 스켈레톤
-        return False
-    if code_skeleton_lines > 100:  # 너무 많음
-        return False
+    IF code_skeleton_lines < 20:  // 최소 스켈레톤
+        RETURN FALSE
+    IF code_skeleton_lines > 100:  // 너무 많음
+        RETURN FALSE
     
-    # 4. 테스트 케이스 포함
+    // 4. 테스트 케이스 포함
     test_cases = checklist.count_test_cases()
-    if not (3 <= test_cases <= 10):
-        return False
+    IF NOT (3 <= test_cases <= 10):
+        RETURN FALSE
     
-    return True
+    RETURN TRUE
 ```
 
 ### 크기별 체크리스트 예시
@@ -283,12 +337,12 @@ Step별 완전성:
   └─ 파일 경로 명확?
 
 □ Step 4 (정적 검증):
-  ├─ ruff 명령어 복사 가능?
-  ├─ mypy 명령어 복사 가능?
+  ├─ Lint 명령어 복사 가능?
+  ├─ Type Check 명령어 복사 가능?
   └─ 예상 출력 명시?
 
 □ Step 5 (테스트 실행):
-  ├─ pytest 명령어 복사 가능?
+  ├─ Test 명령어 복사 가능?
   ├─ coverage 명령어 포함?
   └─ 95%+ 기준 명시?
 
@@ -337,14 +391,10 @@ Step별 완전성:
 
 ### 3.2 구현 스켈레톤
 
-```python
-# src/auth/token.py
-import jwt
-from datetime import datetime, timedelta
-from core.config import config
-from core.logging import logger
+```
+// src/auth/token.* (언어별 확장자)
 
-def create_token(user_id: str) -> str:
+FUNCTION create_token(user_id: String) -> String:
     """JWT 토큰 생성.
     
     Args:
@@ -354,12 +404,14 @@ def create_token(user_id: str) -> str:
     """
     payload = {
         "user_id": user_id,
-        "exp": datetime.utcnow() + timedelta(hours=1)
+        "exp": now() + 1_hour
     }
     secret_key = config.get_secret("JWT_SECRET_KEY")
     token = jwt.encode(payload, secret_key, algorithm="HS256")
     logger.info("token_created", user_id=user_id)
-    return token
+    RETURN token
+
+// 언어별 구현 예시: docs/manuals/ 참조
 ```
 
 ### 3.3 자주 하는 실수
@@ -368,7 +420,7 @@ def create_token(user_id: str) -> str:
 payload["exp"] = 3600
 
 ✅ datetime으로 제공:
-payload["exp"] = datetime.utcnow() + timedelta(hours=1)
+payload["exp"] = now() + 1_hour
 
 검증 결과: 모든 검증 통과! ✅
 ────────────────────────────────────────────────────────
@@ -416,28 +468,28 @@ Task가 다른 Task에 의존할 때:
 ### 의존성 (다른 Task에서 제공)
 
 **User 인터페이스 (Task 001 완료 후 사용 가능)**:
-```python
-# 이 인터페이스는 Task 001에서 구현됨
-# Task 005에서는 이 인터페이스만 알면 됨
+```
+// 이 인터페이스는 Task 001에서 구현됨
+// Task 005에서는 이 인터페이스만 알면 됨
 
-class User:
-    id: UserId
-    email: str
-    created_at: datetime
+Entity: User
+├─ id: UserId
+├─ email: String
+└─ created_at: DateTime
 
-class IUserRepository(Protocol):
-    def find_by_id(self, user_id: UserId) -> User | None: ...
+Interface: IUserRepository
+└─ find_by_id(user_id) → User?
 ```
 
 ### 이 Task의 출력 (다른 Task에 제공)
 
 **OrderService 인터페이스**:
-```python
-# Task 005에서 구현할 것
-# Task 010 (주문 조회)에서 사용할 것
+```
+// Task 005에서 구현할 것
+// Task 010 (주문 조회)에서 사용할 것
 
-class IOrderService(Protocol):
-    def create_order(self, user_id: UserId, items: list[OrderItem]) -> Order: ...
+Interface: IOrderService
+└─ create_order(user_id, items) → Order
 ```
 
 이렇게 하면:
@@ -456,34 +508,31 @@ Mock을 활용한 독립적 Checklist:
 
 ### 의존성 Mock
 
-```python
-# tests/test_order_service.py
+// tests/test_order_service.* (언어별 확장자)
 
-@pytest.fixture
-def mock_user_repository():
+FIXTURE mock_user_repository:
     """User 의존성 Mock (Task 001 미완료 시 사용)"""
-    repo = Mock(spec=IUserRepository)
-    repo.find_by_id.return_value = User(
-        id=UserId("user-123"),
+    repo = Mock(IUserRepository)
+    repo.find_by_id → returns User(
+        id="user-123",
         email="test@example.com",
-        created_at=datetime.utcnow()
+        created_at=now()
     )
-    return repo
+    RETURN repo
 
-def test_create_order_success(mock_user_repository):
-    # Given
+TEST create_order_success(mock_user_repository):
+    // Given
     service = OrderService(user_repo=mock_user_repository)
     
-    # When
+    // When
     order = service.create_order(
-        user_id=UserId("user-123"),
+        user_id="user-123",
         items=[OrderItem(product_id="prod-1", quantity=2)]
     )
     
-    # Then
-    assert order.user_id == UserId("user-123")
-    mock_user_repository.find_by_id.assert_called_once()
-```
+    // Then
+    ASSERT order.user_id == "user-123"
+    ASSERT mock_user_repository.find_by_id called once
 
 장점:
 ├─ Task 001 미완료해도 Task 005 테스트 가능
@@ -587,6 +636,17 @@ AI 에이전트 실행 (구현)
 ---
 
 ### 2-2. 구현 코드는 얼마나?
+
+**"정보 밀도 균형점"이란?**
+
+체크리스트에 제공하는 정보의 양과 상세도의 최적 지점입니다:
+- **너무 적으면**: AI가 추측하여 프로젝트 표준 위반
+- **너무 많으면**: AI가 복붙만 하여 TDD 불가능, 학습 효과 없음
+- **균형점**: AI가 스스로 채우며 구현할 수 있는 "스켈레톤" 수준
+
+이를 4단계 Level로 구체화하여, Level 3 (스켈레톤)이 균형점임을 시연합니다.
+
+---
 
 **Level 1: 인터페이스 계약** (20 lines) - **필수**
 ```python
@@ -882,10 +942,27 @@ standards/
 
 ### 핵심 원칙
 
-**TDD (Test-Driven Development)**
-- Step 2에서 테스트 먼저 작성
-- Step 3에서 구현
-- Step 5에서 테스트 실행
+**TDD (Test-Driven Development) ↔ 9-Step 매핑**
+
+9-Step은 전통적인 Red-Green-Refactor 사이클을 확장한 것입니다:
+
+```
+Red-Green-Refactor (TDD 3단계):
+├─ Red: 실패하는 테스트 작성
+│    → Step 2: 테스트 작성
+├─ Green: 최소 구현으로 통과
+│    → Step 3: 구현
+│    → Step 4: 정적 검증
+│    → Step 5: 테스트 실행
+└─ Refactor: 코드 개선
+     → Step 6: 리팩토링
+     → Step 7: 재테스트
+
+추가 단계 (품질 보장):
+├─ Step 1: 목표 이해 (사전 준비)
+├─ Step 8: 문서화 (사후 정리)
+└─ Step 9: 커밋 (최종 제출)
+```
 
 **Zero-Tolerance Quality**
 - Step 4: ruff 0, mypy 0, import-linter 0

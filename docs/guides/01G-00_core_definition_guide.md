@@ -4,8 +4,8 @@
 >
 > **버전**: v4.1 (2025-12-03)
 >
-> - v5.0 (2025-12-03): Gemini 연구 기반 10가지 ADQ 체계 도입, DNA_METHODOLOGY_DETAILED.md 기준 전면 재작성
-> - v4.0 (2025-11-14): Stage - Part - Layer 구조 재정립
+> - v4.0 (2025-12-03): Gemini 연구 기반 10가지 ADQ 체계 도입, 01_DNA_METHODOLOGY_DETAILED.md 기준 전면 재작성
+> 
 > - v3.0: 3-Layer Decision Tree 도입
 
 ---
@@ -15,17 +15,26 @@
 ```
 DNA 방법론 문서 체계:
 
-Tier 1: DNA_PROJECT_OVERVIEW_v2.md (전체 맥락)
+Tier 1: 00_CORE_METHODOLOGY.md (전체 맥락)
            ↓
-Tier 2: DNA_METHODOLOGY_DETAILED.md (상세 원리)
+Tier 2: 01_DNA_METHODOLOGY_DETAILED.md (상세 원리)
            ↓
-Tier 3: 이 문서 (Stage 1 실행 가이드) ← 지금 여기!
+Tier 3: 이 문서 (Stage1 실행 가이드) ← 지금 여기!
 ```
 
 **참조 문서**:
-- **원리 이해**: `DNA_METHODOLOGY_DETAILED.md` Part 3
-- **패밀리별 기술**: `./family-tech-matrix/` (7개 파일)
-- **실전 사례**: `./02E-01_stock_trading_case.md`
+- **원리 이해**: `01_DNA_METHODOLOGY_DETAILED.md` **Part 3**
+- **패밀리별 기술**: `./family-tech-matrix/` (8개 파일)
+  - `00_overview.md`
+  - `01_ultra_high_frequency_trading_tech_options.md`
+  - `02_transaction_crud_tech_options.md`
+  - `03_collaboration_sync_tech_options.md`
+  - `04_search_recommendation_tech_options.md`
+  - `05_real_time_streaming_tech_options.md`
+  - `06_analytics_batch_tech_options.md`
+  - `07_safety_critical_iot_tech_options.md`
+
+- **실전 사례**: `./manual-cases/02E-01_stock_trading_case.md`
 
 ---
 
@@ -615,15 +624,14 @@ NFR 프로파일과 별도로, 환경 조건을 기록합니다:
 
 | 문서 | 용도 |
 |------|------|
-| `DNA_METHODOLOGY_DETAILED.md` Part 3 | 10가지 ADQ 상세 원리 |
+| `01_DNA_METHODOLOGY_DETAILED.md` Part 3 | 10가지 ADQ 상세 원리 |
 | `./family-tech-matrix/*.md` | 7가지 패밀리별 기술 선택 |
 | `./02E-01_stock_trading_case.md` | 실전 사례 (주식 거래 플랫폼) |
-| `./standards/00_STAGE_STRUCTURE.md` | Stage 간 연결 구조 |
+| `./standards/01_STAGE_STRUCTURE.md` | Stage 간 연결 구조 |
 
 ---
 
 **버전 이력**:
-- v5.0 (2025-12-03): Gemini 연구 기반 10가지 ADQ 체계 도입, DNA_METHODOLOGY_DETAILED.md 기준 전면 재작성
-- v4.0 (2025-11-14): Stage - Part - Layer 구조 재정립
+- v4.0 (2025-12-03): Gemini 연구 기반 10가지 ADQ 체계 도입, 01_DNA_METHODOLOGY_DETAILED.md 기준 전면 재작성
 - v3.0 (2025-11-12): 3-Layer Decision Tree 도입
 - v2.0 (2025-11-11): 초기 버전

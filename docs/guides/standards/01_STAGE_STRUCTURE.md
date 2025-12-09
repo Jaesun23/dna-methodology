@@ -260,7 +260,7 @@ Stage 9: Checklist (작업별 체크리스트)
 
 ### 관련 문서
 - `04G-00_dna_planning_guide.md` (작성 예정)
-- `DNA_Systems_11_Complete_Guide.md` (참조)
+- `03_DNA_SYSTEMS_GUIDE.md` (참조)
 
 ---
 
@@ -313,7 +313,7 @@ Stage 9: Checklist (작업별 체크리스트)
 
 ### 관련 문서
 - `05G-00_dna_implementation_guide.md` (작성 예정)
-- `DNA_Systems_11_Complete_Guide.md` (참조)
+- `03_DNA_SYSTEMS_GUIDE.md` (참조)
 
 ---
 
@@ -549,7 +549,7 @@ Stage 9 (Checklist)
 
 ### 가이드 파일 (completed-guide/)
 ```
-00_STAGE_STRUCTURE.md (이 문서)
+01_STAGE_STRUCTURE.md (이 문서)
 01G-00_core_definition_guide.md (Stage 1)
 01M-01_layer1_manual.md
 01M-02_layer2_manual.md
@@ -611,7 +611,7 @@ Stage 9: 체크리스트
 - 🔄 **Stage 4-5**: DNA 시스템 가이드 작성 중 ⭐
   - 04G-00_dna_planning_guide.md (작성 예정)
   - 05G-00_dna_implementation_guide.md (작성 예정)
-  - DNA_Systems_11_Complete_Guide.md (완성)
+  - 03_DNA_SYSTEMS_GUIDE.md (완성)
 
 - ⏸️ **Stage 6-9**: 향후 작업
 

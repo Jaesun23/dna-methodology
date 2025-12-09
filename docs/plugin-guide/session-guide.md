@@ -101,7 +101,7 @@ DNA 플러그인은 11개 세션으로 개발됩니다. 각 세션은 독립적�
 
 **참조 문서**:
 - 04G-00_dna_planning_guide.md
-- DNA_Systems_11_Complete_Guide.md
+- standards/03_DNA_SYSTEMS_GUIDE.md
 
 ---
 
