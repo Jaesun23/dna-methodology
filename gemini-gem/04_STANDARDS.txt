@@ -1,0 +1,2459 @@
+# DNA Standards - 파일 명명 규칙, Stage 구조, 프로젝트 표준 템플릿
+# 생성일: 2025-12-10
+# 포함된 파일 수: 4
+
+================================================================================
+
+📄 FILE: 00_FILE_NAMING_CONVENTION.md
+--------------------------------------------------------------------------------
+
+# DNA 방법론 파일 및 코드 명명 규칙
+
+> **목적**: 모든 파일(문서, 코드, 테스트, 설정)의 위치와 이름을 즉시 파악
+> **버전**: v2.0 (2025-12-09)
+> **적용 범위**: DNA 방법론의 모든 파일
+
+---
+
+## 📖 문서 구조
+
+```
+이 문서의 Part 구성:
+
+Part 1: 방법론 산출물 (문서)     Line 23-248
+Part 2: 소스 코드 구조           Line 249-443
+Part 3: 테스트 파일              Line 444-578
+Part 4: 스크립트/임시 파일       Line 579-709
+Part 5: 설정 파일                Line 710-909
+```
+
+---
+
+# Part 1: 방법론 산출물 (문서)
+
+---
+
+## 🎯 핵심 원칙
+
+**"파일명만 봐도 어느 Stage의 무슨 역할인지 즉시 알 수 있어야 한다"**
+
+### 왜 필요한가?
+
+❌ **명명 규칙 없으면**:
+```
+core_functions.md
+family.md
+constraints_final_v2.md
+ADR-fastapi.md
+```
+→ 어느 Stage인지? 순서는? 타입은? → **혼란!**
+
+✅ **명명 규칙 있으면**:
+```
+01F-01_core_functions.md          # Stage 1, Function 문서
+01C-01_family_classification.md   # Stage 1, Classification 문서
+02D-01_tech_stack_decision.md     # Stage 2, Decision 문서
+03A-103_fastapi_selection.md      # Stage 3, ADR (Domain)
+```
+→ **Stage, Type, 순서 즉시 파악!**
+
+---
+
+## 📋 문서 파일명 구조
+
+### **패턴**: `{Stage}{Type}-{Seq}_{descriptive_name}.md`
+
+```
+01F-01_core_functions.md
+│││ ││ └────────────────── 설명적 이름 (영문, snake_case)
+│││ ││
+│││ │└─────────────────── 순서 번호 (01~99)
+│││ │
+│││ └──────────────────── 구분자 (하이픈)
+││└─────────────────────── 문서 타입 (알파벳 1글자)
+│└──────────────────────── Stage 번호 (01~09)
+└───────────────────────── 2자리 숫자 (앞에 0 붙임)
+```
+
+### **구성 요소**
+
+| 요소 | 포맷 | 설명 | 예시 |
+|------|------|------|------|
+| **Stage** | 2자리 숫자 | 01~09 (9개 Stage) | `01`, `02`, `03` |
+| **Type** | 알파벳 1글자 | 문서 유형 코드 | `F`, `C`, `D`, `A`, `G` |
+| **Seq** | 2자리 숫자 | 01~99 (같은 Stage+Type 내 순서) | `01`, `02`, `03` |
+| **Name** | snake_case | 설명적 이름 (영문) | `core_functions` |
+
+---
+
+## 🔤 Type 코드 정의
+
+### **프로젝트 산출물**
+
+| Code | 의미 | 용도 | 예시 |
+|------|------|------|------|
+| **F** | Function | 기능 정의 | `01F-01_core_functions.md` |
+| **C** | Classification | 분류/분석 결과 | `01C-01_family_classification.md` |
+| **D** | Decision | 결정 사항 | `02D-01_tech_stack_decision.md` |
+| **S** | Schema | 스키마/설계 | `02S-02_data_schema.md` |
+| **A** | ADR | Architecture Decision Record | `03A-001_logging.md` |
+| **B** | Blueprint | 청사진 | `07B-01_project_blueprint.md` |
+| **T** | Task | 작업 분해 | `08T-01_task_breakdown.md` |
+| **L** | List/Checklist | 체크리스트 | `09L-01_task_001_checklist.md` |
+
+### **방법론 문서**
+
+| Code | 의미 | 용도 | 예시 |
+|------|------|------|------|
+| **G** | Guide | 간결한 가이드 | `01G-00_core_definition_guide.md` |
+| **M** | Manual | 상세 해설서 | `01M-01_layer1_manual.md` |
+| **E** | Example/Case | 사례집 | `02E-01_stock_trading_case.md` |
+
+### **특수 문서**
+
+| Code | 의미 | 용도 | 예시 |
+|------|------|------|------|
+| **00** | Meta | 방법론 자체 문서 | `00_FILE_NAMING_CONVENTION.md` |
+
+---
+
+## 📁 Stage별 산출물 요약
+
+### Stage 1: 패밀리 구분과 핵심기능 파악
+```
+01F-01_core_functions.md          # 핵심 기능 정의
+01C-01_family_classification.md   # 패밀리 분류 (A-C-A)
+01C-02_nfr_profile.md             # NFR 프로파일 (A-B-B-A)
+01D-01_tech_candidates.md         # 기술 후보군
+```
+
+### Stage 2: 구조설계
+```
+02C-01_layer3_constraints.md      # Layer 3 제약 조사
+02C-02_conflicts_analysis.md      # 충돌 패턴 분석
+02D-01_tech_stack_decision.md     # 기술 스택 확정
+02S-01_architecture_diagram.png   # 아키텍처 다이어그램
+02S-02_data_schema.md             # 데이터 스키마
+02S-03_api_design.md              # API 설계
+02L-01_adr_list.md                # ADR 작성 대상 목록
+```
+
+### Stage 3: ADR 문서화
+```
+docs/adr/dna-system/
+  03A-001_logging.md              # DNA 시스템 ADR (001~099)
+  03A-002_error_handling.md
+  ...
+
+docs/adr/domain/
+  03A-101_api_selection.md        # Domain ADR (100~999)
+  03A-102_strategy_pattern.md
+  ...
+```
+
+### Stage 4-5: DNA 시스템
+```
+04B-01_dna_system_blueprint.md    # DNA 시스템 청사진
+04L-01_dna_system_checklist.md    # DNA 시스템 체크리스트
+05D-01_module_usage_docs.md       # 모듈 사용법 문서
+```
+
+### Stage 6: Project Standards
+```
+06D-01_project_standards.md       # 프로젝트 표준 (THE 산출물)
+```
+
+### Stage 7: Project Blueprint
+```
+07B-01_project_blueprint.md       # 프로젝트 청사진
+07S-01_domain_architecture.md     # 도메인 아키텍처
+```
+
+### Stage 8: Task Breakdown
+```
+08T-01_task_breakdown.md          # 작업 분해
+```
+
+### Stage 9: Checklist
+```
+09L-01_task_001_checklist.md      # 작업별 체크리스트
+09L-02_task_002_checklist.md
+...
+```
+
+---
+
+## 📦 문서 저장 위치
+
+### **방법론 문서** (dna-methodology 리포지토리)
+```
+docs/guides/
+├── 00_CORE_METHODOLOGY.md
+├── 01_DNA_METHODOLOGY_DETAILED.md
+├── 01G-00_core_definition_guide.md
+├── 02G-00_environment_constraints_guide.md
+├── ...
+├── standards/
+│   ├── 00_FILE_NAMING_CONVENTION.md   # 이 문서!
+│   └── 01_STAGE_STRUCTURE.md
+│   ├── 02_PROJECT_STANDARDS_TEMPLATE.md
+│   └── 03_DNA_SYSTEMS_GUIDE.md
+└── manuals/
+    └── (언어별 매뉴얼)
+```
+
+### **프로젝트 산출물** (실제 프로젝트)
+```
+docs/
+├── architecture/              # Stage 1-2 산출물
+│   ├── 01F-01_core_functions.md
+│   └── 02D-01_tech_stack_decision.md
+│
+├── adr/                       # Stage 3 산출물
+│   ├── dna-system/
+│   │   └── 03A-001_logging.md
+│   └── domain/
+│       └── 03A-101_api_selection.md
+│
+├── dna-system/                # Stage 4-5 산출물
+│   └── 04B-01_dna_system_blueprint.md
+│
+├── standards/                 # Stage 6 산출물
+│   └── 06D-01_project_standards.md
+│
+├── blueprint/                 # Stage 7 산출물
+│   └── 07B-01_project_blueprint.md
+│
+├── tasks/                     # Stage 8 산출물
+│   └── 08T-01_task_breakdown.md
+│
+└── checklists/                # Stage 9 산출물
+    ├── 09L-01_task_001_checklist.md
+    └── ...
+```
+
+---
+
+## 🎯 Type 치트시트
+
+```
+프로젝트 산출물:
+F = Function       C = Classification   D = Decision
+S = Schema         A = ADR              B = Blueprint
+T = Task           L = List/Checklist
+
+방법론 문서:
+G = Guide          M = Manual           E = Example/Case
+```
+
+### 읽는 법
+```
+03A-101_fastapi_selection.md
+│││ │││
+││└─┴┴─ A-101 = ADR, 101번 (Domain ADR)
+│└──── 03 = Stage 3
+└───── "Stage 3의 101번 ADR (Domain)"
+```
+
+---
+
+# Part 2: 소스 코드 구조
+
+---
+
+## 🏗️ 디렉토리 구조
+
+### 표준 프로젝트 구조
+```
+project-root/
+├── src/                           # 소스 코드 루트
+│   ├── core/                      # DNA 시스템 (Stage 5)
+│   │   ├── logging/
+│   │   ├── config/
+│   │   ├── errors/
+│   │   ├── types/
+│   │   ├── database/
+│   │   ├── cache/
+│   │   ├── auth/
+│   │   ├── validation/
+│   │   ├── events/
+│   │   ├── http/
+│   │   └── testing/
+│   │
+│   ├── domain/                    # 도메인 로직 (Stage 9)
+│   │   └── {domain_name}/
+│   │       ├── entities/
+│   │       ├── value_objects/
+│   │       ├── services/
+│   │       ├── repositories/
+│   │       └── events/
+│   │
+│   ├── application/               # 유스케이스
+│   │   └── {domain_name}/
+│   │       ├── commands/
+│   │       ├── queries/
+│   │       └── handlers/
+│   │
+│   ├── infrastructure/            # 외부 연동
+│   │   ├── persistence/
+│   │   ├── external_apis/
+│   │   └── messaging/
+│   │
+│   └── api/                       # API 레이어
+│       ├── routes/
+│       ├── schemas/
+│       └── middleware/
+│
+├── tests/                         # Part 3 참조
+├── scripts/                       # Part 4 참조
+├── docs/                          # Part 1 참조
+└── (설정 파일들)                   # Part 5 참조
+```
+
+---
+
+## 📝 소스 파일 명명 규칙
+
+### 기본 원칙
+```
+1. snake_case 사용 (모든 언어 공통 권장)
+2. 역할이 명확한 접미사 사용
+3. 복수형/단수형 일관성 유지
+```
+
+### 레이어별 파일명 패턴
+
+#### core/ (DNA 시스템)
+```
+src/core/{system_name}/
+├── index.*                       # 모듈 진입점 (언어별 상이)
+├── {system_name}.*               # 주요 구현
+├── config.*                      # 설정
+├── types.*                       # 타입 정의
+├── errors.*                      # 예외/에러 정의
+└── constants.*                   # 상수
+
+언어별 진입점:
+├── Python:     __init__.py
+├── TypeScript: index.ts
+├── Rust:       mod.rs
+├── Go:         (폴더명이 패키지)
+└── Java:       (패키지 구조)
+
+예시 (언어 무관):
+src/core/logging/
+├── index.*                       # 모듈 진입점
+├── logger.*                      # get_logger(), bind_context()
+├── config.*                      # LogConfig
+├── formatters.*                  # JSON, Console formatter
+└── handlers.*                    # File, Stream handler
+```
+
+#### domain/ (도메인)
+```
+src/domain/{domain_name}/
+├── entities/
+│   └── {entity_name}.*           # 단수형: user.*, order.*
+├── value_objects/
+│   └── {value_name}.*            # money.*, address.*
+├── services/
+│   └── {domain}_service.*        # order_service.*
+├── repositories/
+│   └── {entity}_repository.*     # user_repository.* (인터페이스)
+└── events/
+    └── {entity}_events.*         # order_events.*
+
+예시:
+src/domain/trading/
+├── entities/
+│   ├── order.*
+│   └── position.*
+├── value_objects/
+│   ├── money.*
+│   └── quantity.*
+├── services/
+│   └── trading_service.*
+├── repositories/
+│   └── order_repository.*
+└── events/
+    └── order_events.*
+```
+
+#### application/ (유스케이스)
+```
+src/application/{domain_name}/
+├── commands/
+│   └── {action}_{entity}_command.*    # create_order_command.*
+├── queries/
+│   └── get_{entity}_query.*           # get_order_query.*
+└── handlers/
+    └── {command/query}_handler.*      # create_order_handler.*
+
+예시:
+src/application/trading/
+├── commands/
+│   ├── create_order_command.*
+│   └── cancel_order_command.*
+├── queries/
+│   └── get_order_history_query.*
+└── handlers/
+    ├── create_order_handler.*
+    └── get_order_history_handler.*
+```
+
+#### infrastructure/ (인프라)
+```
+src/infrastructure/
+├── persistence/
+│   └── {db_type}_{entity}_repository.*   # postgres_user_repository.*
+├── external_apis/
+│   └── {service_name}_client.*           # kis_api_client.*
+└── messaging/
+    └── {broker}_{purpose}.*              # kafka_event_publisher.*
+```
+
+#### api/ (API)
+```
+src/api/
+├── routes/
+│   └── {domain}_routes.*          # trading_routes.*
+├── schemas/
+│   └── {domain}_schemas.*         # trading_schemas.*
+└── middleware/
+    └── {purpose}_middleware.*     # auth_middleware.*
+```
+
+---
+
+## 🏷️ 클래스/함수 명명 규칙
+
+### 클래스명 (PascalCase)
+```
+Entity:        User, Order, Product
+Value Object:  Money, Address, Email
+Service:       OrderService, TradingService
+Repository:    UserRepository, OrderRepository
+Handler:       CreateOrderHandler, GetUserHandler
+Command:       CreateOrderCommand, UpdateUserCommand
+Query:         GetOrderQuery, ListUsersQuery
+Event:         OrderCreated, UserRegistered
+Exception:     OrderNotFoundError, InvalidAmountError
+```
+
+### 함수명 (snake_case)
+```
+생성:    create_order(), register_user()
+조회:    get_order(), find_by_id(), list_orders()
+수정:    update_order(), change_status()
+삭제:    delete_order(), remove_item()
+검증:    validate_amount(), is_valid()
+변환:    to_dict(), from_dto()
+```
+
+### 상수 (UPPER_SNAKE_CASE)
+```
+MAX_RETRY_COUNT = 3
+DEFAULT_TIMEOUT_MS = 5000
+ORDER_STATUS_PENDING = "pending"
+```
+
+---
+
+# Part 3: 테스트 파일
+
+---
+
+## 🧪 테스트 디렉토리 구조
+
+```
+tests/
+├── unit/                          # 단위 테스트
+│   ├── core/                      # DNA 시스템 테스트
+│   │   ├── test_logging.*
+│   │   ├── test_config.*
+│   │   └── ...
+│   │
+│   ├── domain/                    # 도메인 테스트
+│   │   └── {domain_name}/
+│   │       ├── test_{entity}.*
+│   │       └── test_{service}.*
+│   │
+│   └── application/               # 유스케이스 테스트
+│       └── {domain_name}/
+│           └── test_{handler}.*
+│
+├── integration/                   # 통합 테스트
+│   ├── test_database.*
+│   ├── test_external_api.*
+│   └── test_{domain}_flow.*
+│
+├── e2e/                           # E2E 테스트
+│   └── test_{scenario}.*
+│
+├── fixtures/                      # 공용 픽스처/헬퍼
+│   ├── factories.*                # 테스트 데이터 팩토리
+│   ├── mocks.*                    # 공용 Mock
+│   └── data/                      # 테스트 데이터 파일
+│       └── sample_orders.json
+│
+└── [테스트 설정 파일]              # 언어별 상이
+    # Python: conftest.py
+    # TypeScript: jest.config.ts, vitest.config.ts
+    # Go: *_test.go (동일 폴더)
+    # Java: src/test/resources/
+```
+
+---
+
+## 📝 테스트 파일 명명 규칙
+
+### 파일명 패턴
+```
+test_{대상모듈명}.*
+
+예시:
+test_user.*                        # User 엔티티 테스트
+test_order_service.*               # OrderService 테스트
+test_create_order_handler.*        # CreateOrderHandler 테스트
+test_postgres_user_repository.*    # PostgresUserRepository 테스트
+```
+
+### 테스트 함수명 패턴
+```
+test_{기능}_{조건}_{예상결과}
+
+예시 (언어별 스타일 다름):
+# snake_case (Python, Rust)
+test_create_order_with_valid_data_returns_order_id()
+test_create_order_with_zero_amount_raises_error()
+
+# camelCase (JavaScript, TypeScript, Java)
+testCreateOrderWithValidDataReturnsOrderId()
+shouldThrowErrorWhenAmountIsZero()
+
+# BDD 스타일 (Jest, Vitest)
+it('should create order with valid data')
+describe('when amount is zero', () => { ... })
+```
+
+### 테스트 클래스명 패턴 (선택적)
+```
+class Test{대상클래스명}:
+class Test{기능그룹}:
+
+예시:
+TestUser, TestOrderCreation, TestAuthenticationFlow
+```
+
+---
+
+## 🎯 테스트 파일 위치 규칙
+
+### 소스 ↔ 테스트 대응
+```
+소스 파일:
+src/domain/trading/entities/order.*
+
+테스트 파일:
+tests/unit/domain/trading/test_order.*
+```
+
+### 미러링 원칙
+```
+src/                               tests/unit/
+├── core/                          ├── core/
+│   └── logging/                   │   └── test_logging.*
+│       └── logger.*               │
+│                                  │
+├── domain/                        ├── domain/
+│   └── trading/                   │   └── trading/
+│       └── entities/              │       ├── test_order.*
+│           └── order.*            │       └── test_position.*
+│                                  │
+└── application/                   └── application/
+    └── trading/                       └── trading/
+        └── handlers/                      └── test_create_order_handler.*
+            └── create_order_handler.py
+```
+
+---
+
+## 📦 픽스처 명명 규칙
+
+### 팩토리 함수
+```
+def create_{entity}(**overrides) -> Entity:
+def build_{entity}_dict(**overrides) -> dict:
+
+예시:
+def create_user(name="Test User", email="test@example.com") -> User:
+def build_order_dict(amount=10000, status="pending") -> dict:
+```
+
+### Mock 객체
+```
+mock_{대상}_repository
+mock_{서비스명}_client
+stub_{외부시스템}
+
+예시:
+mock_user_repository
+mock_kis_api_client
+stub_payment_gateway
+```
+
+---
+
+# Part 4: 스크립트/임시 파일
+
+---
+
+## 🔧 스크립트 디렉토리 구조
+
+```
+scripts/
+├── setup/                         # 환경 설정 스크립트
+│   ├── install_dependencies.sh
+│   ├── setup_database.sh
+│   └── init_project.sh
+│
+├── migration/                     # 마이그레이션 스크립트
+│   ├── migrate_v1_to_v2.py
+│   └── seed_data.py
+│
+├── deployment/                    # 배포 관련 스크립트
+│   ├── deploy_staging.sh
+│   └── deploy_production.sh
+│
+├── utils/                         # 유틸리티 스크립트
+│   ├── generate_test_data.py
+│   ├── cleanup_logs.sh
+│   └── health_check.py
+│
+└── ci/                            # CI/CD 스크립트
+    ├── run_tests.sh
+    └── build_image.sh
+```
+
+---
+
+## 📝 스크립트 명명 규칙
+
+### 파일명 패턴
+```
+{동작}_{대상}.{확장자}
+
+예시:
+setup_database.sh                  # 데이터베이스 설정
+run_tests.sh                       # 테스트 실행
+generate_test_data.py              # 테스트 데이터 생성
+migrate_v1_to_v2.py                # v1에서 v2로 마이그레이션
+cleanup_old_logs.sh                # 오래된 로그 정리
+```
+
+### 스크립트 종류별 접두사
+```
+setup_     환경/초기 설정
+run_       실행 스크립트
+build_     빌드 관련
+deploy_    배포 관련
+migrate_   마이그레이션
+generate_  생성 스크립트
+cleanup_   정리 스크립트
+check_     검증/확인
+```
+
+---
+
+## 📁 임시 파일 관리
+
+### 임시 작업 디렉토리
+```
+.work/                             # 임시 작업 (gitignore 필수!)
+├── notes/                         # 작업 메모
+│   └── 2024-01-15_api_research.md
+├── scratch/                       # 실험 코드
+│   └── test_concept.py
+├── debug/                         # 디버깅용
+│   └── error_trace_20240115.log
+└── exports/                       # 임시 내보내기
+    └── report_draft.csv
+```
+
+### 임시 파일 명명 규칙
+```
+날짜 포함 권장:
+{YYYY-MM-DD}_{설명}.{확장자}
+
+예시:
+2024-01-15_api_response_analysis.md
+2024-01-15_performance_test_results.json
+```
+
+### .gitignore 필수 항목
+```
+# 임시 작업 폴더
+.work/
+temp/
+tmp/
+
+# 개인 메모
+*.local.md
+*.draft.md
+
+# IDE/편집기
+.idea/
+.vscode/
+*.swp
+```
+
+---
+
+## 🗂️ 작업 관련 문서
+
+### 작업 중 생성되는 문서 위치
+```
+docs/work/                         # 작업 관련 문서 (선택적 버전 관리)
+├── research/                      # 리서치 문서
+│   └── {date}_{topic}_research.md
+├── decisions/                     # 미확정 결정 메모
+│   └── {date}_{topic}_draft.md
+└── reviews/                       # 리뷰/피드백
+    └── {date}_{target}_review.md
+```
+
+### vs 공식 산출물 구분
+```
+공식 산출물 (Part 1 규칙):
+docs/architecture/01F-01_core_functions.md    # 버전 관리 O
+docs/adr/03A-001_logging.md                   # 버전 관리 O
+
+작업 중 문서 (이 섹션):
+docs/work/research/2024-01-15_db_comparison.md  # 버전 관리 △
+.work/notes/quick_memo.md                       # 버전 관리 X
+```
+
+---
+
+# Part 5: 설정 파일
+
+---
+
+## ⚙️ 프로젝트 루트 설정 파일
+
+### 표준 레이아웃
+```
+project-root/
+├── pyproject.toml                 # 빌드/린터/타입체커 (Python)
+├── package.json                   # 빌드/린터 (TypeScript)
+├── Cargo.toml                     # 빌드 설정 (Rust)
+├── go.mod                         # 모듈 설정 (Go)
+│
+├── .pre-commit-config.yaml        # pre-commit hooks
+├── .importlinter                  # 아키텍처 의존성 (Python)
+│
+├── .env.example                   # 환경변수 예시 (버전 관리 O)
+├── .env                           # 실제 환경변수 (버전 관리 X)
+├── .env.local                     # 로컬 오버라이드 (버전 관리 X)
+│
+├── .gitignore                     # Git 제외 파일
+├── .dockerignore                  # Docker 제외 파일
+│
+├── Dockerfile                     # Docker 빌드
+├── docker-compose.yml             # 로컬 개발 환경
+├── docker-compose.test.yml        # 테스트 환경
+│
+├── Makefile                       # 공용 명령어 (선택)
+└── README.md                      # 프로젝트 소개
+```
+
+---
+
+## 📝 설정 파일 명명 규칙
+
+### 환경별 설정 파일
+```
+.env.example                       # 예시 (버전 관리 O, 실제 값 X)
+.env                               # 기본 환경
+.env.local                         # 로컬 오버라이드
+.env.development                   # 개발 환경
+.env.staging                       # 스테이징 환경
+.env.production                    # 운영 환경 (버전 관리 X!)
+.env.test                          # 테스트 환경
+```
+
+### Docker 관련
+```
+Dockerfile                         # 기본 (운영용)
+Dockerfile.dev                     # 개발용
+Dockerfile.test                    # 테스트용
+
+docker-compose.yml                 # 기본 (개발용)
+docker-compose.test.yml            # 테스트용
+docker-compose.prod.yml            # 운영용
+```
+
+### CI/CD 설정
+```
+.github/
+├── workflows/
+│   ├── ci.yml                     # CI 파이프라인
+│   ├── cd.yml                     # CD 파이프라인
+│   └── codeql.yml                 # 보안 분석
+├── CODEOWNERS                     # 코드 소유자
+└── pull_request_template.md       # PR 템플릿
+
+.gitlab-ci.yml                     # GitLab CI
+```
+
+---
+
+## 🔒 버전 관리 주의 파일
+
+### 버전 관리 O (반드시 포함)
+```
+✅ .env.example                    # 환경변수 구조 공유
+✅ pyproject.toml / package.json   # 의존성 정의
+✅ .pre-commit-config.yaml         # 품질 도구 설정
+✅ Dockerfile                      # 빌드 정의
+✅ docker-compose.yml              # 개발 환경
+✅ .gitignore                      # 제외 파일 정의
+```
+
+### 버전 관리 X (반드시 제외)
+```
+❌ .env                            # 실제 환경변수
+❌ .env.local                      # 개인 설정
+❌ .env.production                 # 운영 비밀키
+❌ *.pem, *.key                    # 인증서/키 파일
+❌ node_modules/, __pycache__/     # 의존성/캐시
+❌ .work/, temp/                   # 임시 파일
+❌ *.log                           # 로그 파일
+❌ .DS_Store                       # 시스템 파일
+```
+
+---
+
+## 🗂️ 설정 파일 배치 원칙
+
+### 1. 루트 vs 하위 폴더
+```
+프로젝트 전체 설정 → 루트
+├── pyproject.toml
+├── .pre-commit-config.yaml
+└── docker-compose.yml
+
+특정 영역 설정 → 해당 폴더
+├── src/core/logging/config.py
+├── tests/conftest.py
+└── .github/workflows/ci.yml
+```
+
+### 2. 환경별 분리 원칙
+```
+공통 설정:     기본 파일 (docker-compose.yml)
+환경별 설정:   접미사로 구분 (.env.{environment})
+오버라이드:    .local 접미사 (.env.local)
+```
+
+---
+
+# 부록: 체크리스트
+
+---
+
+## ✅ 새 파일 생성 시 확인
+
+### 문서 파일 (Part 1)
+```
+[ ] Stage 번호가 정확한가? (01~09)
+[ ] Type 코드가 올바른가? (F/C/D/S/A/B/T/L/G/M/E)
+[ ] Seq 번호가 중복되지 않는가?
+[ ] 설명적 이름이 snake_case인가?
+[ ] 저장 위치가 올바른가? (docs/{category}/)
+```
+
+### 소스 코드 (Part 2)
+```
+[ ] 올바른 레이어에 위치하는가? (core/domain/application/infrastructure/api)
+[ ] 파일명이 역할을 명확히 표현하는가?
+[ ] 클래스/함수명이 명명 규칙을 따르는가?
+[ ] 도메인 폴더 구조가 일관적인가?
+```
+
+### 테스트 파일 (Part 3)
+```
+[ ] tests/ 하위 올바른 위치에 있는가?
+[ ] test_ 접두사가 있는가?
+[ ] 소스 파일과 경로가 미러링되는가?
+[ ] 테스트 함수명이 기능_조건_결과 패턴인가?
+```
+
+### 스크립트/임시 (Part 4)
+```
+[ ] scripts/ 하위 적절한 폴더에 있는가?
+[ ] 동작_대상 패턴을 따르는가?
+[ ] 임시 파일은 .work/ 또는 gitignore된 위치인가?
+```
+
+### 설정 파일 (Part 5)
+```
+[ ] 비밀 정보가 포함된 파일은 gitignore되었는가?
+[ ] .env.example이 존재하는가?
+[ ] 환경별 파일명이 일관적인가?
+```
+
+---
+
+## 🔍 빠른 검색 명령어
+
+```bash
+# Stage 2 문서 찾기
+find docs/ -name "02*"
+
+# 모든 ADR 찾기
+find docs/adr/ -name "03A-*"
+
+# 특정 도메인 테스트 찾기
+find tests/ -path "*trading*" -name "test_*.py"
+
+# DNA 시스템 코드 찾기
+find src/core/ -name "*.py" | head -20
+```
+
+---
+
+## 📚 참고 문서
+
+- **01_STAGE_STRUCTURE.md**: 9개 Stage 전체 구조
+- **00_CORE_METHODOLOGY.md**: DNA 방법론 개요
+- **06G-00_project_standards_guide.md**: 프로젝트 표준 가이드
+
+---
+
+**버전 이력**:
+- v2.0 (2025-12-09): 소스코드/테스트/스크립트/설정 규칙 추가 (AI 어시스턴트)
+- v1.0 (2025-11-12): 초기 작성 - 문서 명명 규칙 (Jason + AI)
+
+
+================================================================================
+
+📄 FILE: 01_STAGE_STRUCTURE.md
+--------------------------------------------------------------------------------
+
+# DNA 방법론 Stage 구조 기준서
+
+> **목적**: 아이디어부터 구현까지 9개 Stage의 목적, 범위, 산출물을 명확히 정의
+>
+> **버전**: v1.1 (2025-11-13)
+> **기반**: Phase 2 실전 검증 (주식 거래 플랫폼)
+
+---
+
+## 🎯 전체 흐름 개요
+
+```
+아이디어 → 실현 가능한 소프트웨어
+
+Stage 1: 패밀리 구분과 핵심기능 파악 (큰 방향)
+   ↓
+Stage 2: 구조설계 (결정 요소 파악)
+   ↓
+Stage 3: ADR 문서화 (결정)
+   ↓
+Stage 4: DNA 시스템 계획 (청사진+작업분해+체크리스트)
+   ↓
+Stage 5: DNA 시스템 구축 (표준+구현)
+   ↓
+Stage 6: Project Standards (규칙)
+   ↓
+Stage 7: Project Blueprint (상세 청사진)
+   ↓
+Stage 8: Task Breakdown (작업 분할)
+   ↓
+Stage 9: Checklist (작업별 체크리스트)
+   ↓
+구현 (TDD 9-Step)
+```
+
+---
+
+## Stage 1: 패밀리 구분과 핵심기능 파악
+
+### 목적
+- **큰 방향과 큰 틀만 잡기**
+- 시스템의 본질적 특성 파악
+- 필수 기술 방향 자동 결정
+
+### 범위
+1. **Part 0: 핵심 기능 파악**
+   - 이 시스템의 존재 이유는?
+   - 구현 방식이 아닌 비즈니스 목적으로 구분
+   - 예: "거래" (O) vs "수동 거래 + 자동 거래" (X)
+
+2. **Layer 1: 아키텍처 패밀리 식별**
+   - L1-Q1: 실패 파급력 (A/B/C)
+   - L1-Q2: 정보 형태 (A/B/C)
+   - L1-Q3: 응답 시점 (A/B/C)
+   - 결과: 패밀리 패턴 (예: A-C-A)
+
+3. **Layer 2: NFR 우선순위**
+   - L2-Q1: 핵심 품질 (A/B/C)
+   - L2-Q2: 규모 (A/B/C)
+   - L2-Q3: 데이터 노출 (A/B/C)
+   - L2-Q4: 데이터 최신성 (A/B/C)
+   - 결과: NFR 프로파일 (예: A-B-B-A)
+
+### 산출물
+- **패밀리 결정**: A-C-A (실시간 트랜잭션)
+- **핵심 기능**: 거래
+- **필수 기술 방향**:
+  - ✅ 실시간 통신 필수 (WebSocket 계열)
+  - ✅ 숫자 데이터 처리 (시계열 DB 고려)
+  - ✅ 정확성 보장 (ACID 또는 강력한 일관성)
+- **기술 후보군**:
+  - WebSocket, FastAPI, Redis, PostgreSQL 계열
+
+### 제외 사항
+- ❌ 구체적 기술 스택 선택 (Stage 2에서)
+- ❌ 외부 제약 조사 (Stage 2에서)
+- ❌ 아키텍처 다이어그램 (Stage 2에서)
+
+### 관련 문서
+- `01_CORE_DEFINITION_GUIDE.md`
+- `01-1_CORE_DEFINITION_MANUAL_Part1.md`
+- `01-2_CORE_DEFINITION_MANUAL_Part2.md`
+
+---
+
+## Stage 2: 구조설계
+
+### 목적
+- **결정해야 할 요소 목록 만들기**
+- 내부 자원과 외부 제약/기회 파악
+- 구체적 설계 (청사진 수준)
+
+### 범위
+1. **Part 1: Layer 3 - 환경 제약 조사**
+   - L3-Q1: 기술 스택 제약 (외부 조사 필수!)
+     - 외부 API/서비스 비교 (예: 증권사 6개)
+     - 법적 규제 조사
+     - 개인정보보호 조사
+   - L3-Q2: 팀 역량
+   - L3-Q3: 배포 환경
+
+2. **Part 2: 충돌 패턴 발견**
+   - Layer 2 NFR vs Layer 3 제약 충돌
+   - 충돌 매트릭스 작성
+   - 트레이드오프 옵션 정리
+
+3. **Part 3: 5단계 구현방법**
+   - 1단계: 기능 분해
+   - 2단계: 속성 질문 (NFR → 구체적 수치)
+   - 3단계: 제약조건
+   - 4단계: 기술 옵션 비교
+   - 5단계: 통합 설계
+     - 아키텍처 다이어그램
+     - 데이터 스키마 v1.0
+     - API 설계 v1.0
+
+### 산출물
+- **제약 목록**:
+  - 외부: 한국투자증권 API (20건/초, WebSocket 41개)
+  - 내부: 팀 역량, 비용 제약
+- **충돌 목록**:
+  - #1: 정확성 A vs API 20건/초
+  - #2: 즉시성 A vs WebSocket 41개
+  - #3: 모의 검증 vs 실전 차이
+- **기술 스택 (확정)**:
+  - 백엔드: FastAPI (Python)
+  - 실시간: WebSocket
+  - Queue: Redis + Bull/Celery
+  - DB: PostgreSQL
+  - 캐시: Redis
+  - 프론트: Next.js + React
+- **아키텍처 다이어그램**
+- **데이터 스키마 v1.0**
+- **API 설계 v1.0**
+- **ADR 작성 대상 목록** (18개)
+
+### 제외 사항
+- ❌ ADR 작성 (Stage 3에서)
+- ❌ DNA 시스템 설계 (Stage 4에서)
+- ❌ 도메인별 상세 설계 (Stage 7에서)
+
+### 관련 문서
+- `02_STRUCTURE_DESIGN_GUIDE.md` (새로 작성 예정)
+- `02-1_STRUCTURE_DESIGN_MANUAL.md` (새로 작성 예정)
+
+---
+
+## Stage 3: 결정 문서화 (ADR)
+
+### 목적
+- **모든 아키텍처 결정을 문서화**
+- "왜?"에 대한 근거 명확히
+- 시스템 강제(System Enforcement) 기반 마련
+
+### 범위
+1. **DNA 시스템 ADR 작성 (001-011)**
+   - 11개 DNA 시스템 각각에 대한 결정
+   - 예: Type System, Observability, Testing, Code Quality, Architecture Enforcement, Configuration, Error Handling, Performance, API, Data, Security
+
+2. **도메인 ADR 작성 (100-999)**
+   - 프로젝트 특화 요소
+   - 예: 한국투자증권 선택, 하이브리드 전략, Redis Queue
+
+3. **ADR 작성 원칙**
+   - 하나의 ADR = 하나의 결정
+   - 너무나 당연한 요소도 모두 작성
+   - 제약도 ADR이다 (선택지 1개여도 기록)
+
+### 산출물
+- **DNA 시스템 ADR (001-011)** - 11개 필수
+  - 001: Type System 선택 (mypy, TypeScript strict 등)
+  - 002: Observability 전략 (structlog, winston 등)
+  - 003: Testing 프레임워크 (pytest, jest 등)
+  - 004: Code Quality 도구 (ruff, eslint 등)
+  - 005: Architecture Enforcement (import-linter 등)
+  - 006: Configuration 관리 (uv, pnpm 등)
+  - 007: Error Handling 패턴 (Result/Either 등)
+  - 008: Performance 측정 (pytest-benchmark, Criterion 등)
+  - 009: API 설계 (FastAPI, NestJS 등)
+  - 010: Data 접근 (SQLAlchemy, Prisma 등)
+  - 011: Security 전략 (bandit, helmet 등)
+
+- **도메인 ADR (100-999)** (예상 15-20개)
+  - 외부 제약 관련 (예: 한국투자증권 선택)
+  - 충돌 해결 관련 (예: 하이브리드 전략)
+  - 기술 스택 관련 (예: FastAPI 선택)
+  - 데이터 설계 관련
+  - API 설계 관련
+  - ...
+
+### 제외 사항
+- ❌ 구현 (Stage 5, 9에서)
+- ❌ 테스트 코드 (Stage 9에서)
+
+### 관련 문서
+- `03_ADR_GUIDE.md`
+- `03-1_ADR_MANUAL.md` (작성 예정)
+
+---
+
+## Stage 4: DNA 시스템 계획
+
+### 목적
+- **11개 DNA 시스템 구축 계획 수립**
+- DNA 청사진, 작업 분해, 체크리스트 작성
+
+### 배경
+**DNA 시스템 = 모든 소프트웨어의 기본 설계도**
+
+생명의 DNA가 모든 생물의 기초이듯, 11개 DNA 시스템은 모든 소프트웨어 프로젝트의 기초입니다.
+- 언어, 프레임워크, 도메인 무관
+- 11개 모두 필수
+- 자동 강제 (지키지 않으면 빌드/실행 실패)
+- 일관성 필수 (한 곳만 다르면 전체 혼란)
+
+**11개 DNA 시스템**:
+1. Type System (타입 체커)
+2. Observability System (로깅/메트릭/추적)
+3. Testing System (테스트 프레임워크)
+4. Code Quality System (포맷터/린터)
+5. Architecture Enforcement (Layer 경계)
+6. Configuration System (환경 변수 + 의존성)
+7. Error Handling System (Result/Either)
+8. Performance System (벤치마크/프로파일링)
+9. API System (인터페이스)
+10. Data System (저장/조회)
+11. Security System (인증/암호화)
+
+### 범위
+1. **DNA 청사진 작성**
+   - DNA 시스템 ADR (001-011) 기반
+   - 디렉토리 구조 (src/core/)
+   - 각 DNA 시스템별 파일 구조
+   - 공통 모듈 인터페이스
+
+2. **DNA 작업 분해**
+   - 11개 DNA → 하위 작업으로 분해
+   - 우선순위 결정 (기반 6개 → 도메인 5개)
+   - 의존성 파악
+
+3. **DNA 체크리스트 작성**
+   - 11개 DNA 통합 체크리스트 (1개 파일)
+   - 각 DNA별 섹션
+   - 하위 작업 체크박스
+
+### 산출물
+- **04D-01_dna_blueprint.md** (DNA 청사진)
+  - 전체 디렉토리 구조
+  - 각 DNA 시스템별 파일 목록
+  - 인터페이스 설계
+
+- **04T-01_dna_tasks.md** (DNA 작업 분해)
+  - 11개 DNA 시스템 → N개 하위 작업
+  - 우선순위 및 의존성
+
+- **04L-01_dna_checklist.md** (DNA 체크리스트)
+  - 통합 체크리스트 1개
+  - 11개 섹션 (DNA별)
+  - 하위 작업 체크박스
+
+### 관련 문서
+- `04G-00_dna_planning_guide.md` (작성 예정)
+- `03_DNA_SYSTEMS_GUIDE.md` (참조)
+
+---
+
+## Stage 5: DNA 시스템 구축
+
+### 목적
+- **11개 DNA 시스템 실제 구현**
+- 구현 표준 정의 및 검증
+
+### 범위
+1. **DNA 구현 표준 작성**
+   - 파일 구조 규칙 (src/core/)
+   - 네이밍 규칙 (클래스, 함수, 상수)
+   - Import 규칙
+   - 테스트 규칙 (95%+ 커버리지)
+   - 문서화 규칙
+
+2. **DNA 시스템 구현**
+   - 체크리스트 (04L-01) 기반 구현
+   - 구현 표준 (05S-01) 준수
+   - TDD 기반 개발
+   - 각 DNA 시스템별 검증
+
+3. **통합 검증**
+   - 11개 DNA 시스템 통합 테스트
+   - Kent Beck 검증 (10/11개 달성 확인)
+   - 모든 DNA 동작 확인
+
+### 산출물
+- **05S-01_dna_standards.md** (DNA 구현 표준)
+  - 파일 구조 규칙
+  - 네이밍 컨벤션
+  - Import/테스트/문서화 규칙
+
+- **실제 구현 파일**:
+  - `pyproject.toml` (Type, Testing, Quality, Config)
+  - `.pre-commit-config.yaml` (Quality)
+  - `mypy.ini` / `ruff.toml` (Type, Quality)
+  - `src/core/logger.py` (Observability)
+  - `src/core/error.py` (Error Handling)
+  - `src/core/config.py` (Configuration)
+  - `tests/core/` (Testing)
+  - 벤치마크 설정 (Performance)
+  - 보안 스캔 설정 (Security)
+
+- **검증 보고서**:
+  - 11개 DNA 시스템 동작 확인
+  - 테스트 커버리지 95%+ 달성
+  - 품질 검사 0 violations
+
+### 관련 문서
+- `05G-00_dna_implementation_guide.md` (작성 예정)
+- `03_DNA_SYSTEMS_GUIDE.md` (참조)
+
+---
+
+## Stage 6: Project Standards 작성
+
+### 목적
+- **프로젝트 종료 시까지 지켜야 할 규칙 정의**
+- 일관성 보장
+
+### 범위
+1. **코딩 스타일**
+   - Naming conventions
+   - File organization
+   - Code formatting
+
+2. **로깅 표준**
+   - Log levels
+   - Log format
+   - Log rotation
+
+3. **에러 처리 표준**
+   - Error types
+   - Error messages
+   - Error propagation
+
+4. **설정 관리 표준**
+   - Environment variables
+   - Config files
+   - Secrets management
+
+5. **기타 룰**
+   - Git commit convention
+   - PR 규칙
+   - Review 기준
+
+6. **DNA 시스템 사용 강제**
+   - src/core/ 모듈 필수 사용
+   - 직접 구현 금지 항목
+   - DNA 시스템 표준 준수
+
+### 산출물
+- **PROJECT_STANDARDS.md**
+
+### 관련 문서
+- `04_PROJECT_STANDARDS_GUIDE.md` (기존)
+
+---
+
+## Stage 7: Project Blueprint 작성
+
+### 목적
+- **초상세 프로젝트 전체 청사진**
+- 도메인별 구현 가이드
+
+### 범위
+1. **아키텍처 구조**
+   - 전체 시스템 아키텍처
+   - 레이어별 구조
+   - 컴포넌트 다이어그램
+
+2. **도메인 구조**
+   - 도메인 모델
+   - 도메인별 경계
+   - 도메인 간 관계
+
+3. **전체 시스템 다이어그램**
+   - 시스템 컨텍스트
+   - 컨테이너 다이어그램
+   - 컴포넌트 다이어그램
+   - 시퀀스 다이어그램
+
+4. **도메인별 다이어그램**
+   - 각 도메인의 상세 설계
+   - 데이터 흐름
+   - API 엔드포인트
+
+5. **도메인별 구현 가이드**
+   - 구현해야 할 기능 목록
+   - 기술 스택 활용 방법
+   - 최신 기술/기법 적용 방안
+
+### 산출물
+- **PROJECT_BLUEPRINT.md** (초상세)
+- **아키텍처 다이어그램** (여러 레벨)
+- **도메인별 구현 가이드**
+
+### 관련 문서
+- `05_BLUEPRINT_GUIDE.md` (기존)
+
+---
+
+## Stage 8: Task Breakdown 문서 작성
+
+### 목적
+- **AI가 집중해서 완전하게 구현할 크기로 작업 분할**
+
+### 범위
+1. **작업 분할 기준**
+   - 1개 작업 = 1개 파일 또는 1개 기능
+   - 4시간 이내 완료 가능 크기
+   - 독립적으로 테스트 가능
+
+2. **작업 목록 작성**
+   - 도메인별 작업 분할
+   - 우선순위 결정
+   - 의존성 파악
+
+3. **작업별 설명**
+   - 목표
+   - 입력/출력
+   - 제약 조건
+   - 참고 자료
+
+### 산출물
+- **TASK_BREAKDOWN.md**
+- **작업별 상세 설명**
+
+### 관련 문서
+- `06_TASK_BREAKDOWN_GUIDE.md` (기존)
+
+---
+
+## Stage 9: 작업별 Checklist 작성
+
+### 목적
+- **TDD 기반 9-Step Checklist**
+- 모든 기능 구현, 0 violations, 95%+ coverage 보장
+
+### 범위
+**TDD 9-Step Checklist**:
+1. **목표 이해**
+   - 요구사항 명확히
+   - 성공 기준 정의
+
+2. **테스트 작성**
+   - 단위 테스트 먼저
+   - 실패하는 테스트 확인
+
+3. **구현**
+   - 테스트 통과하는 최소 코드
+   - 점진적 개선
+
+4. **정적 검증**
+   - Ruff, Mypy 실행
+   - 0 violations 확인
+
+5. **단위 테스트 실행**
+   - Pytest 실행
+   - 95%+ 커버리지 확인
+
+6. **리팩토링**
+   - 코드 정리
+   - 중복 제거
+
+7. **종합 테스트**
+   - 통합 테스트
+   - E2E 테스트
+
+8. **문서화**
+   - Docstring
+   - README 업데이트
+
+9. **커밋**
+   - Git commit
+   - PR 생성
+
+### 산출물
+- **작업별 체크리스트 문서**
+- **테스트 템플릿**
+
+### 관련 문서
+- `07_CHECKLIST_GUIDE.md` (기존)
+
+---
+
+## 📊 Stage 간 관계
+
+```
+Stage 1 (패밀리+핵심기능)
+   ↓ 필수 기술 방향, 기술 후보군
+Stage 2 (구조설계)
+   ↓ ADR 작성 대상 목록, 기술 스택 확정
+Stage 3 (ADR)
+   ↓ DNA 시스템 ADR (001-011), 도메인 ADR (100-999)
+Stage 4 (DNA 계획)
+   ↓ DNA 청사진, 작업 분해, 체크리스트
+Stage 5 (DNA 구축)
+   ↓ DNA 구현 표준, 실제 구현 파일 (src/core/)
+Stage 6 (Standards)
+   ↓ 프로젝트 규칙 (DNA 시스템 사용 강제)
+Stage 7 (Blueprint)
+   ↓ 초상세 청사진 (DNA 시스템 활용)
+Stage 8 (Task Breakdown)
+   ↓ 작업 목록
+Stage 9 (Checklist)
+   ↓ 작업별 체크리스트
+구현 (TDD 9-Step)
+```
+
+---
+
+## 🎯 각 Stage의 핵심 원칙
+
+### Stage 1: 큰 방향만
+- ✅ 패밀리 결정 → 필수 기술 방향 자동 결정
+- ✅ 핵심 기능 파악 → 구현 후보군 결정
+- ❌ 구체적 기술 선택 금지
+
+### Stage 2: 구체적 설계
+- ✅ 외부 제약 조사 (실제 API, 법규 확인)
+- ✅ 충돌 발견 → 트레이드오프 정리
+- ✅ 기술 스택 확정 → 아키텍처 다이어그램
+
+### Stage 3: 모든 결정 문서화
+- ✅ 너무 당연한 것도 ADR 작성
+- ✅ 제약도 ADR (선택지 1개여도)
+- ✅ DNA 시스템 (001-011) vs 도메인 (100-999) 구분
+
+### Stage 4-5: DNA 시스템 구축
+- ✅ 11개 DNA 모두 필수
+- ✅ 계획 (청사진→작업분해→체크리스트) → 구축 (표준→구현)
+- ✅ Kent Beck 검증 (10/11개 달성)
+- ✅ src/core/ 구조 완성
+
+### Stage 6-9: 프로젝트 구현 준비
+- ✅ DNA 시스템 활용 강제 (Standards)
+- ✅ 상세 설계 (Blueprint)
+- ✅ 작업 분할 → 체크리스트 → 구현
+
+---
+
+## 📝 문서 명명 규칙
+
+### 가이드 파일 (completed-guide/)
+```
+01_STAGE_STRUCTURE.md (이 문서)
+01G-00_core_definition_guide.md (Stage 1)
+01M-01_layer1_manual.md
+01M-02_layer2_manual.md
+02G-00_structure_design_guide.md (Stage 2)
+02M-01_structure_design_manual.md
+02M-02_architecture_decision_manual.md
+03G-00_adr_guide.md (Stage 3)
+04G-00_dna_planning_guide.md (Stage 4) ⭐ 신규
+05G-00_dna_implementation_guide.md (Stage 5) ⭐ 신규
+06G-00_project_standards_guide.md (Stage 6)
+07G-00_blueprint_guide.md (Stage 7)
+08G-00_task_breakdown_guide.md (Stage 8)
+09G-00_checklist_guide.md (Stage 9)
+```
+
+### 프로젝트 산출물 파일 (프로젝트별)
+```
+Stage 3: ADR
+- 03A-001_type_system.md ~ 03A-011_security_system.md (DNA ADR)
+- 03A-101_xxx.md ~ 03A-999_xxx.md (Domain ADR)
+
+Stage 4: DNA 계획
+- 04D-01_dna_blueprint.md (청사진)
+- 04T-01_dna_tasks.md (작업 분해)
+- 04L-01_dna_checklist.md (체크리스트)
+
+Stage 5: DNA 구축
+- 05S-01_dna_standards.md (구현 표준)
+- src/core/ (실제 구현)
+
+Stage 6: 프로젝트 표준
+- 06S-01_project_standards.md
+
+Stage 7: 청사진
+- 07B-01_project_blueprint.md
+
+Stage 8: 작업 분해
+- 08T-01_task_breakdown.md
+
+Stage 9: 체크리스트
+- 09L-01~N_task_*_checklist.md
+```
+
+---
+
+## 🔄 현재 작업 상태 (2025-11-13)
+
+- ✅ **Stage 1**: 01_CORE_DEFINITION 완성
+  - Part 0, Layer 1-2 완료
+  - A-C-A 패밀리 발견 반영
+
+- 🔄 **Stage 2**: 02_STRUCTURE_DESIGN 작성 필요
+  - 기존 02_ARCHITECTURE_DECISION + 02_IMPLEMENTATION_APPROACH 통합
+  - Layer 3 + 충돌 + 5단계 통합
+
+- ✅ **Stage 3**: 03_ADR 완성
+  - DNA 시스템 ADR (001-011) vs 도메인 ADR (100-999) 구분
+
+- 🔄 **Stage 4-5**: DNA 시스템 가이드 작성 중 ⭐
+  - 04G-00_dna_planning_guide.md (작성 예정)
+  - 05G-00_dna_implementation_guide.md (작성 예정)
+  - 03_DNA_SYSTEMS_GUIDE.md (완성)
+
+- ⏸️ **Stage 6-9**: 향후 작업
+
+---
+
+**버전 이력**:
+- v1.0 (2025-11-12): 초기 작성 (Phase 2 실전 검증 기반)
+- v1.1 (2025-11-13): DNA 시스템 통일 (Bootstrap → DNA)
+
+
+================================================================================
+
+📄 FILE: 02_PROJECT_STANDARDS_TEMPLATE.md
+--------------------------------------------------------------------------------
+
+# Project Standards 템플릿 (언어 중립)
+
+> **버전**: v1.0
+> **최종 수정**: 2025-12-09
+> **출처**: 06G-00 Stage 6 가이드에서 분리
+> **원칙**: 언어/프레임워크에 무관한 범용 템플릿
+
+---
+
+## 📋 개요
+
+이 템플릿은 **Stage 6: Project Standards** 산출물의 기본 구조입니다.
+프로젝트의 언어/프레임워크에 맞게 구체화하여 사용하세요.
+
+**언어별 상세 예시**: `manual-cases/` 폴더 참조
+
+---
+
+## 📄 템플릿 시작
+
+```markdown
+# Project Standards
+
+> **프로젝트**: [프로젝트명]
+> **버전**: v1.0
+> **작성일**: YYYY-MM-DD
+> **기반 ADR**: 03A-401 ~ 03A-411 (DNA 시스템)
+> **언어/프레임워크**: [언어 버전, 주요 프레임워크]
+
+---
+
+## 1. 코드 스타일
+
+### 1.1 포맷팅
+- **도구**: [Formatter Tool - 예: Ruff, Prettier, gofmt, rustfmt]
+- **줄 길이**: [80/88/100/120자]
+- **들여쓰기**: [Spaces/Tabs, 개수]
+- **인용부호**: [큰따옴표/작은따옴표]
+
+### 1.2 네이밍
+| 대상 | 규칙 | 예시 |
+|------|-----|------|
+| 클래스/타입 | PascalCase | `OrderService`, `UserDto` |
+| 함수/메서드 | [snake_case/camelCase] | `create_order` / `createOrder` |
+| 변수 | [snake_case/camelCase] | `user_id` / `userId` |
+| 상수 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
+| 비공개 | [_prefix/private 키워드] | `_internal` |
+
+### 1.3 Import/Package 순서
+```
+# 1. 표준 라이브러리/내장 모듈
+
+# 2. 서드파티/외부 패키지
+
+# 3. 로컬 모듈 (core → domain → api 순)
+```
+
+---
+
+## 2. DNA 시스템 사용 규칙
+
+> 각 DNA 시스템별 DO/DON'T 패턴 정의
+
+### 2.1 Logging
+
+**DO ✅**
+```
+- 구조화된 로거 사용 (core/logging)
+- 컨텍스트 정보 포함 (trace_id, user_id)
+- 키워드 인자로 데이터 전달
+```
+
+**DON'T ❌**
+```
+- print/console.log 사용 금지
+- 표준 로깅 라이브러리 직접 사용 금지
+- 문자열 연결/포매팅으로 로그 메시지 생성 금지
+```
+
+### 2.2 Configuration
+
+**DO ✅**
+```
+- 중앙 설정 관리자 사용 (core/config)
+- 타입 안전한 설정 접근
+- 환경별 설정 분리
+```
+
+**DON'T ❌**
+```
+- 환경변수 직접 접근 금지
+- 하드코딩된 설정값 금지
+- 설정 검증 없이 사용 금지
+```
+
+### 2.3 Types
+
+**DO ✅**
+```
+- 도메인 타입 사용 (UserId, OrderId, Money 등)
+- 모든 공개 API에 타입 명시
+- 타입 검사 도구 통과 필수
+```
+
+**DON'T ❌**
+```
+- Any/unknown/dynamic 타입 금지
+- 원시 타입만으로 도메인 표현 금지
+- 타입 힌트/어노테이션 누락 금지
+```
+
+### 2.4 Error Handling
+
+**DO ✅**
+```
+- 도메인 예외 클래스 사용 (ValidationError, NotFoundError 등)
+- 예외에 컨텍스트 정보 포함
+- 복구 가능 여부에 따른 예외 분류
+```
+
+**DON'T ❌**
+```
+- 일반 Exception/Error 사용 금지
+- 빈 catch/except 블록 금지
+- 예외 무시(swallow) 금지
+```
+
+### 2.5 Database
+
+**DO ✅**
+```
+- 중앙 세션/커넥션 관리자 사용
+- 파라미터화된 쿼리 사용
+- 트랜잭션 경계 명확히 설정
+```
+
+**DON'T ❌**
+```
+- 문자열 연결로 쿼리 생성 금지 (SQL Injection!)
+- 수동 커넥션 관리 금지
+- 커밋/롤백 누락 금지
+```
+
+---
+
+## 3. 품질 기준
+
+### 3.1 Zero Tolerance
+
+| 항목 | 기준 | 검증 방법 |
+|------|-----|----------|
+| [Lint Tool] | 0 violations | `[lint command]` |
+| [Type Check Tool] | 0 errors | `[type check command]` |
+| [Test Framework] | 0 failures | `[test command]` |
+| Coverage | [95%+] | `[coverage command]` |
+
+### 3.2 커밋 전 필수
+
+```bash
+# 모든 검증 통과 필수 (pre-commit hook)
+[pre-commit run command]
+```
+
+위반 시 커밋 차단됨.
+
+---
+
+## 4. 아키텍처 규칙
+
+### 4.1 레이어 구조
+
+```
+src/
+├── core/      # DNA 시스템 (공통 인프라)
+├── domain/    # 비즈니스 로직
+└── api/       # 인터페이스 (HTTP, CLI, etc.)
+```
+
+### 4.2 의존성 방향
+
+```
+허용: api → domain → core
+금지: core → domain, domain → api
+```
+
+### 4.3 아키텍처 검증
+
+```bash
+# 의존성 방향 검증 도구
+[architecture lint command]
+
+# 위반 시
+FAILED: Core는 Domain/API에 의존하지 않음
+```
+
+---
+
+## 5. Git 규칙
+
+### 5.1 커밋 메시지
+
+```
+<type>(<scope>): <subject>
+
+타입:
+- feat: 새 기능
+- fix: 버그 수정
+- refactor: 리팩토링
+- test: 테스트 추가/수정
+- docs: 문서 수정
+- chore: 빌드/설정 변경
+```
+
+### 5.2 브랜치 전략
+
+```
+main         ← 운영 (보호됨)
+develop      ← 개발 통합
+feature/*    ← 기능 개발
+fix/*        ← 버그 수정
+```
+
+### 5.3 PR 규칙
+
+- [ ] 모든 CI 통과
+- [ ] 리뷰어 [N]명 이상 승인
+- [ ] 커버리지 유지 또는 증가
+
+---
+
+## 6. 참조
+
+- ADR: `docs/adr/03A-401~411_*.md`
+- DNA 구현: `src/core/`
+- 자동화 설정: `[빌드 설정 파일]`, `[pre-commit 설정]`
+```
+
+## 템플릿 끝
+
+---
+
+## 🔧 사용 방법
+
+### 1. 복사 후 구체화
+```bash
+cp 02_PROJECT_STANDARDS_TEMPLATE.md docs/06D-01_project_standards.md
+```
+
+### 2. 플레이스홀더 교체
+
+| 플레이스홀더 | 언어별 예시 |
+|------------|-----------|
+| `[Lint Tool]` | Ruff (Python), ESLint (TS), golangci-lint (Go) |
+| `[Type Check Tool]` | MyPy (Python), tsc (TS), go vet (Go) |
+| `[Test Framework]` | pytest (Python), Jest (TS), go test (Go) |
+| `[Formatter Tool]` | Ruff (Python), Prettier (TS), gofmt (Go) |
+| `[lint command]` | `ruff check .`, `eslint .`, `golangci-lint run` |
+
+### 3. DNA 규칙 상세화
+각 DNA 시스템별로 프로젝트에 맞는 구체적인 DO/DON'T 코드 예시 추가
+
+### 4. 팀 합의 반영
+- 줄 길이, 들여쓰기 등 스타일 결정
+- 커버리지 기준 결정
+- 리뷰어 수 결정
+
+---
+
+## 📚 언어별 상세 예시
+
+- **Python**: `manual-cases/06M-01_python_standards_manual.md` (예정)
+- **TypeScript**: `manual-cases/06M-02_typescript_standards_manual.md` (예정)
+- **Go**: `manual-cases/06M-03_go_standards_manual.md` (예정)
+
+---
+
+## ✅ 체크리스트: 템플릿 사용 전 확인
+
+- [ ] 프로젝트 언어/프레임워크 결정됨
+- [ ] DNA 시스템 ADR 작성 완료 (Stage 4)
+- [ ] DNA 시스템 구현 완료 (Stage 5)
+- [ ] 품질 도구 선택 완료
+- [ ] 팀 스타일 합의 완료
+
+
+================================================================================
+
+📄 FILE: 03_DNA_SYSTEMS_GUIDE.md
+--------------------------------------------------------------------------------
+
+# 🧬 DNA 시스템 11개 - 완전 가이드
+
+> **DNA 시스템 = 모든 소프트웨어의 기본 설계도**
+>
+> 생명의 DNA가 모든 생물의 기초이듯, 11개 DNA 시스템은 모든 소프트웨어 프로젝트의 기초입니다.
+
+------
+
+## DNA 시스템이란?
+
+**정의**: 전체 시스템에 걸쳐 **"통일"**되어야 하는 횡단 관심사(Cross-Cutting Concerns)
+
+- 언어, 프레임워크, 도메인에 관계없이 모든 프로젝트가 처음부터 끝까지 유지해야 하는 11가지 필수 시스템.
+
+**특징**:
+
+- 언어 무관 (개념/원칙 중심)
+- 모두 필수 (선택 없음)
+- 자동 강제 (지키지 않으면 빌드/실행 실패)
+- 일관성 필수 (한 곳만 다르면 전체 혼란)
+
+**왜 필요한가?**:
+
+```
+문서로 알려주기 → AI가 안 읽음/잊어버림
+체크리스트 작성 → AI가 안 지킴
+지시/설명 반복 → 매 세션마다 반복
+
+✅ 해결: "환경"을 만들어서 잘못할 수 없게!
+```
+
+------
+
+## 1. Type System (타입 시스템)
+
+**목적**: 런타임 에러 방지, 타입 안전성 보장
+
+**범위**:
+
+- 모든 변수, 함수, 클래스의 타입 명시
+- 타입 체커 통과 필수 (컴파일/빌드 단계)
+- any/dynamic/var 금지 또는 엄격 제한
+- 타입 불일치 = 실행 불가
+
+**예시**:
+
+- 간단: 함수 인자/리턴 타입 명시
+- 중간: 제네릭, Union 타입, 도메인 모델
+- 복잡: 타입 안전한 빌더 패턴, 의존성 주입
+
+**언어별 구현**:
+
+- Python: `mypy --strict`, Pydantic v2
+- Rust: 기본 타입 시스템 (엄격함)
+- TypeScript: `strict: true`, `noImplicitAny`
+- Go: 기본 타입 시스템
+
+**왜 필수인가?**: 타입 없으면 "이 변수가 문자열인지 숫자인지" 런타임에 폭탄. 리팩토링 시 어디가 깨졌는지 알 수 없음.
+
+------
+
+## 2. Observability System (관찰 가능성)
+
+**목적**: 시스템 상태 관찰, 디버깅, 성능 모니터링
+
+**범위**:
+
+- **Logging** (구조화된 로깅)
+  - JSON/구조화 형식
+  - trace_id로 요청 추적
+  - print/console.log 금지
+  - 중앙 집중 설정
+- **Metrics** (메트릭)
+  - 성능 지표 수집 (응답 시간, 처리량)
+  - 카운터, 게이지, 히스토그램
+- **Tracing** (분산 추적)
+  - 마이크로서비스 간 호출 추적
+  - 요청 전체 흐름 시각화
+
+**예시**:
+
+- 간단:
+  - 함수 진입/종료 로그
+  - 에러 발생 로그
+- 중간:
+  - 구조화된 로깅 (structlog, winston)
+  - trace_id 자동 전파
+  - 기본 메트릭 수집
+- 복잡:
+  - OpenTelemetry 통합
+  - 분산 추적 (Jaeger, Zipkin)
+  - 실시간 대시보드 (Grafana)
+
+**언어별 구현**:
+
+- Python: structlog, OpenTelemetry
+- Rust: tracing, tracing-subscriber
+- TypeScript: winston, pino, OpenTelemetry
+- Go: zap, zerolog, OpenTelemetry
+
+**왜 필수인가?**: print() 남발하면 "무슨 에러인지" "어디서 느린지" 파악 불가능. 구조화된 로깅 없으면 디버깅 지옥.
+
+------
+
+## 3. Testing System (테스팅 시스템)
+
+**목적**: 품질 보증, 회귀 방지, 안전한 리팩토링
+
+**범위**:
+
+- 테스트 우선 (TDD - Test-Driven Development)
+- 95%+ 코드 커버리지 강제
+- 단위 테스트 (Unit Tests)
+- 통합 테스트 (Integration Tests)
+- 속성 기반 테스트 (Property-Based Tests)
+- 테스트 없이 커밋 불가
+
+**예시**:
+
+- 간단:
+  - 함수 단위 테스트
+  - 예상 입력/출력 검증
+- 중간:
+  - Given-When-Then 패턴
+  - Mock/Stub 최소화
+  - 통합 테스트
+- 복잡:
+  - Property-based testing (가설 검증)
+  - Fuzz testing (무작위 입력)
+  - Mutation testing (테스트의 테스트)
+
+**언어별 구현**:
+
+- Python: pytest, hypothesis, pytest-cov
+- Rust: cargo test, proptest
+- TypeScript: jest, vitest, fast-check
+- Go: testing, rapid
+
+**왜 필수인가?**: 테스트 없으면 "고쳤는지 망쳤는지" 알 수 없음. 리팩토링할 때마다 전체 수동 테스트 = 불가능.
+
+------
+
+## 4. Code Quality System (코드 품질)
+
+**목적**: 일관된 스타일, 유지보수성, 자동화된 품질 보증
+
+**범위**:
+
+- **자동 포맷팅** (포맷터 강제 실행)
+  - 들여쓰기, 줄바꿈, 공백 통일
+- **린팅** (스타일 가이드 강제)
+  - 경고 0개 달성
+  - 나쁜 패턴 감지
+- **TODO/FIXME/pass 금지**
+  - 미완성 코드 커밋 차단
+- **Pre-commit Hooks**
+  - 커밋 전 자동 검사
+  - 포맷/린트/타입 체크
+- **CI 파이프라인**
+  - 빌드 자동 검증
+  - 테스트 자동 실행
+
+**예시**:
+
+- 간단:
+  - 포맷터 실행 (black, prettier)
+  - 기본 린트 (pylint, eslint)
+- 중간:
+  - pre-commit hooks
+  - 복잡도 체크 (cyclomatic complexity)
+  - import 정렬
+- 복잡:
+  - 중복 코드 감지 (jscpd)
+  - 보안 린트 (bandit, semgrep)
+  - CI/CD 파이프라인 통합
+
+**언어별 구현**:
+
+- Python: ruff, black, mypy, pre-commit
+- Rust: cargo fmt, clippy
+- TypeScript: prettier, eslint
+- Go: gofmt, golangci-lint
+
+**왜 필수인가?**: 스타일 제각각이면 코드 리뷰 시간 낭비. 나쁜 패턴 방치하면 기술 부채 폭발. TODO 남발하면 언제까지나 미완성.
+
+------
+
+## 5. Architecture Enforcement (아키텍처 강제)
+
+**목적**: 아키텍처 경계 유지, 의존성 방향 제어
+
+**범위**:
+
+- **Layer 경계 검증**
+  - Domain → Infrastructure 금지
+  - Presentation → Domain만 허용
+- **순환 의존성 금지**
+  - 모듈 A → B → A 차단
+- **Import 규칙 강제**
+  - 허용된 import만 가능
+  - 외부 라이브러리 제한
+- **Architecture Tests**
+  - 경계 위반 = 테스트 실패
+
+**예시**:
+
+- 간단:
+  - 모듈 간 의존성 방향 정의
+  - 순환 의존 체크
+- 중간:
+  - Layer 경계 강제 (Clean Architecture)
+  - import-linter 규칙
+- 복잡:
+  - Architecture decision tests
+  - 의존성 그래프 시각화
+  - 자동 리팩토링 제안
+
+**언어별 구현**:
+
+- Python: import-linter, pytest (architecture tests)
+- Rust: 모듈 시스템 + Architecture tests
+- TypeScript: dependency-cruiser, madge
+- Go: go-cleanarch, depguard
+
+**왜 필수인가?**: 경계 없으면 스파게티 코드. Domain에서 DB 직접 접근하면 테스트 불가능. 순환 의존하면 리팩토링 지옥.
+
+------
+
+## 6. Configuration System (설정 관리)
+
+**목적**: 환경별 설정 분리, 타입 안전, 민감 정보 보호
+
+**범위**:
+
+- **환경 변수 관리**
+  - .env 파일 (dev, staging, prod)
+  - 환경별 자동 로딩
+- **타입 안전한 설정**
+  - 설정 값 타입 검증
+  - IDE 자동완성
+- **하드코딩 금지**
+  - 코드에 URL, 비밀번호 직접 작성 금지
+- **의존성 관리** ⭐
+  - 패키지 버전 통일
+  - lock 파일로 고정
+  - 라이센스 체크
+  - 보안 취약점 스캔
+
+**예시**:
+
+- 간단:
+  - .env 파일 + 환경 변수
+  - requirements.txt, package.json
+- 중간:
+  - 타입 안전한 설정 클래스
+  - pyproject.toml (uv), Cargo.toml
+  - 의존성 lock 파일
+- 복잡:
+  - 환경별 설정 상속
+  - Feature flags (런타임 토글)
+  - 설정 검증 + 기본값
+  - 의존성 자동 업데이트
+
+**의존성 관리 도구**:
+
+- Python: **uv** (pyproject.toml 하나로 통일) ⭐
+- Rust: Cargo (Cargo.toml + Cargo.lock)
+- TypeScript: pnpm (package.json + pnpm-lock.yaml)
+- Go: go mod (go.mod + go.sum)
+
+**왜 필수인가?**: 하드코딩하면 환경 바꿀 때마다 코드 수정. 타입 없으면 "PORT가 문자열인지 숫자인지" 런타임에 폭탄. 의존성 버전 안 맞으면 "내 컴퓨터에서는 되는데요?" 지옥.
+
+------
+
+## 7. Error Handling System (에러 처리)
+
+**목적**: 에러 파악 및 복구, 디버깅 가능성
+
+**범위**:
+
+- **구조화된 에러**
+  - 에러 타입 정의
+  - 에러 컨텍스트 포함 (어디서, 왜, 무엇을)
+- **panic/throw 제한**
+  - 예외 처리 강제
+  - 복구 불가능한 경우만 panic
+- **Result/Either 패턴**
+  - 명시적 에러 반환
+  - 에러 전파 규칙
+- **에러 로깅 통합**
+  - 모든 에러를 Observability에 기록
+
+**예시**:
+
+- 간단:
+  - try-catch + 의미 있는 에러 메시지
+  - 에러 타입 구분 (ValueError, TypeError)
+- 중간:
+  - 커스텀 예외 클래스
+  - 에러 체인 (원인 추적)
+  - Result<T, E> 패턴
+- 복잡:
+  - 에러 복구 전략 (재시도, 폴백)
+  - Circuit Breaker 패턴
+  - 에러 집계 및 알림
+
+**언어별 구현**:
+
+- Python: 커스텀 예외 + Result 패턴 (라이브러리)
+- Rust: Result<T, E> 강제, panic! 금지
+- TypeScript: neverthrow, Either 패턴
+- Go: error 타입 (기본), pkg/errors
+
+**왜 필수인가?**: "Error: Something went wrong" → 무슨 에러인지 모름. 에러 컨텍스트 없으면 디버깅 불가능. panic하면 전체 프로그램 죽음.
+
+------
+
+## 8. Performance System (성능 측정)
+
+**목적**: 객관적 성능 평가, 최적화 검증
+
+**범위**:
+
+- **벤치마크** (전체 성능 측정)
+  - 함수/모듈별 실행 시간
+  - 처리량 (throughput) 측정
+  - 리팩토링 전후 비교
+- **프로파일링** (병목 분석) ⭐
+  - 함수별 실행 시간 분포
+  - 메모리 할당 추적
+  - CPU 사용량 분석
+  - 핫스팟(느린 부분) 찾기
+- **성능 회귀 감지**
+  - 벤치마크 자동 실행
+  - 이전 버전 대비 느려지면 실패
+
+**예시**:
+
+- 간단:
+  - 함수 실행 시간 측정 (time.time())
+  - 수동 비교
+- 중간:
+  - pytest-benchmark, Criterion
+  - 통계적 벤치마크 (평균, p95, p99)
+  - 프로파일링 스냅샷
+- 복잡:
+  - Instruments (macOS), perf (Linux)
+  - 지속적 프로파일링 (production)
+  - 성능 대시보드
+  - 자동 회귀 감지
+
+**프로파일링 도구**:
+
+- Python: py-spy, cProfile, memory_profiler
+- Rust: Instruments (macOS), perf, flamegraph
+- TypeScript: clinic.js, 0x, Chrome DevTools
+- Go: pprof (기본 내장)
+
+**왜 필수인가?**: 리팩토링 후 "느려진 건지 빨라진 건지" 객관적 증거 없으면 논쟁. 병목 지점 모르면 "감으로" 최적화 = 시간 낭비.
+
+------
+
+## 9. API System (인터페이스/통신)
+
+**목적**: 모듈/서비스 간 통신 규약 통일
+
+**범위**: ⚠️ "API"를 좁게 생각하지 마세요!
+
+- ✅ **외부 REST API** (서버)
+- ✅ **내부 마이크로서비스 통신** (gRPC, 메시지 큐)
+- ✅ **모듈 간 함수 호출 규약** (인터페이스)
+- ✅ **라이브러리 public API** (pub fn, export)
+- ✅ **CLI 명령어 인터페이스** (argparse, clap)
+
+**모든 인터페이스/통신을 포함합니다!**
+
+**예시**:
+
+- 간단:
+  - 함수 시그니처 정의
+  - CLI 명령어 인터페이스
+  - 모듈 간 호출 규약
+- 중간:
+  - 라이브러리 public API
+  - 타입 안전한 인터페이스
+  - API 문서 자동 생성
+- 복잡:
+  - REST API (FastAPI, Express)
+  - GraphQL, gRPC
+  - WebSocket 실시간 통신
+  - OpenAPI 스펙 준수
+
+**언어별 구현**:
+
+- Python: FastAPI, pydantic (타입 검증), typer (CLI)
+- Rust: axum, tonic (gRPC), clap (CLI)
+- TypeScript: NestJS, tRPC, express
+- Go: gin, gRPC, cobra (CLI)
+
+**왜 필수인가?**: 인터페이스 통일 안 되면 "어떻게 호출하는지" 매번 확인. API 문서 없으면 "이 함수 뭐 하는 거지?" 코드 뒤져야 함. CLI 도구도 명령어 인터페이스 = API!
+
+------
+
+## 10. Data System (저장/조회)
+
+**목적**: 데이터 영속성 및 접근 통일
+
+**범위**: ⚠️ "대용량 데이터"만 생각하지 마세요!
+
+- ✅ **일반 DB** (PostgreSQL, MySQL, SQLite)
+- ✅ **파일 읽기/쓰기** (로컬, S3)
+- ✅ **캐시** (Redis, 메모리)
+- ✅ **대용량 처리** (ETL, Streaming, Batch)
+- ✅ **메모리 관리** (Arena, 객체 풀링)
+
+**모든 저장/조회를 포함합니다!**
+
+**예시**:
+
+- 간단:
+  - 설정 파일 읽기/쓰기
+  - 로컬 파일 저장
+  - 히스토리 저장
+- 중간:
+  - PostgreSQL CRUD
+  - Redis 캐싱
+  - ORM (SQLAlchemy, TypeORM)
+  - 연결 풀 관리
+- 복잡:
+  - ETL 파이프라인 (Airflow, dbt)
+  - 실시간 스트리밍 (Kafka, Flink)
+  - 데이터 웨어하우스 (Snowflake, BigQuery)
+  - Arena 메모리 관리 (Kent Beck)
+
+**언어별 구현**:
+
+- Python: SQLAlchemy, Pydantic, polars (대용량)
+- Rust: diesel, sqlx, Arena allocator
+- TypeScript: Prisma, TypeORM, Drizzle
+- Go: gorm, sqlx
+
+**왜 필수인가?**: 저장 안 하는 프로그램? 거의 없음. (설정, 히스토리, 결과 등) DB 접근 통일 안 되면 "여기선 raw SQL, 저기선 ORM" 혼란. 메모리 관리도 Data System! (Kent Beck의 Arena)
+
+------
+
+## 11. Security System (보안)
+
+**목적**: 보안 취약점 방지, 민감 정보 보호
+
+**범위**:
+
+- **민감 정보 관리**
+  - API 키, 비밀번호 암호화 저장
+  - 환경 변수 사용 (.env)
+  - 코드에 하드코딩 금지
+- **입력 검증** (Injection 방지)
+  - SQL Injection 차단
+  - XSS (Cross-Site Scripting) 방지
+  - Command Injection 방지
+  - Path Traversal 방지
+- **인증/권한** (Authentication/Authorization)
+  - 누가 접근하는가? (인증)
+  - 무엇을 할 수 있는가? (권한)
+  - JWT, OAuth2, RBAC
+- **암호화**
+  - 전송 중 (HTTPS, TLS)
+  - 저장 중 (DB 암호화)
+  - 비밀번호 해싱 (bcrypt, argon2)
+- **보안 스캔**
+  - SAST (정적 분석)
+  - DAST (동적 분석)
+  - 의존성 취약점 체크
+- **보안 헤더**
+  - CORS, CSP, HSTS 설정
+- **Rate Limiting** (DDoS 방지)
+
+**예시**:
+
+- 간단:
+  - .env에 비밀 저장 (코드 X)
+  - 입력 검증 (SQL Injection 방지)
+  - HTTPS 사용
+- 중간:
+  - JWT 인증
+  - RBAC 권한 시스템
+  - bcrypt 비밀번호 해싱
+  - 보안 헤더 설정
+  - 의존성 스캔 (npm audit)
+- 복잡:
+  - OAuth2/OIDC
+  - 암호화 키 관리 (KMS)
+  - 보안 스캔 자동화 (Snyk, OWASP ZAP)
+  - 침입 탐지 시스템 (IDS)
+  - 카오스 엔지니어링 (보안 테스트)
+
+**언어별 구현**:
+
+- Python: bandit (SAST), safety (의존성), cryptography
+- Rust: cargo-audit, clippy (unsafe 체크), RustCrypto
+- TypeScript: helmet (보안 헤더), npm audit, bcrypt
+- Go: gosec, go-critic, crypto 패키지
+
+**왜 필수인가?**: 보안 사고 1건 = 프로젝트 전체 신뢰 상실. 개인정보 유출 = 법적 책임 + 벌금. SQL Injection 하나로 DB 전체 탈취 가능. 모든 소프트웨어는 공격 대상.
+
+------
+
+## 📊 DNA 시스템 체크리스트
+
+프로젝트 시작 시 **11개 모두** 체크:
+
+```markdown
+## DNA 시스템 11개 구축 (Stage 4-5)
+
+### [ ] 1. Type System
+- [ ] 타입 체커 설정
+- [ ] strict mode 활성화
+- [ ] any/dynamic 금지 규칙
+
+### [ ] 2. Observability System
+- [ ] 구조화된 로깅 설정
+- [ ] trace_id 전파
+- [ ] 메트릭 수집 (선택)
+
+### [ ] 3. Testing System
+- [ ] 테스트 프레임워크 설정
+- [ ] 95% 커버리지 목표
+- [ ] pre-commit hook (테스트 실행)
+
+### [ ] 4. Code Quality System
+- [ ] 포맷터 설정 + 자동 실행
+- [ ] 린터 설정 + 경고 0개
+- [ ] pre-commit hooks
+- [ ] CI 파이프라인
+
+### [ ] 5. Architecture Enforcement
+- [ ] Layer 경계 정의
+- [ ] import 규칙 설정
+- [ ] Architecture tests
+
+### [ ] 6. Configuration System
+- [ ] .env 파일 설정
+- [ ] 타입 안전한 설정 클래스
+- [ ] 의존성 관리 도구 선택
+- [ ] lock 파일 생성
+
+### [ ] 7. Error Handling System
+- [ ] 에러 타입 정의
+- [ ] Result/Either 패턴
+- [ ] 에러 로깅 통합
+
+### [ ] 8. Performance System
+- [ ] 벤치마크 설정
+- [ ] 프로파일링 도구 설치
+- [ ] 성능 회귀 체크
+
+### [ ] 9. API System
+- [ ] 인터페이스 정의
+- [ ] API 문서 자동 생성 (선택)
+- [ ] 타입 안전한 계약
+
+### [ ] 10. Data System
+- [ ] DB/파일 접근 계층 정의
+- [ ] 연결 풀 설정
+- [ ] 캐시 전략 (필요 시)
+
+### [ ] 11. Security System
+- [ ] 민감 정보 관리 (.env)
+- [ ] 입력 검증 규칙
+- [ ] 보안 스캔 설정
+- [ ] 인증/권한 (API 있을 시)
+```
+
+------
+
+## 🎯 Kent Beck 프로젝트 검증
+
+Kent Beck의 BPlusTree 프로젝트에서 11개 DNA 모두 확인:
+
+| DNA               | Kent Beck 구현                        | 검증 |
+| ----------------- | ------------------------------------- | ---- |
+| 1. Type           | Rust 타입 시스템 + strict             | ✅    |
+| 2. Observability  | (명시적 로깅 없음)                    | ⚠️    |
+| 3. Testing        | 95%+ 커버리지 + fuzz + property       | ✅    |
+| 4. Code Quality   | cargo fmt + clippy + "Dead code dead" | ✅    |
+| 5. Architecture   | Architecture tests                    | ✅    |
+| 6. Configuration  | Cargo.toml + lock                     | ✅    |
+| 7. Error Handling | Result<T,E> 강제, panic! 금지         | ✅    |
+| 8. Performance    | Criterion + Instruments profiling     | ✅    |
+| 9. API            | pub fn 인터페이스                     | ✅    |
+| 10. Data          | Arena 메모리 관리                     | ✅    |
+| 11. Security      | Memory safety, unsafe 감사            | ✅    |
+
+**10/11개 명확히 구현!** (Observability는 라이브러리라서 최소화)
+
+
+
+================================================================================
