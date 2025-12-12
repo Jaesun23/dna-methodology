@@ -342,6 +342,283 @@ Step 6: 재진행 결과 검증
 
 ---
 
+## 🧠 에이전트 컨텍스트 한계와 자기 인식 (2025-12-12)
+
+### 제미나이의 구조적 결함 발견
+
+**3가지 핵심 문제:**
+
+1. **Backend/Infra Bias** ⭐⭐⭐⭐⭐
+   - 11 DNA Systems가 모두 백엔드/인프라 중심
+   - 프론트엔드 시스템(State Management, Routing) 완전 누락
+
+2. **Static Architecture Bias** ⭐⭐⭐⭐
+   - CRUD/배치/검색 패턴에 최적화
+   - Event-driven/Streaming 패턴 반영 부족
+
+3. **AI Optimal Size Paradox** ⭐⭐⭐⭐⭐ (가장 위험!)
+   - AI가 "최적 크기" → "생략 허가"로 오해석
+   - 결과: ADR 1개만 쓰고 조기 종료
+   - 근본 원인: 완전성 vs 최적화 우선순위 불명확
+
+### 컨텍스트 한계의 진실
+
+**검증된 발견 (Gemini 1M 토큰 실험):**
+```
+컨텍스트 크기 1M (클로드의 5배)
+  BUT
+시간 지나면서 → 방법론 무시
+  = Context Rot 발생!
+
+결론: 컨텍스트 크기 ≠ 일관성 유지 능력
+```
+
+**핵심 인사이트:**
+- Context Rot는 컨텍스트 크기와 무관
+- 어텐션 메커니즘의 근본적 한계
+- AI 최적 크기는 "절대값" 기준 (80-100K 토큰)
+- 클로드든 제미나이든 비슷한 최적 크기
+
+### 에이전트 토큰 계산 (200K 기준)
+
+**기본 오버헤드:**
+```
+System prompt:        3.8k  (1.9%)
+System tools:        19.2k  (9.6%)
+MCP tools (Context7): 1.8k  (0.9%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+기본 오버헤드:        24.8k (12.4%)
+```
+
+**작업 준비 (구현 에이전트 기준):**
+```
+에이전트 정의:         4.0k
+표준문서:             8.0k
+작업 체크리스트 1개:  10.0k
+공통모듈 경로:         2.0k
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+총 소모 (넉넉잡아):    40.0k
+```
+
+**가용 공간 계산:**
+```
+200,000 토큰 (전체)
+ -40,000 (준비 소모)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+= 160,000 토큰 (80%) 남음
+```
+
+**쓰기 작업 = 2배 소모 (중요!):**
+```
+왜 2배인가?
+
+1단계: AI가 내부에서 생각하며 내용 생성
+       → 토큰 소모 1차 (80k)
+
+2단계: 생성한 내용을 실제 텍스트로 출력
+       → 토큰 소모 2차 (80k)
+
+총: 160k 토큰 소모
+
+따라서:
+160,000 가용 ÷ 2 (생각 + 쓰기) = 80,000 토큰 실제 생성
+80,000 토큰 ÷ 20 토큰/줄 = 4,000줄 코드
+```
+
+**DNA 방법론의 AI 최적 크기 재정의:**
+```
+1개 작업 (Task) = 4,000~5,000줄 코드
+                = 체크리스트 10k 토큰 (500줄)
+                = 품질 유지 + Context Rot 회피
+```
+
+### 에이전트 자기 인식 원칙
+
+**Phase 0: 작업 시작 전 항상 계산**
+```markdown
+1. 현재 컨텍스트 사용량 확인
+2. 가용 토큰 계산 (쓰기 = 2배 고려)
+3. 작업량 추정 (줄 수 기준)
+4. 예상 완성도 계산
+
+IF 예상 완성도 < 100%:
+   → "증분 작업 모드" 진입
+   → 품질 유지 우선
+   → 완료 가능한 단위만 작업
+```
+
+**증분 작업 모드 (Incremental Work):**
+```
+예시: ADR 7개 작성 요청
+
+계산 결과:
+- 가용: 160k
+- 생성 가능: 80k (÷2)
+- 1개 ADR: 800줄
+- 완료 가능: 5개 / 7개 (71%)
+
+전략:
+✅ ADR-001 ~ 005 완성 (5개 100% 품질)
+❌ ADR-006 ~ 007 미작성 (중간 작업 금지!)
+🔄 재호출 요청 명확히
+```
+
+### Partial Completion 상태
+
+**output JSON 구조:**
+```json
+{
+  "status": "partial_completion",
+  "progress": {
+    "completed": "71.4%",
+    "completed_items": ["ADR-001", "ADR-002", ...],
+    "remaining_items": ["ADR-006", "ADR-007"]
+  },
+  "context_analysis": {
+    "initial_available": "160k",
+    "actual_used": "155k",
+    "safety_margin_used": true
+  },
+  "reinvoke_request": {
+    "required": true,
+    "reason": "Context capacity reached, stopped to preserve quality",
+    "next_task": "Complete remaining ADRs 006-007"
+  },
+  "quality_assurance": {
+    "completed_items_quality": "100%",
+    "no_partial_items": true,
+    "no_rushed_work": true
+  }
+}
+```
+
+### Blocked 상태 프로토콜
+
+**언제 blocked를 선언하나?**
+
+1. **리서치 불가능**
+   - Context7 결과 불충분
+   - 명확한 결정 불가능
+
+2. **기술적 막힘**
+   - 테스트 반복 실패 (5회 이상)
+   - 버그 원인 파악 불가
+   - 아키텍처 수정 필요 판단
+
+3. **컨텍스트 한계**
+   - 190k+ 사용 (95%+)
+   - 품질 유지 불가능 예상
+
+**Blocked 시 output JSON:**
+```json
+{
+  "status": "blocked",
+  "blocking_issue": {
+    "type": "research_inconclusive" | "persistent_test_failures" | "context_limit",
+    "attempts": [...],
+    "context_consumed": "190k/200k"
+  },
+  "current_state": {
+    "working_features": [...],
+    "broken_features": [...]
+  },
+  "recommendation": {
+    "options": [
+      "Architecture review",
+      "Add distributed lock",
+      "Accept MVP scope"
+    ]
+  }
+}
+```
+
+**Blocked는 실패가 아니다:**
+```
+Blocked = "현명한 정지"
+       = "품질 유지를 위한 선택"
+       = "투명한 소통"
+       ≠ "실패"
+```
+
+### 실전 시나리오
+
+**시나리오 1: 리서치 중 컨텍스트 소진**
+```
+Phase 3: 섹션별 작성 중
+  ├─ Section 1-2 완성 ✅
+  ├─ Section 3 막힘 (Context7 5회 호출, 명확한 답 없음)
+  ├─ 컨텍스트: 190k/200k (95%)
+  └─ 결정: blocked 선언, 수동 리서치 요청
+```
+
+**시나리오 2: 테스트 실패 루프**
+```
+Phase 4: 테스트 실행
+  ├─ Run 1-5: 디버그 & 수정 반복
+  ├─ 12/15 테스트 통과 (80%)
+  ├─ 3개 실패 (검증 로직, 동시성 이슈)
+  ├─ 컨텍스트: 185k/200k
+  └─ 결정: blocked 선언, 아키텍처 리뷰 요청
+```
+
+**금지 사항:**
+```
+❌ 테스트 스킵 (@pytest.mark.skip)
+❌ TODO/pass로 대충 끝내기
+❌ 품질 타협하며 억지로 완성
+❌ 에러 숨기기
+```
+
+### 2호 (Orchestrator) 역할
+
+**Partial Completion 처리:**
+```typescript
+if (output.status === "partial_completion") {
+  console.log(`✅ ${output.progress.completion_percentage}% 완료`);
+
+  if (output.reinvoke_request.required) {
+    // 재호출
+    await Task(agent, output.reinvoke_request.next_task);
+  }
+}
+```
+
+**Blocked 상태 처리:**
+```typescript
+if (output.status === "blocked") {
+  switch (output.blocking_issue.type) {
+    case "research_inconclusive":
+      // 직접 리서치 or Jason 에스컬레이션
+      break;
+    case "persistent_test_failures":
+      // analyzer-dna 호출 or MVP 범위 수용
+      break;
+  }
+}
+```
+
+### 핵심 원칙 업데이트
+
+**원칙 0 (절대 원칙): 완전해질 때까지 반복**
+- 모든 원칙의 전제 조건
+- "일부만" 절대 금지
+
+**원칙 1 (완전성 전제): AI 최적 크기**
+- 완전한 산출물을 위한 최적 분할
+- "생략"이 아닌 "분할"
+- 4,000~5,000줄 코드 = 1개 작업
+
+**Context Rot 대응 전략:**
+1. 에이전트 자기 인식 (Phase 0 계산)
+2. 증분 작업 모드 (품질 우선)
+3. Partial/Blocked 상태 투명 소통
+4. 2호의 반복적 Gap 메우기
+5. JSON 기반 상태 전달
+
+**"2호가 반복해서 부족한 걸 메꿔야 한다"** - Jason
+
+---
+
 ## Critical Principles (Legacy - kept for reference)
 
 ### 1. Environment First, Then Execution
